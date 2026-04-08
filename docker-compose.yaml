@@ -1,0 +1,32 @@
+
+# include: 
+#   - ./swarmpit.yaml 
+
+services:
+
+  
+
+  postgres:
+    image: cyber-navigate/postgres
+    ports:
+      - target: 5432
+        published: 5777
+        protocol: tcp
+        mode: host
+    networks:
+      - cyber_navigate_net
+    secrets:
+      - source: postgres_secret
+        target: postgres_secret
+    deploy:
+      replicas: 1
+
+
+
+
+networks:
+  cyber_navigate_net:
+
+secrets:
+  postgres_secret:
+    external: true
