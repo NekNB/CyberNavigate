@@ -1,6 +1,11 @@
-.PHONY: run build start stop secrets_remove srm secrets_create scr secrets_update
+.PHONY: echorun build start stop secrets_remove srm secrets_create scr secrets_update
 
-run: stop build secrets_update start
+
+.SILENT:
+
+ARGS = $(filter-out $@,$(MAKECMDGOALS))
+
+run: build secrets_update start
 
 build:
 	docker build -f ./postgres/Dockerfile -t cyber-navigate/postgres .
@@ -11,7 +16,7 @@ secrets_remove srm:
 	docker secret remove postgres_secret || echo ">> Secret not found"
 
 secrets_create scr:
-	docker secret create postgres_secret ./secrets/postgres.secret
+	docker secret create postgres_secret ./secrets/postgres.secret.env || echo ">> Secret already exists"
 
 
 
@@ -23,3 +28,10 @@ start:
 stop:
 	docker stack rm cyber-navigate
 
+
+update:
+	docker service update --force cyber-navigate_${ARGS}
+
+
+%:
+	@:

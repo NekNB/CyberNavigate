@@ -1,7 +1,12 @@
 FROM postgres:18.2
 
 
-RUN apt update && apt install -y gettext
+RUN apt update && apt install -y curl
+
+RUN  curl -o /usr/local/bin/gomplate -sSL https://github.com/hairyhenderson/gomplate/releases/download/v5.0.0/gomplate_linux-amd64
+RUN chmod 755 /usr/local/bin/gomplate
+
+
 
 
 COPY postgres/templates /docker-entrypoint-initdb.d/

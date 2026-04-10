@@ -1,10 +1,8 @@
 
-# include: 
-#   - ./swarmpit.yaml 
 
 services:
 
-  
+
 
   postgres:
     image: cyber-navigate/postgres
@@ -13,8 +11,7 @@ services:
         published: 5777
         protocol: tcp
         mode: host
-    networks:
-      - cyber_navigate_net
+
     secrets:
       - source: postgres_secret
         target: postgres_secret
@@ -22,10 +19,11 @@ services:
       replicas: 1
 
 
+volumes:
+  portainer_data:
+    driver: local # Создаем том для хранения данных Portainer
 
 
-networks:
-  cyber_navigate_net:
 
 secrets:
   postgres_secret:

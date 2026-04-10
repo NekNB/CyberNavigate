@@ -8,15 +8,16 @@ SECRET_PATH="/run/secrets/postgres_secret"
 
 transform_template_to_sql() {
 	# Обработка SQL шаблонов
-	for template in /docker-entrypoint-initdb.d/*.template; do
-			echo "Work with $template"
-			if [ -f "$template" ]; then
-					filename=$(basename "$template" .template)
+	for template in /docker-entrypoint-initdb.d/*.tmp.sql; do
+		echo "Work with $template"
+		if [ -f "$template" ]; then
+				filename=$(basename "$template" .tmp.sql).sql
 
-					echo "$filename from $template"
-					envsubst < "$template" > "/docker-entrypoint-initdb.d/$filename"
-					rm -f "$template"
-			fi
+				echo "$filename from $template"
+				gomplate -f $template -o /docker-entrypoint-initdb.d/$filename
+				rm -f "$template"
+
+		fi
 	done
 }
 
@@ -27,13 +28,9 @@ load_secrets() {
         # Используем set -a чтобы экспортировать все переменные из файла автоматически
         # Это работает, если файл содержит VAR=Value строки
         set -a
-        source "$SECRET_PATH"
+        source <(tr -d '\r' < /run/secrets/postgres_secret)
         set +a
 				
-				export POSTGRES_USER=$(echo -e "$POSTGRES_USER" | tr -d '[:space:]')
-        export POSTGRES_PASSWORD=$(echo -e "$POSTGRES_PASSWORD" | tr -d '[:space:]')
-        export POSTGRES_DB=$(echo -e "$POSTGRES_DB" | tr -d '[:space:]')
-
         # Проверка, загрузились ли переменные	
         if [ -z "$POSTGRES_USER" ] || [ -z "$POSTGRES_PASSWORD" ]; then
             echo "Error: Failed to load secrets from $SECRET_PATH or variables are empty."
