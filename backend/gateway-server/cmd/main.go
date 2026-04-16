@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	pb "github.com/NekNB/CyberNavigate/protos/gen/user"
+	pb "github.com/NekNB/CyberNavigate/protos/gen/user/neknb.user.v1"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
