@@ -3,7 +3,7 @@ syntax = "proto3";
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 
-package auth;
+package user;
 
 option go_package = "neknb.user.v1;userv1";
 

@@ -1,1 +1,1 @@
-protoc -I proto .\proto\sso\sso.proto --go_out=./gen/go/sso --go_opt=paths=source_relative --go-grpc_out=./gen/go/ --go-grpc_opt=paths=source_relative
+  protoc -I . -I ./third_party --go_out=./gen/go  --go-grpc_out=./gen/go --grpc-gateway_out=./gen/go  --openapiv2_out=../backend/gateway-server/internal/assets/docs proto/article/article.proto proto/user/user.proto
