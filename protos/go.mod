@@ -1,4 +1,4 @@
-module github/NekNArej/CyberNavigate/protos
+module github.com/NekNArej/CyberNavigate/protos
 
 go 1.26.2
 
