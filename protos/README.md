@@ -1,1 +1,1 @@
-  protoc -I . -I ./third_party --go_out=./gen/go  --go-grpc_out=./gen/go --grpc-gateway_out=./gen/go  --openapiv2_out=../backend/gateway-server/internal/assets/docs proto/article/article.proto proto/user/user.proto
+protoc -I . -I ./third_party --go_out=./gen/go  --go-grpc_out=./gen/go --grpc-gateway_out=./gen/go  --openapiv2_out=../backend/gateway-server/internal/assets/docs proto/article/article.proto proto/user/user.proto

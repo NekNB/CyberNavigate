@@ -12,7 +12,7 @@ service Articles {
 	//
   rpc Create (CreateArticleRequest) returns (ArticleStatusResponse) {
     option (google.api.http) = {
-      post: "/v1/articles/create",
+      post: "/api/v1/articles/create",
       body: "*",
     };
   };
@@ -20,21 +20,21 @@ service Articles {
 	//
   rpc GetArticle (GetArticleRequest) returns (ArticleStatusResponse) {
     option (google.api.http) = {
-      get: "/v1/articles/{article_id}",
+      get: "/api/v1/articles/{article_id}",
     };
   };
 
 	//
   rpc GetArticles (google.protobuf.Empty) returns (ArticlesListResponse) {
     option (google.api.http) = {
-      get: "/v1/articles"
+      get: "/api/v1/articles"
     };
   };
 
 	//
   rpc Update (ArticleUpdateRequest) returns (ArticleStatusResponse) {
     option (google.api.http) = {
-      patch:  "/v1/articles/{article_id}",
+      patch:  "/api/v1/articles/{article_id}",
 			body: "*",
     };
   };

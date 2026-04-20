@@ -12,7 +12,7 @@ service User {
 	//
   rpc Register (RegisterRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/v1/users/register",
+      post: "/api/v1/users/register",
       body: "*",
     };
   };
@@ -20,7 +20,7 @@ service User {
 	//
   rpc Login (LoginRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/v1/users/login",
+      post: "/api/v1/users/login",
       body: "*",
     };
   };
@@ -28,14 +28,14 @@ service User {
 	//
   rpc Logout (google.protobuf.Empty) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      delete: "/v1/users/logout"
+      delete: "/api/v1/users/logout"
     };
   };
 
 	//
   rpc Refresh (google.protobuf.Empty) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      put : "/v1/users/refresh"
+      put : "/api/v1/users/refresh"
     };
   };
 }
