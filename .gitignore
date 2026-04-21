@@ -1,3 +1,4 @@
 *.env
 bin/*
 go.sum
+protos/go.sum

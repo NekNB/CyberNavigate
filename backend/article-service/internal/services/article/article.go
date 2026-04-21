@@ -7,10 +7,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/NekNB/AuthService/sso/internal/domain/models"
-	"github.com/NekNB/AuthService/sso/internal/lib/jwt"
-	"github.com/NekNB/AuthService/sso/internal/lib/logger/sl"
-	"github.com/NekNB/AuthService/sso/internal/storage"
+	"github.com/NekNB/CyberNavigate/backend/article-service/internal/domain/models"
 	"golang.org/x/crypto/bcrypt"
 )
 

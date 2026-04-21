@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/NekNB/ArticleService/sso/internal/storage"
 	articleModel "github.com/NekNB/CyberNavigate/backend/article-service/internal/domain/models"
 	"github.com/NekNB/CyberNavigate/backend/article-service/internal/services/article"
 	articlev1 "github.com/NekNB/CyberNavigate/protos/gen/go/neknb.article.v1"
@@ -22,6 +21,10 @@ type Article interface {
 		ctx context.Context,
 		article_id string,
 	) (uuid, name, status string, err error)
+	GetArticleStream(
+		ctx context.Context,
+		article_id string,
+	) (content byte, err error)
 	GetArticles(
 		ctx context.Context,
 	) (total int64, articles *[]articleModel.Article)
@@ -51,7 +54,7 @@ func (s *serverAPI) Create(
 ) (*articlev1.ArticleStatusResponse, error) {
 
 	if err := validateCreate(req); err != nil {
-		return nil, err
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	articleUuid, articleName, articleStatus, err := s.article.Create(ctx, req.GetArticleName())
@@ -67,23 +70,15 @@ func (s *serverAPI) Create(
 		ArticleName:   articleName,
 		ArticleStatus: articleStatus,
 	}, nil
-
 }
 
-func validateCreate(req *articlev1.CreateArticleRequest) error {
-	if req.GetArticleName() == "" {
-		return status.Error(codes.InvalidArgument, "article name is required")
-	}
-
-	return nil
-}
-
+// Возвращает конкретную запись из статьи
 func (s *serverAPI) GetArticle(
 	ctx context.Context,
 	req *articlev1.GetArticleRequest,
 ) (*articlev1.ArticleStatusResponse, error) {
 	if err := validateGetArticle(req); err != nil {
-		return nil, err
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	articleUuid, articleName, articleStatus, err := s.article.GetArticle(ctx, req.GetArticleId())
@@ -101,11 +96,28 @@ func (s *serverAPI) GetArticle(
 	}, nil
 }
 
-func validateGetArticle(req *articlev1.GetArticleRequest) error {
-	if req.GetArticleId() == "" {
-		return status.Error(codes.InvalidArgument, "article_id is required")
+// Передает поток статьи
+func (s *serverAPI) GetArticleStream(
+	ctx context.Context,
+	req *articlev1.GetArticleRequest,
+) (*articlev1., error) {
+	if err := validateGetArticle(req); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	return nil
+
+	articleUuid, articleName, articleStatus, err := s.article.GetArticle(ctx, req.GetArticleId())
+	if err != nil {
+		if errors.Is(err, article.ErrArticleNotFound) {
+			return nil, status.Error(codes.NotFound, "article not found. Please check article_uuid")
+		}
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	return &articlev1.ArticleChunk{
+		ArticleUuid:   articleUuid,
+		ArticleName:   articleName,
+		ArticleStatus: articleStatus,
+	}, nil
 }
 
 func (s *serverAPI) IsAdmin(
@@ -127,12 +139,4 @@ func (s *serverAPI) IsAdmin(
 	return &articlev1.IsAdminResponse{
 		IsAdmin: isAdmin,
 	}, nil
-}
-
-func validateIsAdmin(req *articlev1.IsAdminRequest) error {
-	if req.GetUserId() == emptyValue {
-		return status.Error(codes.InvalidArgument, "user_id is required")
-	}
-
-	return nil
 }
