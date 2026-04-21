@@ -17,10 +17,19 @@ service Articles {
     };
   };
 
-	//
+	// Используется для запроса к конкретной статье. 
+  // Не подходит для реализации поиска.
+  //  В случае отсутсвия ресурса в базе возвращает огибку
   rpc GetArticle (GetArticleRequest) returns (ArticleStatusResponse) {
     option (google.api.http) = {
       get: "/api/v1/articles/{article_id}",
+    };
+  };
+
+  // Выполняет потоковую передачу текста статьи
+  rpc GetArticleTextStream (GetArticleRequest) returns (stream ArticleChunk) {
+    option (google.api.http) = {
+      get: "/api/v1/articles/{article_id}/text",
     };
   };
 
@@ -68,6 +77,11 @@ message Article {
 	string title = 1;
 	string text = 2;
 	optional string video_link = 3;
+}
+
+// 
+message ArticleChunk {
+  bytes content = 1;
 }
 
 // 

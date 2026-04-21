@@ -2,62 +2,39 @@ package main
 
 import (
 	"context"
-	"io/fs"
-	"log"
-	"net/http"
 
-	pb "github.com/NekNB/CyberNavigate/protos/gen/user/neknb.user.v1"
+	"os"
+	"os/signal"
+	"syscall"
 
-	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/assets"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/app"
+	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/config"
+	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/lib/logger"
 )
 
 func main() {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	mainMux := http.NewServeMux()
 
-	// 1. Настройка раздачи JSON файлов
+	cfg := config.MustLoad()
 
-	// Открываем подсистему папки docs
-	specsDir, err := fs.Sub(assets.SpecsFS, "docs/proto")
+	log, err := logger.Init(cfg.Env)
 	if err != nil {
 		panic(err)
 	}
-	specServer := http.FileServer(http.FS(specsDir))
 
-	// Вешаем их на адреса /specs/...
-	// Теперь файлы доступны по URL:
-	// http://localhost:8080/specs/user.swagger.json
-	// http://localhost:8080/specs/article.swagger.json
-	mainMux.Handle("/specs/", http.StripPrefix("/specs/", specServer))
+	app := app.New(ctx, cfg, log)
 
-	// 2. Настройка раздачи самого интерфейса (как в прошлом ответе)
-	uiDir, _ := fs.Sub(assets.SwaggerUI, "swagger")
-	uiServer := http.FileServer(http.FS(uiDir))
-	mainMux.Handle("/swagger/", http.StripPrefix("/swagger/", uiServer))
+	go app.Run()
 
-	mux := runtime.NewServeMux()
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
 
-	err = pb.RegisterUserHandlerFromEndpoint(
-		ctx,
-		mux,
-		"localhost:50051",
-		[]grpc.DialOption{
-			grpc.WithTransportCredentials(insecure.NewCredentials()),
-		},
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
+	sign := <-stop
+	log.WithField("signal", sign.String()).Info("stopping application")
 
-	mainMux.Handle("/api/", mux)
+	app.Stop(ctx)
 
-	log.Println("gateway on :8080")
-
-	// важно: ты сейчас НЕ используешь mux в ListenAndServe
-	http.ListenAndServe(":8080", mainMux)
+	log.Info("application stopped")
 }

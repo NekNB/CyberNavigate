@@ -1,8 +1,37 @@
 
 
 services:
+  docker-cleanup:
+    image: docker:latest
+    command: >
+      sh -c "while true; do
+        docker container prune -f;
+        sleep 3600;
+      done"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      mode: global
+      restart_policy:
+        condition: any
+        
+  mongo:
+    image: mongo:8.2.7
+    ports:
+      - target: 27017
+        published: 27017
+        protocol: tcp
+        mode: host
 
-
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: v
+    deploy:
+      replicas: 1
+  # volumes:
+  #   - mongo_data:/data/db
+  # - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
 
   postgres:
     image: cyber-navigate/postgres
@@ -20,8 +49,11 @@ services:
 
 
 volumes:
-  portainer_data:
-    driver: local # Создаем том для хранения данных Portainer
+  mongo_data:
+
+
+
+  
 
 
 

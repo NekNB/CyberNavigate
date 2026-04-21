@@ -16,7 +16,7 @@
     "application/json"
   ],
   "paths": {
-    "/v1/users/login": {
+    "/api/v1/users/login": {
       "post": {
         "operationId": "User_Login",
         "responses": {
@@ -49,7 +49,7 @@
         ]
       }
     },
-    "/v1/users/logout": {
+    "/api/v1/users/logout": {
       "delete": {
         "operationId": "User_Logout",
         "responses": {
@@ -72,7 +72,7 @@
         ]
       }
     },
-    "/v1/users/refresh": {
+    "/api/v1/users/refresh": {
       "put": {
         "operationId": "User_Refresh",
         "responses": {
@@ -95,7 +95,7 @@
         ]
       }
     },
-    "/v1/users/register": {
+    "/api/v1/users/register": {
       "post": {
         "operationId": "User_Register",
         "responses": {

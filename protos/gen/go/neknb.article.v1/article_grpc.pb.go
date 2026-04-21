@@ -20,10 +20,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Articles_Create_FullMethodName      = "/article.Articles/Create"
-	Articles_GetArticle_FullMethodName  = "/article.Articles/GetArticle"
-	Articles_GetArticles_FullMethodName = "/article.Articles/GetArticles"
-	Articles_Update_FullMethodName      = "/article.Articles/Update"
+	Articles_Create_FullMethodName               = "/article.Articles/Create"
+	Articles_GetArticle_FullMethodName           = "/article.Articles/GetArticle"
+	Articles_GetArticleTextStream_FullMethodName = "/article.Articles/GetArticleTextStream"
+	Articles_GetArticles_FullMethodName          = "/article.Articles/GetArticles"
+	Articles_Update_FullMethodName               = "/article.Articles/Update"
 )
 
 // ArticlesClient is the client API for Articles service.
@@ -31,7 +32,13 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ArticlesClient interface {
 	Create(ctx context.Context, in *CreateArticleRequest, opts ...grpc.CallOption) (*ArticleStatusResponse, error)
+	// Используется для запроса к конкретной статье.
+	// Не подходит для реализации поиска.
+	//
+	//	В случае отсутсвия ресурса в базе возвращает огибку
 	GetArticle(ctx context.Context, in *GetArticleRequest, opts ...grpc.CallOption) (*ArticleStatusResponse, error)
+	// Выполняет потоковую передачу текста статьи
+	GetArticleTextStream(ctx context.Context, in *GetArticleRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ArticleChunk], error)
 	GetArticles(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ArticlesListResponse, error)
 	Update(ctx context.Context, in *ArticleUpdateRequest, opts ...grpc.CallOption) (*ArticleStatusResponse, error)
 }
@@ -64,6 +71,25 @@ func (c *articlesClient) GetArticle(ctx context.Context, in *GetArticleRequest, 
 	return out, nil
 }
 
+func (c *articlesClient) GetArticleTextStream(ctx context.Context, in *GetArticleRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ArticleChunk], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &Articles_ServiceDesc.Streams[0], Articles_GetArticleTextStream_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[GetArticleRequest, ArticleChunk]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Articles_GetArticleTextStreamClient = grpc.ServerStreamingClient[ArticleChunk]
+
 func (c *articlesClient) GetArticles(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ArticlesListResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ArticlesListResponse)
@@ -89,7 +115,13 @@ func (c *articlesClient) Update(ctx context.Context, in *ArticleUpdateRequest, o
 // for forward compatibility.
 type ArticlesServer interface {
 	Create(context.Context, *CreateArticleRequest) (*ArticleStatusResponse, error)
+	// Используется для запроса к конкретной статье.
+	// Не подходит для реализации поиска.
+	//
+	//	В случае отсутсвия ресурса в базе возвращает огибку
 	GetArticle(context.Context, *GetArticleRequest) (*ArticleStatusResponse, error)
+	// Выполняет потоковую передачу текста статьи
+	GetArticleTextStream(*GetArticleRequest, grpc.ServerStreamingServer[ArticleChunk]) error
 	GetArticles(context.Context, *emptypb.Empty) (*ArticlesListResponse, error)
 	Update(context.Context, *ArticleUpdateRequest) (*ArticleStatusResponse, error)
 	mustEmbedUnimplementedArticlesServer()
@@ -107,6 +139,9 @@ func (UnimplementedArticlesServer) Create(context.Context, *CreateArticleRequest
 }
 func (UnimplementedArticlesServer) GetArticle(context.Context, *GetArticleRequest) (*ArticleStatusResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetArticle not implemented")
+}
+func (UnimplementedArticlesServer) GetArticleTextStream(*GetArticleRequest, grpc.ServerStreamingServer[ArticleChunk]) error {
+	return status.Error(codes.Unimplemented, "method GetArticleTextStream not implemented")
 }
 func (UnimplementedArticlesServer) GetArticles(context.Context, *emptypb.Empty) (*ArticlesListResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetArticles not implemented")
@@ -171,6 +206,17 @@ func _Articles_GetArticle_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Articles_GetArticleTextStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(GetArticleRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ArticlesServer).GetArticleTextStream(m, &grpc.GenericServerStream[GetArticleRequest, ArticleChunk]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Articles_GetArticleTextStreamServer = grpc.ServerStreamingServer[ArticleChunk]
+
 func _Articles_GetArticles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
@@ -231,6 +277,12 @@ var Articles_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Articles_Update_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "GetArticleTextStream",
+			Handler:       _Articles_GetArticleTextStream_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "proto/article/article.proto",
 }

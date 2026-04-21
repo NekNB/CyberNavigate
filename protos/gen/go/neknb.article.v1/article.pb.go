@@ -284,6 +284,50 @@ func (x *Article) GetVideoLink() string {
 	return ""
 }
 
+type ArticleChunk struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Content       []byte                 `protobuf:"bytes,1,opt,name=content,proto3" json:"content,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ArticleChunk) Reset() {
+	*x = ArticleChunk{}
+	mi := &file_proto_article_article_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ArticleChunk) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ArticleChunk) ProtoMessage() {}
+
+func (x *ArticleChunk) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_article_article_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ArticleChunk.ProtoReflect.Descriptor instead.
+func (*ArticleChunk) Descriptor() ([]byte, []int) {
+	return file_proto_article_article_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ArticleChunk) GetContent() []byte {
+	if x != nil {
+		return x.Content
+	}
+	return nil
+}
+
 type ArticleUpdateRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ArticleId     string                 `protobuf:"bytes,1,opt,name=article_id,json=articleId,proto3" json:"article_id,omitempty"`
@@ -296,7 +340,7 @@ type ArticleUpdateRequest struct {
 
 func (x *ArticleUpdateRequest) Reset() {
 	*x = ArticleUpdateRequest{}
-	mi := &file_proto_article_article_proto_msgTypes[5]
+	mi := &file_proto_article_article_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -308,7 +352,7 @@ func (x *ArticleUpdateRequest) String() string {
 func (*ArticleUpdateRequest) ProtoMessage() {}
 
 func (x *ArticleUpdateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_article_article_proto_msgTypes[5]
+	mi := &file_proto_article_article_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -321,7 +365,7 @@ func (x *ArticleUpdateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArticleUpdateRequest.ProtoReflect.Descriptor instead.
 func (*ArticleUpdateRequest) Descriptor() ([]byte, []int) {
-	return file_proto_article_article_proto_rawDescGZIP(), []int{5}
+	return file_proto_article_article_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *ArticleUpdateRequest) GetArticleId() string {
@@ -374,7 +418,9 @@ const file_proto_article_article_proto_rawDesc = "" +
 	"\x04text\x18\x02 \x01(\tR\x04text\x12\"\n" +
 	"\n" +
 	"video_link\x18\x03 \x01(\tH\x00R\tvideoLink\x88\x01\x01B\r\n" +
-	"\v_video_link\"\xaf\x01\n" +
+	"\v_video_link\"(\n" +
+	"\fArticleChunk\x12\x18\n" +
+	"\acontent\x18\x01 \x01(\fR\acontent\"\xaf\x01\n" +
 	"\x14ArticleUpdateRequest\x12\x1d\n" +
 	"\n" +
 	"article_id\x18\x01 \x01(\tR\tarticleId\x12\x19\n" +
@@ -384,13 +430,14 @@ const file_proto_article_article_proto_rawDesc = "" +
 	"video_link\x18\x04 \x01(\tH\x02R\tvideoLink\x88\x01\x01B\b\n" +
 	"\x06_titleB\a\n" +
 	"\x05_textB\r\n" +
-	"\v_video_link2\xab\x03\n" +
-	"\bArticles\x12g\n" +
-	"\x06Create\x12\x1d.article.CreateArticleRequest\x1a\x1e.article.ArticleStatusResponse\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\"\x13/v1/articles/create\x12k\n" +
+	"\v_video_link2\xb4\x04\n" +
+	"\bArticles\x12k\n" +
+	"\x06Create\x12\x1d.article.CreateArticleRequest\x1a\x1e.article.ArticleStatusResponse\"\"\x82\xd3\xe4\x93\x02\x1c:\x01*\"\x17/api/v1/articles/create\x12o\n" +
 	"\n" +
-	"GetArticle\x12\x1a.article.GetArticleRequest\x1a\x1e.article.ArticleStatusResponse\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/v1/articles/{article_id}\x12Z\n" +
-	"\vGetArticles\x12\x16.google.protobuf.Empty\x1a\x1d.article.ArticlesListResponse\"\x14\x82\xd3\xe4\x93\x02\x0e\x12\f/v1/articles\x12m\n" +
-	"\x06Update\x12\x1d.article.ArticleUpdateRequest\x1a\x1e.article.ArticleStatusResponse\"$\x82\xd3\xe4\x93\x02\x1e:\x01*2\x19/v1/articles/{article_id}B\x1cZ\x1aneknb.article.v1;articlev1b\x06proto3"
+	"GetArticle\x12\x1a.article.GetArticleRequest\x1a\x1e.article.ArticleStatusResponse\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/api/v1/articles/{article_id}\x12w\n" +
+	"\x14GetArticleTextStream\x12\x1a.article.GetArticleRequest\x1a\x15.article.ArticleChunk\"*\x82\xd3\xe4\x93\x02$\x12\"/api/v1/articles/{article_id}/text0\x01\x12^\n" +
+	"\vGetArticles\x12\x16.google.protobuf.Empty\x1a\x1d.article.ArticlesListResponse\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/api/v1/articles\x12q\n" +
+	"\x06Update\x12\x1d.article.ArticleUpdateRequest\x1a\x1e.article.ArticleStatusResponse\"(\x82\xd3\xe4\x93\x02\":\x01*2\x1d/api/v1/articles/{article_id}B\x1cZ\x1aneknb.article.v1;articlev1b\x06proto3"
 
 var (
 	file_proto_article_article_proto_rawDescOnce sync.Once
@@ -404,28 +451,31 @@ func file_proto_article_article_proto_rawDescGZIP() []byte {
 	return file_proto_article_article_proto_rawDescData
 }
 
-var file_proto_article_article_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_proto_article_article_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_proto_article_article_proto_goTypes = []any{
 	(*CreateArticleRequest)(nil),  // 0: article.CreateArticleRequest
 	(*ArticleStatusResponse)(nil), // 1: article.ArticleStatusResponse
 	(*GetArticleRequest)(nil),     // 2: article.GetArticleRequest
 	(*ArticlesListResponse)(nil),  // 3: article.ArticlesListResponse
 	(*Article)(nil),               // 4: article.Article
-	(*ArticleUpdateRequest)(nil),  // 5: article.ArticleUpdateRequest
-	(*emptypb.Empty)(nil),         // 6: google.protobuf.Empty
+	(*ArticleChunk)(nil),          // 5: article.ArticleChunk
+	(*ArticleUpdateRequest)(nil),  // 6: article.ArticleUpdateRequest
+	(*emptypb.Empty)(nil),         // 7: google.protobuf.Empty
 }
 var file_proto_article_article_proto_depIdxs = []int32{
 	4, // 0: article.ArticlesListResponse.articles:type_name -> article.Article
 	0, // 1: article.Articles.Create:input_type -> article.CreateArticleRequest
 	2, // 2: article.Articles.GetArticle:input_type -> article.GetArticleRequest
-	6, // 3: article.Articles.GetArticles:input_type -> google.protobuf.Empty
-	5, // 4: article.Articles.Update:input_type -> article.ArticleUpdateRequest
-	1, // 5: article.Articles.Create:output_type -> article.ArticleStatusResponse
-	1, // 6: article.Articles.GetArticle:output_type -> article.ArticleStatusResponse
-	3, // 7: article.Articles.GetArticles:output_type -> article.ArticlesListResponse
-	1, // 8: article.Articles.Update:output_type -> article.ArticleStatusResponse
-	5, // [5:9] is the sub-list for method output_type
-	1, // [1:5] is the sub-list for method input_type
+	2, // 3: article.Articles.GetArticleTextStream:input_type -> article.GetArticleRequest
+	7, // 4: article.Articles.GetArticles:input_type -> google.protobuf.Empty
+	6, // 5: article.Articles.Update:input_type -> article.ArticleUpdateRequest
+	1, // 6: article.Articles.Create:output_type -> article.ArticleStatusResponse
+	1, // 7: article.Articles.GetArticle:output_type -> article.ArticleStatusResponse
+	5, // 8: article.Articles.GetArticleTextStream:output_type -> article.ArticleChunk
+	3, // 9: article.Articles.GetArticles:output_type -> article.ArticlesListResponse
+	1, // 10: article.Articles.Update:output_type -> article.ArticleStatusResponse
+	6, // [6:11] is the sub-list for method output_type
+	1, // [1:6] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
 	1, // [1:1] is the sub-list for extension extendee
 	0, // [0:1] is the sub-list for field type_name
@@ -437,14 +487,14 @@ func file_proto_article_article_proto_init() {
 		return
 	}
 	file_proto_article_article_proto_msgTypes[4].OneofWrappers = []any{}
-	file_proto_article_article_proto_msgTypes[5].OneofWrappers = []any{}
+	file_proto_article_article_proto_msgTypes[6].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_article_article_proto_rawDesc), len(file_proto_article_article_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

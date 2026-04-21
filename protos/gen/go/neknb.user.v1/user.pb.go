@@ -139,12 +139,12 @@ const file_proto_user_user_proto_rawDesc = "" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\"F\n" +
 	"\fLoginRequest\x12\x1a\n" +
 	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword2\xdb\x02\n" +
-	"\x04User\x12X\n" +
-	"\bRegister\x12\x15.user.RegisterRequest\x1a\x16.google.protobuf.Empty\"\x1d\x82\xd3\xe4\x93\x02\x17:\x01*\"\x12/v1/users/register\x12O\n" +
-	"\x05Login\x12\x12.user.LoginRequest\x1a\x16.google.protobuf.Empty\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/v1/users/login\x12R\n" +
-	"\x06Logout\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\x18\x82\xd3\xe4\x93\x02\x12*\x10/v1/users/logout\x12T\n" +
-	"\aRefresh\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\x19\x82\xd3\xe4\x93\x02\x13\x1a\x11/v1/users/refreshB\x16Z\x14neknb.user.v1;userv1b\x06proto3"
+	"\bpassword\x18\x02 \x01(\tR\bpassword2\xeb\x02\n" +
+	"\x04User\x12\\\n" +
+	"\bRegister\x12\x15.user.RegisterRequest\x1a\x16.google.protobuf.Empty\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/api/v1/users/register\x12S\n" +
+	"\x05Login\x12\x12.user.LoginRequest\x1a\x16.google.protobuf.Empty\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\"\x13/api/v1/users/login\x12V\n" +
+	"\x06Logout\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\x1c\x82\xd3\xe4\x93\x02\x16*\x14/api/v1/users/logout\x12X\n" +
+	"\aRefresh\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\x1d\x82\xd3\xe4\x93\x02\x17\x1a\x15/api/v1/users/refreshB\x16Z\x14neknb.user.v1;userv1b\x06proto3"
 
 var (
 	file_proto_user_user_proto_rawDescOnce sync.Once

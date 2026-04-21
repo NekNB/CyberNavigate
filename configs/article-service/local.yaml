@@ -1,0 +1,22 @@
+env: "local" # dev, prod
+
+
+grpc:
+  port: 44044
+  timeout: 10h
+
+
+storages:
+  postgres:
+    database: 
+    host:
+    port:
+    user:
+    password:
+
+  mongo:
+    database: admin
+    host: localhost
+    port: 27017
+    user: password123
+    password: myapp

@@ -102,6 +102,35 @@ func local_request_Articles_GetArticle_0(ctx context.Context, marshaler runtime.
 	return msg, metadata, err
 }
 
+func request_Articles_GetArticleTextStream_0(ctx context.Context, marshaler runtime.Marshaler, client ArticlesClient, req *http.Request, pathParams map[string]string) (Articles_GetArticleTextStreamClient, runtime.ServerMetadata, error) {
+	var (
+		protoReq GetArticleRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	val, ok := pathParams["article_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "article_id")
+	}
+	protoReq.ArticleId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "article_id", err)
+	}
+	stream, err := client.GetArticleTextStream(ctx, &protoReq)
+	if err != nil {
+		return nil, metadata, err
+	}
+	header, err := stream.Header()
+	if err != nil {
+		return nil, metadata, err
+	}
+	metadata.HeaderMD = header
+	return stream, metadata, nil
+}
+
 func request_Articles_GetArticles_0(ctx context.Context, marshaler runtime.Marshaler, client ArticlesClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq emptypb.Empty
@@ -180,7 +209,7 @@ func RegisterArticlesHandlerServer(ctx context.Context, mux *runtime.ServeMux, s
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/article.Articles/Create", runtime.WithHTTPPathPattern("/v1/articles/create"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/article.Articles/Create", runtime.WithHTTPPathPattern("/api/v1/articles/create"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -200,7 +229,7 @@ func RegisterArticlesHandlerServer(ctx context.Context, mux *runtime.ServeMux, s
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/article.Articles/GetArticle", runtime.WithHTTPPathPattern("/v1/articles/{article_id}"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/article.Articles/GetArticle", runtime.WithHTTPPathPattern("/api/v1/articles/{article_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -214,13 +243,20 @@ func RegisterArticlesHandlerServer(ctx context.Context, mux *runtime.ServeMux, s
 		}
 		forward_Articles_GetArticle_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
+
+	mux.Handle(http.MethodGet, pattern_Articles_GetArticleTextStream_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		err := status.Error(codes.Unimplemented, "streaming calls are not yet supported in the in-process transport")
+		_, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+		return
+	})
 	mux.Handle(http.MethodGet, pattern_Articles_GetArticles_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/article.Articles/GetArticles", runtime.WithHTTPPathPattern("/v1/articles"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/article.Articles/GetArticles", runtime.WithHTTPPathPattern("/api/v1/articles"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -240,7 +276,7 @@ func RegisterArticlesHandlerServer(ctx context.Context, mux *runtime.ServeMux, s
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/article.Articles/Update", runtime.WithHTTPPathPattern("/v1/articles/{article_id}"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/article.Articles/Update", runtime.WithHTTPPathPattern("/api/v1/articles/{article_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -298,7 +334,7 @@ func RegisterArticlesHandlerClient(ctx context.Context, mux *runtime.ServeMux, c
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/article.Articles/Create", runtime.WithHTTPPathPattern("/v1/articles/create"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/article.Articles/Create", runtime.WithHTTPPathPattern("/api/v1/articles/create"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -315,7 +351,7 @@ func RegisterArticlesHandlerClient(ctx context.Context, mux *runtime.ServeMux, c
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/article.Articles/GetArticle", runtime.WithHTTPPathPattern("/v1/articles/{article_id}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/article.Articles/GetArticle", runtime.WithHTTPPathPattern("/api/v1/articles/{article_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -328,11 +364,28 @@ func RegisterArticlesHandlerClient(ctx context.Context, mux *runtime.ServeMux, c
 		}
 		forward_Articles_GetArticle_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
+	mux.Handle(http.MethodGet, pattern_Articles_GetArticleTextStream_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/article.Articles/GetArticleTextStream", runtime.WithHTTPPathPattern("/api/v1/articles/{article_id}/text"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_Articles_GetArticleTextStream_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_Articles_GetArticleTextStream_0(annotatedContext, mux, outboundMarshaler, w, req, func() (proto.Message, error) { return resp.Recv() }, mux.GetForwardResponseOptions()...)
+	})
 	mux.Handle(http.MethodGet, pattern_Articles_GetArticles_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/article.Articles/GetArticles", runtime.WithHTTPPathPattern("/v1/articles"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/article.Articles/GetArticles", runtime.WithHTTPPathPattern("/api/v1/articles"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -349,7 +402,7 @@ func RegisterArticlesHandlerClient(ctx context.Context, mux *runtime.ServeMux, c
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/article.Articles/Update", runtime.WithHTTPPathPattern("/v1/articles/{article_id}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/article.Articles/Update", runtime.WithHTTPPathPattern("/api/v1/articles/{article_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -366,15 +419,17 @@ func RegisterArticlesHandlerClient(ctx context.Context, mux *runtime.ServeMux, c
 }
 
 var (
-	pattern_Articles_Create_0      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "articles", "create"}, ""))
-	pattern_Articles_GetArticle_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "articles", "article_id"}, ""))
-	pattern_Articles_GetArticles_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "articles"}, ""))
-	pattern_Articles_Update_0      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "articles", "article_id"}, ""))
+	pattern_Articles_Create_0               = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "articles", "create"}, ""))
+	pattern_Articles_GetArticle_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "v1", "articles", "article_id"}, ""))
+	pattern_Articles_GetArticleTextStream_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "articles", "article_id", "text"}, ""))
+	pattern_Articles_GetArticles_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "v1", "articles"}, ""))
+	pattern_Articles_Update_0               = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "v1", "articles", "article_id"}, ""))
 )
 
 var (
-	forward_Articles_Create_0      = runtime.ForwardResponseMessage
-	forward_Articles_GetArticle_0  = runtime.ForwardResponseMessage
-	forward_Articles_GetArticles_0 = runtime.ForwardResponseMessage
-	forward_Articles_Update_0      = runtime.ForwardResponseMessage
+	forward_Articles_Create_0               = runtime.ForwardResponseMessage
+	forward_Articles_GetArticle_0           = runtime.ForwardResponseMessage
+	forward_Articles_GetArticleTextStream_0 = runtime.ForwardResponseStream
+	forward_Articles_GetArticles_0          = runtime.ForwardResponseMessage
+	forward_Articles_Update_0               = runtime.ForwardResponseMessage
 )

@@ -1,0 +1,10 @@
+env: "local"
+
+server:
+  port: 9000
+  article: 
+    host: localhost
+    port: 44044
+  user: 
+    host: localhost
+    port: 9000

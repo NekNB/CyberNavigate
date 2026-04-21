@@ -16,7 +16,7 @@
     "application/json"
   ],
   "paths": {
-    "/v1/articles": {
+    "/api/v1/articles": {
       "get": {
         "operationId": "Articles_GetArticles",
         "responses": {
@@ -38,7 +38,7 @@
         ]
       }
     },
-    "/v1/articles/create": {
+    "/api/v1/articles/create": {
       "post": {
         "operationId": "Articles_Create",
         "responses": {
@@ -70,8 +70,9 @@
         ]
       }
     },
-    "/v1/articles/{articleId}": {
+    "/api/v1/articles/{articleId}": {
       "get": {
+        "summary": "Используется для запроса к конкретной статье. \nНе подходит для реализации поиска.\n В случае отсутсвия ресурса в базе возвращает огибку",
         "operationId": "Articles_GetArticle",
         "responses": {
           "200": {
@@ -135,6 +136,46 @@
           "Articles"
         ]
       }
+    },
+    "/api/v1/articles/{articleId}/text": {
+      "get": {
+        "summary": "Выполняет потоковую передачу текста статьи",
+        "operationId": "Articles_GetArticleTextStream",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/articleArticleChunk"
+                },
+                "error": {
+                  "$ref": "#/definitions/rpcStatus"
+                }
+              },
+              "title": "Stream result of articleArticleChunk"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "articleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Articles"
+        ]
+      }
     }
   },
   "definitions": {
@@ -163,6 +204,15 @@
         },
         "videoLink": {
           "type": "string"
+        }
+      }
+    },
+    "articleArticleChunk": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string",
+          "format": "byte"
         }
       }
     },

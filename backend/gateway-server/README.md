@@ -1,0 +1,1 @@
+go run ./cmd --config=../../configs/gateway-server.yaml
