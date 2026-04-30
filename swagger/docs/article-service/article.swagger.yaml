@@ -60,13 +60,13 @@ paths:
                 items:
                   $ref: "#/components/schemas/ArticleMetaData"
 
-  /articles/{ArticleMetaData}:
+  /articles/{articleId}:
     patch:
       tags:
         - Admin
       summary: Update article by Id
       parameters:
-        - name: ArticleMetaData
+        - name: articleId
           in: path
           description: ID of article
           required: true
@@ -108,18 +108,25 @@ paths:
               schema:
                 $ref: "#/components/schemas/ArticleMetaData"
     parameters:
-      - name: ArticleMetaData
+      - name: articleId
         in: path
         description: ID of article
         required: true
         schema:
           type: string
 
-  /articles/{ArticleMetaData}/text:
+  /articles/{articleId}/text:
     post:
       tags:
         - Admin
-      summary: Upload Article Text
+      summary: Upload Article Text by articleId
+      parameters:
+        - name: articleId
+          in: path
+          description: ID of article
+          required: true
+          schema:
+            type: string
       requestBody:
         content:
           text/plain:
@@ -136,9 +143,9 @@ paths:
     get:
       tags:
         - User
-      summary: Article Text By ArticleMetaData
+      summary: Article Text By articleId
       parameters:
-        - name: ArticleMetaData
+        - name: articleId
           in: path
           description: ID of article
           required: true
