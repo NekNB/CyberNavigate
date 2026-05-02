@@ -233,7 +233,7 @@ paths:
           $ref: "#/components/responses/ArticleNotFound"
         "422":
           description: ArticleTextNotCreatedYet
-          $ref: "#/components/responses/ArticleNotFound"
+          $ref: "#/components/responses/ArticleTextNotCreatedYet"
 
     get:
       tags:

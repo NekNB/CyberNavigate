@@ -56,6 +56,11 @@ type ArticleNotFound struct {
 	Message *string `json:"message,omitempty"`
 }
 
+// ArticleTextNotCreatedYet defines model for ArticleTextNotCreatedYet.
+type ArticleTextNotCreatedYet struct {
+	Message *string `json:"message,omitempty"`
+}
+
 // PostArticlesJSONBody defines parameters for PostArticles.
 type PostArticlesJSONBody struct {
 	ArticleTitle *string `json:"articleTitle,omitempty"`
