@@ -3,10 +3,10 @@ package app
 import (
 	"context"
 	"fmt"
-
+	"net"
 	"net/http"
 
-	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/app/grpc"
+	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/app/proxy"
 	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/app/specs"
 	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/app/swagger"
 	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/config"
@@ -33,7 +33,7 @@ func New(ctx context.Context, cfg *config.Config, log *logrus.Logger) *App {
 	}
 }
 
-func (a *App) Run() {
+func (a *App) Run(ctx context.Context) {
 
 	mux := http.NewServeMux()
 
@@ -43,14 +43,20 @@ func (a *App) Run() {
 	swaggerHandler := swagger.NewSwagger()
 	mux.Handle("/swagger/", http.StripPrefix("/swagger/", swaggerHandler))
 
-	grpcHandler := grpc.Register(a.ctx, a.cfg, a.log)
-	mux.Handle("/api/", grpcHandler)
+	HTTPHandler, err := proxy.New(a.cfg)
+	if err != nil {
+		panic(err)
+	}
+	mux.Handle("/api/", HTTPHandler)
 
 	mainHandler := middlewares.Recovery(a.log)(middlewares.RequestLogging(a.log)(mux))
 
 	a.server = &http.Server{
 		Addr:    fmt.Sprintf("0.0.0.0:%d", a.cfg.Server.Port),
 		Handler: mainHandler,
+		BaseContext: func(net.Listener) context.Context {
+			return ctx
+		},
 	}
 
 	a.log.Infof("gateway on : %s", a.server.Addr)

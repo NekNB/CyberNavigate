@@ -2,9 +2,11 @@ env: "local"
 
 server:
   port: 9000
-  article: 
+  article:
+    protocol: http
     host: localhost
-    port: 44044
-  user: 
+    port: 8081
+  user:
+    protocol: http
     host: localhost
-    port: 9000
+    port: 8080
