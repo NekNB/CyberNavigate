@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/oapi-codegen/runtime"
 )
 
@@ -15,25 +15,25 @@ import (
 type ServerInterface interface {
 	// Get All Articles Entity
 	// (GET /articles)
-	GetArticles(c *fiber.Ctx) error
+	GetArticles(c fiber.Ctx) error
 	// Create article with articleName
 	// (POST /articles)
-	PostArticles(c *fiber.Ctx) error
+	PostArticles(c fiber.Ctx) error
 	// Find article by Id
 	// (GET /articles/{articleId})
-	GetArticleById(c *fiber.Ctx, articleId string) error
+	GetArticleById(c fiber.Ctx, articleId string) error
 	// Update article by Id
 	// (PATCH /articles/{articleId})
-	PatchArticleById(c *fiber.Ctx, articleId string) error
+	PatchArticleById(c fiber.Ctx, articleId string) error
 	// Article Text By articleId
 	// (GET /articles/{articleId}/text)
-	GetArticleTextById(c *fiber.Ctx, articleId string) error
+	GetArticleTextById(c fiber.Ctx, articleId string) error
 	// Upload Article Text by articleId
 	// (POST /articles/{articleId}/text)
-	PostArticleTextById(c *fiber.Ctx, articleId string, params PostArticleTextByIdParams) error
+	PostArticleTextById(c fiber.Ctx, articleId string, params PostArticleTextByIdParams) error
 	// Update Article Text by ArticleId
 	// (PUT /articles/{articleId}/text)
-	PutArticleTextById(c *fiber.Ctx, articleId string, params PutArticleTextByIdParams) error
+	PutArticleTextById(c fiber.Ctx, articleId string, params PutArticleTextByIdParams) error
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -43,19 +43,19 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc fiber.Handler
-type HandlerMiddlewareFunc func(c *fiber.Ctx, next fiber.Handler) error
+type HandlerMiddlewareFunc func(c fiber.Ctx, next fiber.Handler) error
 
 // GetArticles operation middleware
-func (siw *ServerInterfaceWrapper) GetArticles(c *fiber.Ctx) error {
+func (siw *ServerInterfaceWrapper) GetArticles(c fiber.Ctx) error {
 
-	handler := func(c *fiber.Ctx) error {
+	handler := func(c fiber.Ctx) error {
 		return siw.Handler.GetArticles(c)
 	}
 
 	for i := len(siw.HandlerMiddlewares) - 1; i >= 0; i-- {
 		m := siw.HandlerMiddlewares[i]
 		next := handler
-		handler = func(c *fiber.Ctx) error {
+		handler = func(c fiber.Ctx) error {
 			return m(c, next)
 		}
 	}
@@ -64,16 +64,16 @@ func (siw *ServerInterfaceWrapper) GetArticles(c *fiber.Ctx) error {
 }
 
 // PostArticles operation middleware
-func (siw *ServerInterfaceWrapper) PostArticles(c *fiber.Ctx) error {
+func (siw *ServerInterfaceWrapper) PostArticles(c fiber.Ctx) error {
 
-	handler := func(c *fiber.Ctx) error {
+	handler := func(c fiber.Ctx) error {
 		return siw.Handler.PostArticles(c)
 	}
 
 	for i := len(siw.HandlerMiddlewares) - 1; i >= 0; i-- {
 		m := siw.HandlerMiddlewares[i]
 		next := handler
-		handler = func(c *fiber.Ctx) error {
+		handler = func(c fiber.Ctx) error {
 			return m(c, next)
 		}
 	}
@@ -82,7 +82,7 @@ func (siw *ServerInterfaceWrapper) PostArticles(c *fiber.Ctx) error {
 }
 
 // GetArticleById operation middleware
-func (siw *ServerInterfaceWrapper) GetArticleById(c *fiber.Ctx) error {
+func (siw *ServerInterfaceWrapper) GetArticleById(c fiber.Ctx) error {
 
 	var err error
 	_ = err
@@ -95,14 +95,14 @@ func (siw *ServerInterfaceWrapper) GetArticleById(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter articleId: %w", err).Error())
 	}
 
-	handler := func(c *fiber.Ctx) error {
+	handler := func(c fiber.Ctx) error {
 		return siw.Handler.GetArticleById(c, articleId)
 	}
 
 	for i := len(siw.HandlerMiddlewares) - 1; i >= 0; i-- {
 		m := siw.HandlerMiddlewares[i]
 		next := handler
-		handler = func(c *fiber.Ctx) error {
+		handler = func(c fiber.Ctx) error {
 			return m(c, next)
 		}
 	}
@@ -111,7 +111,7 @@ func (siw *ServerInterfaceWrapper) GetArticleById(c *fiber.Ctx) error {
 }
 
 // PatchArticleById operation middleware
-func (siw *ServerInterfaceWrapper) PatchArticleById(c *fiber.Ctx) error {
+func (siw *ServerInterfaceWrapper) PatchArticleById(c fiber.Ctx) error {
 
 	var err error
 	_ = err
@@ -124,14 +124,14 @@ func (siw *ServerInterfaceWrapper) PatchArticleById(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter articleId: %w", err).Error())
 	}
 
-	handler := func(c *fiber.Ctx) error {
+	handler := func(c fiber.Ctx) error {
 		return siw.Handler.PatchArticleById(c, articleId)
 	}
 
 	for i := len(siw.HandlerMiddlewares) - 1; i >= 0; i-- {
 		m := siw.HandlerMiddlewares[i]
 		next := handler
-		handler = func(c *fiber.Ctx) error {
+		handler = func(c fiber.Ctx) error {
 			return m(c, next)
 		}
 	}
@@ -140,7 +140,7 @@ func (siw *ServerInterfaceWrapper) PatchArticleById(c *fiber.Ctx) error {
 }
 
 // GetArticleTextById operation middleware
-func (siw *ServerInterfaceWrapper) GetArticleTextById(c *fiber.Ctx) error {
+func (siw *ServerInterfaceWrapper) GetArticleTextById(c fiber.Ctx) error {
 
 	var err error
 	_ = err
@@ -153,14 +153,14 @@ func (siw *ServerInterfaceWrapper) GetArticleTextById(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter articleId: %w", err).Error())
 	}
 
-	handler := func(c *fiber.Ctx) error {
+	handler := func(c fiber.Ctx) error {
 		return siw.Handler.GetArticleTextById(c, articleId)
 	}
 
 	for i := len(siw.HandlerMiddlewares) - 1; i >= 0; i-- {
 		m := siw.HandlerMiddlewares[i]
 		next := handler
-		handler = func(c *fiber.Ctx) error {
+		handler = func(c fiber.Ctx) error {
 			return m(c, next)
 		}
 	}
@@ -169,7 +169,7 @@ func (siw *ServerInterfaceWrapper) GetArticleTextById(c *fiber.Ctx) error {
 }
 
 // PostArticleTextById operation middleware
-func (siw *ServerInterfaceWrapper) PostArticleTextById(c *fiber.Ctx) error {
+func (siw *ServerInterfaceWrapper) PostArticleTextById(c fiber.Ctx) error {
 
 	var err error
 	_ = err
@@ -221,14 +221,14 @@ func (siw *ServerInterfaceWrapper) PostArticleTextById(c *fiber.Ctx) error {
 
 	}
 
-	handler := func(c *fiber.Ctx) error {
+	handler := func(c fiber.Ctx) error {
 		return siw.Handler.PostArticleTextById(c, articleId, params)
 	}
 
 	for i := len(siw.HandlerMiddlewares) - 1; i >= 0; i-- {
 		m := siw.HandlerMiddlewares[i]
 		next := handler
-		handler = func(c *fiber.Ctx) error {
+		handler = func(c fiber.Ctx) error {
 			return m(c, next)
 		}
 	}
@@ -237,7 +237,7 @@ func (siw *ServerInterfaceWrapper) PostArticleTextById(c *fiber.Ctx) error {
 }
 
 // PutArticleTextById operation middleware
-func (siw *ServerInterfaceWrapper) PutArticleTextById(c *fiber.Ctx) error {
+func (siw *ServerInterfaceWrapper) PutArticleTextById(c fiber.Ctx) error {
 
 	var err error
 	_ = err
@@ -289,14 +289,14 @@ func (siw *ServerInterfaceWrapper) PutArticleTextById(c *fiber.Ctx) error {
 
 	}
 
-	handler := func(c *fiber.Ctx) error {
+	handler := func(c fiber.Ctx) error {
 		return siw.Handler.PutArticleTextById(c, articleId, params)
 	}
 
 	for i := len(siw.HandlerMiddlewares) - 1; i >= 0; i-- {
 		m := siw.HandlerMiddlewares[i]
 		next := handler
-		handler = func(c *fiber.Ctx) error {
+		handler = func(c fiber.Ctx) error {
 			return m(c, next)
 		}
 	}
