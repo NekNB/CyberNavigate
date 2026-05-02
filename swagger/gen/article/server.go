@@ -5,6 +5,7 @@ package article
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/oapi-codegen/runtime"
@@ -29,7 +30,7 @@ type ServerInterface interface {
 	GetArticlesArticleIdText(c *fiber.Ctx, articleId string) error
 	// Upload Article Text by articleId
 	// (POST /articles/{articleId}/text)
-	PostArticlesArticleIdText(c *fiber.Ctx, articleId string) error
+	PostArticlesArticleIdText(c *fiber.Ctx, articleId string, params PostArticlesArticleIdTextParams) error
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -112,7 +113,29 @@ func (siw *ServerInterfaceWrapper) PostArticlesArticleIdText(c *fiber.Ctx) error
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter articleId: %w", err).Error())
 	}
 
-	return siw.Handler.PostArticlesArticleIdText(c, articleId)
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PostArticlesArticleIdTextParams
+
+	headers := c.GetReqHeaders()
+
+	// ------------- Optional header parameter "Content-Encoding" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Content-Encoding")]; found {
+		var ContentEncoding PostArticlesArticleIdTextParamsContentEncoding
+		n := len(valueList)
+		if n != 1 {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Too many values for ParamName Content-Encoding, 1 is required, but %d found", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Content-Encoding", valueList[0], &ContentEncoding, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter Content-Encoding: %w", err).Error())
+		}
+
+		params.ContentEncoding = &ContentEncoding
+
+	}
+
+	return siw.Handler.PostArticlesArticleIdText(c, articleId, params)
 }
 
 // FiberServerOptions provides options for the Fiber server.

@@ -123,8 +123,14 @@ paths:
         - Admin
       summary: Upload Article Text by articleId
       parameters:
-        - name: articleId
-          in: path
+        - in: header
+          name: Content-Encoding
+          schema:
+            type: string
+            enum: [gzip]
+          required: false
+        - in: path
+          name: articleId
           description: ID of article
           required: true
           schema:

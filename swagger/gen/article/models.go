@@ -9,6 +9,21 @@ const ServerUrlInternalDockerAPIGatewayServer = "http://cyber-navigate_gateway/a
 // ServerUrlLocalAPIGatewayServer defines the Server URL for Local API Gateway Server
 const ServerUrlLocalAPIGatewayServer = "http://localhost:9000/api/v1"
 
+// Defines values for PostArticlesArticleIdTextParamsContentEncoding.
+const (
+	Gzip PostArticlesArticleIdTextParamsContentEncoding = "gzip"
+)
+
+// Valid indicates whether the value is a known member of the PostArticlesArticleIdTextParamsContentEncoding enum.
+func (e PostArticlesArticleIdTextParamsContentEncoding) Valid() bool {
+	switch e {
+	case Gzip:
+		return true
+	default:
+		return false
+	}
+}
+
 // ArticleMetaData defines model for ArticleMetaData.
 type ArticleMetaData struct {
 	Id     *string `json:"id,omitempty"`
@@ -29,6 +44,14 @@ type PatchArticlesArticleIdJSONBody struct {
 
 // PostArticlesArticleIdTextTextBody defines parameters for PostArticlesArticleIdText.
 type PostArticlesArticleIdTextTextBody = string
+
+// PostArticlesArticleIdTextParams defines parameters for PostArticlesArticleIdText.
+type PostArticlesArticleIdTextParams struct {
+	ContentEncoding *PostArticlesArticleIdTextParamsContentEncoding `json:"Content-Encoding,omitempty"`
+}
+
+// PostArticlesArticleIdTextParamsContentEncoding defines parameters for PostArticlesArticleIdText.
+type PostArticlesArticleIdTextParamsContentEncoding string
 
 // PostArticlesJSONRequestBody defines body for PostArticles for application/json ContentType.
 type PostArticlesJSONRequestBody PostArticlesJSONBody
