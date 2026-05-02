@@ -28,6 +28,9 @@ type ServerInterface interface {
 	// Article Text By articleId
 	// (GET /articles/{articleId}/text)
 	GetArticleTextById(c *fiber.Ctx, articleId string) error
+	// Update Article Text by ArticleId
+	// (PATCH /articles/{articleId}/text)
+	PostArticleTextById(c *fiber.Ctx, articleId string, params PostArticleTextByIdParams) error
 	// Upload Article Text by articleId
 	// (POST /articles/{articleId}/text)
 	PostArticleTextById(c *fiber.Ctx, articleId string, params PostArticleTextByIdParams) error
@@ -138,6 +141,44 @@ func (siw *ServerInterfaceWrapper) PostArticleTextById(c *fiber.Ctx) error {
 	return siw.Handler.PostArticleTextById(c, articleId, params)
 }
 
+// PostArticleTextById operation middleware
+func (siw *ServerInterfaceWrapper) PostArticleTextById(c *fiber.Ctx) error {
+
+	var err error
+
+	// ------------- Path parameter "articleId" -------------
+	var articleId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "articleId", c.Params("articleId"), &articleId, runtime.BindStyledParameterOptions{Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter articleId: %w", err).Error())
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PostArticleTextByIdParams
+
+	headers := c.GetReqHeaders()
+
+	// ------------- Optional header parameter "Content-Encoding" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Content-Encoding")]; found {
+		var ContentEncoding PostArticleTextByIdParamsContentEncoding
+		n := len(valueList)
+		if n != 1 {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Too many values for ParamName Content-Encoding, 1 is required, but %d found", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Content-Encoding", valueList[0], &ContentEncoding, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter Content-Encoding: %w", err).Error())
+		}
+
+		params.ContentEncoding = &ContentEncoding
+
+	}
+
+	return siw.Handler.PostArticleTextById(c, articleId, params)
+}
+
 // FiberServerOptions provides options for the Fiber server.
 type FiberServerOptions struct {
 	BaseURL     string
@@ -168,6 +209,8 @@ func RegisterHandlersWithOptions(router fiber.Router, si ServerInterface, option
 	router.Patch(options.BaseURL+"/articles/:articleId", wrapper.PatchArticleById)
 
 	router.Get(options.BaseURL+"/articles/:articleId/text", wrapper.GetArticleTextById)
+
+	router.Patch(options.BaseURL+"/articles/:articleId/text", wrapper.PostArticleTextById)
 
 	router.Post(options.BaseURL+"/articles/:articleId/text", wrapper.PostArticleTextById)
 

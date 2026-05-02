@@ -45,7 +45,7 @@ components:
               message:
                 type: string
             example:
-              message: "Article With ArticleID Already Exists"
+              message: "Article With ArticleText Already Exists"
 paths:
   /articles:
     post:
@@ -158,6 +158,40 @@ paths:
         - Admin
       summary: Upload Article Text by articleId
       operationId: postArticleTextById
+      parameters:
+        - in: header
+          name: Content-Encoding
+          schema:
+            type: string
+            enum: [gzip]
+          required: false
+        - in: path
+          name: articleId
+          description: ID of article
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        "201":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArticleMetaData"
+        "404":
+          description: ArticleNotFound
+          $ref: "#/components/responses/ArticleNotFound"
+
+    put:
+      tags:
+        - Admin
+      summary: Update Article Text by ArticleId
+      operationId: putArticleTextById
       parameters:
         - in: header
           name: Content-Encoding
