@@ -27,9 +27,10 @@ components:
 paths:
   /articles:
     post:
-      summary: Create article with articleName
       tags:
         - Admin
+      summary: Create article with articleName
+      operationId: postArticles
       requestBody:
         required: true
         description: Create Article Entity Request
@@ -49,9 +50,10 @@ paths:
               schema:
                 $ref: "#/components/schemas/ArticleMetaData"
     get:
-      summary: Get All Articles Entity
       tags:
         - User
+      summary: Get All Articles Entity
+      operationId: getArticles
       responses:
         "200":
           description: List of ArticleMetaData
@@ -67,6 +69,7 @@ paths:
       tags:
         - Admin
       summary: Update article by Id
+      operationId: patchArticleById
       parameters:
         - name: articleId
           in: path
@@ -101,7 +104,7 @@ paths:
       tags:
         - User
       summary: Find article by Id
-      operationId: getPetsById
+      operationId: getArticleById
       responses:
         "200":
           description: pet response
@@ -109,22 +112,29 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ArticleMetaData"
-    parameters:
-      - name: articleId
-        in: path
-        description: ID of article
-        required: true
-        schema:
-          type: string
+      parameters:
+        - name: articleId
+          in: path
+          description: ID of article
+          required: true
+          schema:
+            type: string
 
   /articles/{articleId}/text:
     post:
       tags:
         - Admin
       summary: Upload Article Text by articleId
+      operationId: postArticleTextById
       parameters:
-        - name: articleId
-          in: path
+        - in: header
+          name: Content-Encoding
+          schema:
+            type: string
+            enum: [gzip]
+          required: false
+        - in: path
+          name: articleId
           description: ID of article
           required: true
           schema:
@@ -146,6 +156,7 @@ paths:
       tags:
         - User
       summary: Article Text By articleId
+      operationId: getArticleTextById
       parameters:
         - name: articleId
           in: path
