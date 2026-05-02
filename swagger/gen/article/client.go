@@ -109,9 +109,9 @@ type ClientInterface interface {
 	GetArticlesArticleIdText(ctx context.Context, articleId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// PostArticlesArticleIdTextWithBody request with any body
-	PostArticlesArticleIdTextWithBody(ctx context.Context, articleId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	PostArticlesArticleIdTextWithBody(ctx context.Context, articleId string, params *PostArticlesArticleIdTextParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PostArticlesArticleIdTextWithTextBody(ctx context.Context, articleId string, body PostArticlesArticleIdTextTextRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	PostArticlesArticleIdTextWithTextBody(ctx context.Context, articleId string, params *PostArticlesArticleIdTextParams, body PostArticlesArticleIdTextTextRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetArticles(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -198,8 +198,8 @@ func (c *Client) GetArticlesArticleIdText(ctx context.Context, articleId string,
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostArticlesArticleIdTextWithBody(ctx context.Context, articleId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostArticlesArticleIdTextRequestWithBody(c.Server, articleId, contentType, body)
+func (c *Client) PostArticlesArticleIdTextWithBody(ctx context.Context, articleId string, params *PostArticlesArticleIdTextParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostArticlesArticleIdTextRequestWithBody(c.Server, articleId, params, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -210,8 +210,8 @@ func (c *Client) PostArticlesArticleIdTextWithBody(ctx context.Context, articleI
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostArticlesArticleIdTextWithTextBody(ctx context.Context, articleId string, body PostArticlesArticleIdTextTextRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostArticlesArticleIdTextRequestWithTextBody(c.Server, articleId, body)
+func (c *Client) PostArticlesArticleIdTextWithTextBody(ctx context.Context, articleId string, params *PostArticlesArticleIdTextParams, body PostArticlesArticleIdTextTextRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostArticlesArticleIdTextRequestWithTextBody(c.Server, articleId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -405,14 +405,14 @@ func NewGetArticlesArticleIdTextRequest(server string, articleId string) (*http.
 }
 
 // NewPostArticlesArticleIdTextRequestWithTextBody calls the generic PostArticlesArticleIdText builder with text/plain body
-func NewPostArticlesArticleIdTextRequestWithTextBody(server string, articleId string, body PostArticlesArticleIdTextTextRequestBody) (*http.Request, error) {
+func NewPostArticlesArticleIdTextRequestWithTextBody(server string, articleId string, params *PostArticlesArticleIdTextParams, body PostArticlesArticleIdTextTextRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	bodyReader = strings.NewReader(string(body))
-	return NewPostArticlesArticleIdTextRequestWithBody(server, articleId, "text/plain", bodyReader)
+	return NewPostArticlesArticleIdTextRequestWithBody(server, articleId, params, "text/plain", bodyReader)
 }
 
 // NewPostArticlesArticleIdTextRequestWithBody generates requests for PostArticlesArticleIdText with any type of body
-func NewPostArticlesArticleIdTextRequestWithBody(server string, articleId string, contentType string, body io.Reader) (*http.Request, error) {
+func NewPostArticlesArticleIdTextRequestWithBody(server string, articleId string, params *PostArticlesArticleIdTextParams, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -443,6 +443,21 @@ func NewPostArticlesArticleIdTextRequestWithBody(server string, articleId string
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.ContentEncoding != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Content-Encoding", *params.ContentEncoding, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Content-Encoding", headerParam0)
+		}
+
+	}
 
 	return req, nil
 }
@@ -510,9 +525,9 @@ type ClientWithResponsesInterface interface {
 	GetArticlesArticleIdTextWithResponse(ctx context.Context, articleId string, reqEditors ...RequestEditorFn) (*GetArticlesArticleIdTextResponse, error)
 
 	// PostArticlesArticleIdTextWithBodyWithResponse request with any body
-	PostArticlesArticleIdTextWithBodyWithResponse(ctx context.Context, articleId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostArticlesArticleIdTextResponse, error)
+	PostArticlesArticleIdTextWithBodyWithResponse(ctx context.Context, articleId string, params *PostArticlesArticleIdTextParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostArticlesArticleIdTextResponse, error)
 
-	PostArticlesArticleIdTextWithTextBodyWithResponse(ctx context.Context, articleId string, body PostArticlesArticleIdTextTextRequestBody, reqEditors ...RequestEditorFn) (*PostArticlesArticleIdTextResponse, error)
+	PostArticlesArticleIdTextWithTextBodyWithResponse(ctx context.Context, articleId string, params *PostArticlesArticleIdTextParams, body PostArticlesArticleIdTextTextRequestBody, reqEditors ...RequestEditorFn) (*PostArticlesArticleIdTextResponse, error)
 }
 
 type GetArticlesResponse struct {
@@ -708,16 +723,16 @@ func (c *ClientWithResponses) GetArticlesArticleIdTextWithResponse(ctx context.C
 }
 
 // PostArticlesArticleIdTextWithBodyWithResponse request with arbitrary body returning *PostArticlesArticleIdTextResponse
-func (c *ClientWithResponses) PostArticlesArticleIdTextWithBodyWithResponse(ctx context.Context, articleId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostArticlesArticleIdTextResponse, error) {
-	rsp, err := c.PostArticlesArticleIdTextWithBody(ctx, articleId, contentType, body, reqEditors...)
+func (c *ClientWithResponses) PostArticlesArticleIdTextWithBodyWithResponse(ctx context.Context, articleId string, params *PostArticlesArticleIdTextParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostArticlesArticleIdTextResponse, error) {
+	rsp, err := c.PostArticlesArticleIdTextWithBody(ctx, articleId, params, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParsePostArticlesArticleIdTextResponse(rsp)
 }
 
-func (c *ClientWithResponses) PostArticlesArticleIdTextWithTextBodyWithResponse(ctx context.Context, articleId string, body PostArticlesArticleIdTextTextRequestBody, reqEditors ...RequestEditorFn) (*PostArticlesArticleIdTextResponse, error) {
-	rsp, err := c.PostArticlesArticleIdTextWithTextBody(ctx, articleId, body, reqEditors...)
+func (c *ClientWithResponses) PostArticlesArticleIdTextWithTextBodyWithResponse(ctx context.Context, articleId string, params *PostArticlesArticleIdTextParams, body PostArticlesArticleIdTextTextRequestBody, reqEditors ...RequestEditorFn) (*PostArticlesArticleIdTextResponse, error) {
+	rsp, err := c.PostArticlesArticleIdTextWithTextBody(ctx, articleId, params, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
