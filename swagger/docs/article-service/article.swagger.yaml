@@ -30,6 +30,9 @@ components:
         application/json:
           schema:
             type: object
+            properties:
+              message:
+                type: string
             example:
               - message: "Article With ArticleID Not Found"
     ArticleAlreadyExists:
@@ -38,8 +41,11 @@ components:
         application/json:
           schema:
             type: object
+            properties:
+              message:
+                type: string
             example:
-              - message: "Article With ArticleID Already Exists"
+              message: "Article With ArticleID Already Exists"
 paths:
   /articles:
     post:
