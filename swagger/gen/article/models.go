@@ -63,11 +63,25 @@ type PostArticleTextByIdParams struct {
 // PostArticleTextByIdParamsContentEncoding defines parameters for PostArticleTextById.
 type PostArticleTextByIdParamsContentEncoding string
 
+// PostArticleTextByIdTextBody defines parameters for PostArticleTextById.
+type PostArticleTextByIdTextBody = string
+
+// PostArticleTextByIdParams defines parameters for PostArticleTextById.
+type PostArticleTextByIdParams struct {
+	ContentEncoding *PostArticleTextByIdParamsContentEncoding `json:"Content-Encoding,omitempty"`
+}
+
+// PostArticleTextByIdParamsContentEncoding defines parameters for PostArticleTextById.
+type PostArticleTextByIdParamsContentEncoding string
+
 // PostArticlesJSONRequestBody defines body for PostArticles for application/json ContentType.
 type PostArticlesJSONRequestBody PostArticlesJSONBody
 
 // PatchArticleByIdJSONRequestBody defines body for PatchArticleById for application/json ContentType.
 type PatchArticleByIdJSONRequestBody PatchArticleByIdJSONBody
+
+// PostArticleTextByIdTextRequestBody defines body for PostArticleTextById for text/plain ContentType.
+type PostArticleTextByIdTextRequestBody = PostArticleTextByIdTextBody
 
 // PostArticleTextByIdTextRequestBody defines body for PostArticleTextById for text/plain ContentType.
 type PostArticleTextByIdTextRequestBody = PostArticleTextByIdTextBody
