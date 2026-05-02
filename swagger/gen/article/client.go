@@ -763,6 +763,7 @@ type PutArticleTextByIdResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *ArticleMetaData
 	JSON404      *ArticleNotFound
+	JSON422      *ArticleNotFound
 }
 
 // Status returns HTTPResponse.Status
@@ -1087,6 +1088,13 @@ func ParsePutArticleTextByIdResponse(rsp *http.Response) (*PutArticleTextByIdRes
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest ArticleNotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	}
 

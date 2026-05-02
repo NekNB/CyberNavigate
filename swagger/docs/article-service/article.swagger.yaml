@@ -35,6 +35,17 @@ components:
                 type: string
             example:
               - message: "Article With ArticleID Not Found"
+    ArticleTextNotCreatedYet:
+      description: Article Text Not Created
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            example:
+              - message: "Article Text With ArticleID Not Created Yet"
     ArticleAlreadyExists:
       description: Article Already Exists
       content:
@@ -219,6 +230,9 @@ paths:
                 $ref: "#/components/schemas/ArticleMetaData"
         "404":
           description: ArticleNotFound
+          $ref: "#/components/responses/ArticleNotFound"
+        "422":
+          description: ArticleTextNotCreatedYet
           $ref: "#/components/responses/ArticleNotFound"
 
     get:
