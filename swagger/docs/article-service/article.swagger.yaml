@@ -176,6 +176,12 @@ paths:
             type: string
             enum: [gzip]
           required: false
+        - in: header
+          name: X-Content-Is-Base64
+          schema:
+            type: string
+            enum: [true]
+          required: false
         - in: path
           name: articleId
           description: ID of article
@@ -209,6 +215,12 @@ paths:
           schema:
             type: string
             enum: [gzip]
+          required: false
+        - in: header
+          name: X-Content-Is-Base64
+          schema:
+            type: string
+            enum: [true]
           required: false
         - in: path
           name: articleId
