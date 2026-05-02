@@ -23,13 +23,30 @@ components:
         id: "0c0ea3c4-925e-4801-9ef5-b6c40976d3c0"
         title: "Article Title 1"
         status: "draft"
-
+  responses:
+    ArticleNotFound:
+      description: Article Not Found
+      content:
+        application/json:
+          schema:
+            type: object
+            example:
+              - message: "Article With ArticleID Not Found"
+    ArticleAlreadyExists:
+      description: Article Already Exists
+      content:
+        application/json:
+          schema:
+            type: object
+            example:
+              - message: "Article With ArticleID Already Exists"
 paths:
   /articles:
     post:
-      summary: Create article with articleName
       tags:
         - Admin
+      summary: Create article with articleName
+      operationId: postArticles
       requestBody:
         required: true
         description: Create Article Entity Request
@@ -48,10 +65,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ArticleMetaData"
+        "400":
+          description: ArticleAlreadyExists
+          $ref: "#/components/responses/ArticleAlreadyExists"
+
     get:
-      summary: Get All Articles Entity
       tags:
         - User
+      summary: Get All Articles Entity
+      operationId: getArticles
       responses:
         "200":
           description: List of ArticleMetaData
@@ -67,6 +89,7 @@ paths:
       tags:
         - Admin
       summary: Update article by Id
+      operationId: patchArticleById
       parameters:
         - name: articleId
           in: path
@@ -96,12 +119,22 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ArticleMetaData"
+        "404":
+          description: ArticleNotFound
+          $ref: "#/components/responses/ArticleNotFound"
 
     get:
       tags:
         - User
       summary: Find article by Id
-      operationId: getPetsById
+      operationId: getArticleById
+      parameters:
+        - name: articleId
+          in: path
+          description: ID of article
+          required: true
+          schema:
+            type: string
       responses:
         "200":
           description: pet response
@@ -109,19 +142,16 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ArticleMetaData"
-    parameters:
-      - name: articleId
-        in: path
-        description: ID of article
-        required: true
-        schema:
-          type: string
+        "404":
+          description: ArticleNotFound
+          $ref: "#/components/responses/ArticleNotFound"
 
   /articles/{articleId}/text:
     post:
       tags:
         - Admin
       summary: Upload Article Text by articleId
+      operationId: postArticleTextById
       parameters:
         - in: header
           name: Content-Encoding
@@ -147,11 +177,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ArticleMetaData"
+        "404":
+          description: ArticleNotFound
+          $ref: "#/components/responses/ArticleNotFound"
 
     get:
       tags:
         - User
       summary: Article Text By articleId
+      operationId: getArticleTextById
       parameters:
         - name: articleId
           in: path
@@ -167,3 +201,6 @@ paths:
               schema:
                 type: string
                 format: binary
+        "404":
+          description: ArticleNotFound
+          $ref: "#/components/responses/ArticleNotFound"
