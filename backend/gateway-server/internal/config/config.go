@@ -19,8 +19,9 @@ type ServerConfig struct {
 }
 
 type MicroServiceConfig struct {
-	Host string `yaml:"host"`
-	Port int    `yaml:"port"`
+	Protocol string `yaml:"protocol" env-default:"http"`
+	Host     string `yaml:"host" env-default:"localhost"`
+	Port     int    `yaml:"port" env-default:"8000"`
 }
 
 // "Must" means the function will panic rather than return an error

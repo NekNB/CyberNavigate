@@ -28,7 +28,7 @@ load_secrets() {
         # Используем set -a чтобы экспортировать все переменные из файла автоматически
         # Это работает, если файл содержит VAR=Value строки
         set -a
-        source <(tr -d '\r' < /run/secrets/postgres_secret)
+        source <(tr -d '\r' < $SECRET_PATH)
         set +a
 				
         # Проверка, загрузились ли переменные	

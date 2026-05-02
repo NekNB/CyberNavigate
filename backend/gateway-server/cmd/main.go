@@ -26,7 +26,7 @@ func main() {
 
 	app := app.New(ctx, cfg, log)
 
-	go app.Run()
+	go app.Run(ctx)
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)

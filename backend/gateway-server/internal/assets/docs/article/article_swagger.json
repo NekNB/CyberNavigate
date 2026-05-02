@@ -1,0 +1,137 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API для загрузки файлов в MinIO",
+        "title": "Storage Service API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "127.0.0.1:8777",
+    "basePath": "/api/v1",
+    "paths": {
+        "/articles": {
+            "post": {
+                "description": "Create Article",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "CreateArticle",
+                "parameters": [
+                    {
+                        "description": "Article object",
+                        "name": "article",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateArticleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.ArticleStatus"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/article.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/article.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/articles/{articleID}": {
+            "post": {
+                "description": "Create Article",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "CreateArticle",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Article ID",
+                        "name": "articleID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ArticleStatus"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/article.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/article.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "article.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ArticleStatus": {
+            "type": "object",
+            "properties": {
+                "articleID": {
+                    "type": "string",
+                    "example": "764e656c-440f-443e-bd5b-e8c2cb138d09"
+                },
+                "articleStatus": {
+                    "type": "string",
+                    "enum": [
+                        "draft",
+                        "published",
+                        "archived"
+                    ],
+                    "example": "draft"
+                },
+                "articleTitle": {
+                    "type": "string",
+                    "example": "Article Title"
+                }
+            }
+        },
+        "models.CreateArticleRequest": {
+            "type": "object",
+            "properties": {
+                "articleTitle": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

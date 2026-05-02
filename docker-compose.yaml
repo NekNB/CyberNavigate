@@ -6,7 +6,7 @@ services:
     command: >
       sh -c "while true; do
         docker container prune -f;
-        sleep 3600;
+        sleep 600;
       done"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -14,24 +14,27 @@ services:
       mode: global
       restart_policy:
         condition: any
+      replicas: 1
         
   mongo:
-    image: mongo:8.2.7
+    image: cyber-navigate/mongo
     ports:
       - target: 27017
         published: 27017
         protocol: tcp
         mode: host
 
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password123
-      MONGO_INITDB_DATABASE: v
+    secrets:
+      - source: mongo_secret
+        target: mongo_secret
     deploy:
       replicas: 1
+
+  # volumes:
+  #   - ./secrets/mongo.secret.env:/secrets/mongo.secret.env
+
   # volumes:
   #   - mongo_data:/data/db
-  # - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
 
   postgres:
     image: cyber-navigate/postgres
@@ -59,4 +62,6 @@ volumes:
 
 secrets:
   postgres_secret:
+    external: true
+  mongo_secret:
     external: true

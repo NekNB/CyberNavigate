@@ -5,6 +5,8 @@ info:
 servers:
   - url: http://localhost:9000/api/v1
     description: Local API Gateway Server
+  - url: http://127.0.0.1:9000/api/v1
+    description: Local API Gateway Server
   - url: http://cyber-navigate_gateway/api/v1
     description: Internal Docker API Gateway Server
 
@@ -35,6 +37,17 @@ components:
                 type: string
             example:
               - message: "Article With ArticleID Not Found"
+    ArticleTextNotCreatedYet:
+      description: Article Text Not Created
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            example:
+              - message: "Article Text With ArticleID Not Created Yet"
     ArticleAlreadyExists:
       description: Article Already Exists
       content:
@@ -159,12 +172,6 @@ paths:
       summary: Upload Article Text by articleId
       operationId: postArticleTextById
       parameters:
-        - in: header
-          name: Content-Encoding
-          schema:
-            type: string
-            enum: [gzip]
-          required: false
         - in: path
           name: articleId
           description: ID of article
@@ -193,12 +200,6 @@ paths:
       summary: Update Article Text by ArticleId
       operationId: putArticleTextById
       parameters:
-        - in: header
-          name: Content-Encoding
-          schema:
-            type: string
-            enum: [gzip]
-          required: false
         - in: path
           name: articleId
           description: ID of article
@@ -220,6 +221,9 @@ paths:
         "404":
           description: ArticleNotFound
           $ref: "#/components/responses/ArticleNotFound"
+        "422":
+          description: ArticleTextNotCreatedYet
+          $ref: "#/components/responses/ArticleTextNotCreatedYet"
 
     get:
       tags:
