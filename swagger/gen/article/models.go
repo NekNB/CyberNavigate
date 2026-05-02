@@ -9,6 +9,9 @@ const ServerUrlInternalDockerAPIGatewayServer = "http://cyber-navigate_gateway/a
 // ServerUrlLocalAPIGatewayServer defines the Server URL for Local API Gateway Server
 const ServerUrlLocalAPIGatewayServer = "http://localhost:9000/api/v1"
 
+// ServerUrlLocalAPIGatewayServer1 defines the Server URL for Local API Gateway Server
+const ServerUrlLocalAPIGatewayServer1 = "http://127.0.0.1:9000/api/v1"
+
 // ArticleMetaData defines model for ArticleMetaData.
 type ArticleMetaData struct {
 	Id     *string `json:"id,omitempty"`
