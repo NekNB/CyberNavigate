@@ -9,13 +9,13 @@ const ServerUrlInternalDockerAPIGatewayServer = "http://cyber-navigate_gateway/a
 // ServerUrlLocalAPIGatewayServer defines the Server URL for Local API Gateway Server
 const ServerUrlLocalAPIGatewayServer = "http://localhost:9000/api/v1"
 
-// Defines values for PostArticlesArticleIdTextParamsContentEncoding.
+// Defines values for PostArticleTextByIdParamsContentEncoding.
 const (
-	Gzip PostArticlesArticleIdTextParamsContentEncoding = "gzip"
+	Gzip PostArticleTextByIdParamsContentEncoding = "gzip"
 )
 
-// Valid indicates whether the value is a known member of the PostArticlesArticleIdTextParamsContentEncoding enum.
-func (e PostArticlesArticleIdTextParamsContentEncoding) Valid() bool {
+// Valid indicates whether the value is a known member of the PostArticleTextByIdParamsContentEncoding enum.
+func (e PostArticleTextByIdParamsContentEncoding) Valid() bool {
 	switch e {
 	case Gzip:
 		return true
@@ -31,33 +31,39 @@ type ArticleMetaData struct {
 	Title  *string `json:"title,omitempty"`
 }
 
+// ArticleAlreadyExists defines model for ArticleAlreadyExists.
+type ArticleAlreadyExists = map[string]interface{}
+
+// ArticleNotFound defines model for ArticleNotFound.
+type ArticleNotFound = map[string]interface{}
+
 // PostArticlesJSONBody defines parameters for PostArticles.
 type PostArticlesJSONBody struct {
 	ArticleTitle *string `json:"articleTitle,omitempty"`
 }
 
-// PatchArticlesArticleIdJSONBody defines parameters for PatchArticlesArticleId.
-type PatchArticlesArticleIdJSONBody struct {
+// PatchArticleByIdJSONBody defines parameters for PatchArticleById.
+type PatchArticleByIdJSONBody struct {
 	ArticleStatus *string `json:"articleStatus,omitempty"`
 	ArticleTitle  *string `json:"articleTitle,omitempty"`
 }
 
-// PostArticlesArticleIdTextTextBody defines parameters for PostArticlesArticleIdText.
-type PostArticlesArticleIdTextTextBody = string
+// PostArticleTextByIdTextBody defines parameters for PostArticleTextById.
+type PostArticleTextByIdTextBody = string
 
-// PostArticlesArticleIdTextParams defines parameters for PostArticlesArticleIdText.
-type PostArticlesArticleIdTextParams struct {
-	ContentEncoding *PostArticlesArticleIdTextParamsContentEncoding `json:"Content-Encoding,omitempty"`
+// PostArticleTextByIdParams defines parameters for PostArticleTextById.
+type PostArticleTextByIdParams struct {
+	ContentEncoding *PostArticleTextByIdParamsContentEncoding `json:"Content-Encoding,omitempty"`
 }
 
-// PostArticlesArticleIdTextParamsContentEncoding defines parameters for PostArticlesArticleIdText.
-type PostArticlesArticleIdTextParamsContentEncoding string
+// PostArticleTextByIdParamsContentEncoding defines parameters for PostArticleTextById.
+type PostArticleTextByIdParamsContentEncoding string
 
 // PostArticlesJSONRequestBody defines body for PostArticles for application/json ContentType.
 type PostArticlesJSONRequestBody PostArticlesJSONBody
 
-// PatchArticlesArticleIdJSONRequestBody defines body for PatchArticlesArticleId for application/json ContentType.
-type PatchArticlesArticleIdJSONRequestBody PatchArticlesArticleIdJSONBody
+// PatchArticleByIdJSONRequestBody defines body for PatchArticleById for application/json ContentType.
+type PatchArticleByIdJSONRequestBody PatchArticleByIdJSONBody
 
-// PostArticlesArticleIdTextTextRequestBody defines body for PostArticlesArticleIdText for text/plain ContentType.
-type PostArticlesArticleIdTextTextRequestBody = PostArticlesArticleIdTextTextBody
+// PostArticleTextByIdTextRequestBody defines body for PostArticleTextById for text/plain ContentType.
+type PostArticleTextByIdTextRequestBody = PostArticleTextByIdTextBody

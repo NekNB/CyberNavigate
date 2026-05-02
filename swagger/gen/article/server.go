@@ -30,7 +30,7 @@ type ServerInterface interface {
 	GetArticleTextById(c *fiber.Ctx, articleId string) error
 	// Upload Article Text by articleId
 	// (POST /articles/{articleId}/text)
-	PostArticlesArticleIdText(c *fiber.Ctx, articleId string, params PostArticlesArticleIdTextParams) error
+	PostArticleTextById(c *fiber.Ctx, articleId string, params PostArticleTextByIdParams) error
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -114,13 +114,13 @@ func (siw *ServerInterfaceWrapper) PostArticleTextById(c *fiber.Ctx) error {
 	}
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params PostArticlesArticleIdTextParams
+	var params PostArticleTextByIdParams
 
 	headers := c.GetReqHeaders()
 
 	// ------------- Optional header parameter "Content-Encoding" -------------
 	if valueList, found := headers[http.CanonicalHeaderKey("Content-Encoding")]; found {
-		var ContentEncoding PostArticlesArticleIdTextParamsContentEncoding
+		var ContentEncoding PostArticleTextByIdParamsContentEncoding
 		n := len(valueList)
 		if n != 1 {
 			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Too many values for ParamName Content-Encoding, 1 is required, but %d found", n))
@@ -135,7 +135,7 @@ func (siw *ServerInterfaceWrapper) PostArticleTextById(c *fiber.Ctx) error {
 
 	}
 
-	return siw.Handler.PostArticlesArticleIdText(c, articleId, params)
+	return siw.Handler.PostArticleTextById(c, articleId, params)
 }
 
 // FiberServerOptions provides options for the Fiber server.
