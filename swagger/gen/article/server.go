@@ -5,7 +5,6 @@ package article
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/oapi-codegen/runtime"
@@ -30,10 +29,10 @@ type ServerInterface interface {
 	GetArticleTextById(c fiber.Ctx, articleId string) error
 	// Upload Article Text by articleId
 	// (POST /articles/{articleId}/text)
-	PostArticleTextById(c fiber.Ctx, articleId string, params PostArticleTextByIdParams) error
+	PostArticleTextById(c fiber.Ctx, articleId string) error
 	// Update Article Text by ArticleId
 	// (PUT /articles/{articleId}/text)
-	PutArticleTextById(c fiber.Ctx, articleId string, params PutArticleTextByIdParams) error
+	PutArticleTextById(c fiber.Ctx, articleId string) error
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -182,47 +181,8 @@ func (siw *ServerInterfaceWrapper) PostArticleTextById(c fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter articleId: %w", err).Error())
 	}
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PostArticleTextByIdParams
-
-	headers := c.GetReqHeaders()
-
-	// ------------- Optional header parameter "Content-Encoding" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("Content-Encoding")]; found {
-		var ContentEncoding PostArticleTextByIdParamsContentEncoding
-		n := len(valueList)
-		if n != 1 {
-			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Too many values for ParamName Content-Encoding, 1 is required, but %d found", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "Content-Encoding", valueList[0], &ContentEncoding, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
-		if err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter Content-Encoding: %w", err).Error())
-		}
-
-		params.ContentEncoding = &ContentEncoding
-
-	}
-
-	// ------------- Optional header parameter "X-Content-Is-Base64" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Content-Is-Base64")]; found {
-		var XContentIsBase64 PostArticleTextByIdParamsXContentIsBase64
-		n := len(valueList)
-		if n != 1 {
-			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Too many values for ParamName X-Content-Is-Base64, 1 is required, but %d found", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Content-Is-Base64", valueList[0], &XContentIsBase64, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
-		if err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter X-Content-Is-Base64: %w", err).Error())
-		}
-
-		params.XContentIsBase64 = &XContentIsBase64
-
-	}
-
 	handler := func(c fiber.Ctx) error {
-		return siw.Handler.PostArticleTextById(c, articleId, params)
+		return siw.Handler.PostArticleTextById(c, articleId)
 	}
 
 	for i := len(siw.HandlerMiddlewares) - 1; i >= 0; i-- {
@@ -250,47 +210,8 @@ func (siw *ServerInterfaceWrapper) PutArticleTextById(c fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter articleId: %w", err).Error())
 	}
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PutArticleTextByIdParams
-
-	headers := c.GetReqHeaders()
-
-	// ------------- Optional header parameter "Content-Encoding" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("Content-Encoding")]; found {
-		var ContentEncoding PutArticleTextByIdParamsContentEncoding
-		n := len(valueList)
-		if n != 1 {
-			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Too many values for ParamName Content-Encoding, 1 is required, but %d found", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "Content-Encoding", valueList[0], &ContentEncoding, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
-		if err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter Content-Encoding: %w", err).Error())
-		}
-
-		params.ContentEncoding = &ContentEncoding
-
-	}
-
-	// ------------- Optional header parameter "X-Content-Is-Base64" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Content-Is-Base64")]; found {
-		var XContentIsBase64 PutArticleTextByIdParamsXContentIsBase64
-		n := len(valueList)
-		if n != 1 {
-			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Too many values for ParamName X-Content-Is-Base64, 1 is required, but %d found", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Content-Is-Base64", valueList[0], &XContentIsBase64, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
-		if err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter X-Content-Is-Base64: %w", err).Error())
-		}
-
-		params.XContentIsBase64 = &XContentIsBase64
-
-	}
-
 	handler := func(c fiber.Ctx) error {
-		return siw.Handler.PutArticleTextById(c, articleId, params)
+		return siw.Handler.PutArticleTextById(c, articleId)
 	}
 
 	for i := len(siw.HandlerMiddlewares) - 1; i >= 0; i-- {

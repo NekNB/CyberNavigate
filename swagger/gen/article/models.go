@@ -9,66 +9,6 @@ const ServerUrlInternalDockerAPIGatewayServer = "http://cyber-navigate_gateway/a
 // ServerUrlLocalAPIGatewayServer defines the Server URL for Local API Gateway Server
 const ServerUrlLocalAPIGatewayServer = "http://localhost:9000/api/v1"
 
-// Defines values for PostArticleTextByIdParamsContentEncoding.
-const (
-	PostArticleTextByIdParamsContentEncodingGzip PostArticleTextByIdParamsContentEncoding = "gzip"
-)
-
-// Valid indicates whether the value is a known member of the PostArticleTextByIdParamsContentEncoding enum.
-func (e PostArticleTextByIdParamsContentEncoding) Valid() bool {
-	switch e {
-	case PostArticleTextByIdParamsContentEncodingGzip:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for PostArticleTextByIdParamsXContentIsBase64.
-const (
-	PostArticleTextByIdParamsXContentIsBase64True PostArticleTextByIdParamsXContentIsBase64 = "true"
-)
-
-// Valid indicates whether the value is a known member of the PostArticleTextByIdParamsXContentIsBase64 enum.
-func (e PostArticleTextByIdParamsXContentIsBase64) Valid() bool {
-	switch e {
-	case PostArticleTextByIdParamsXContentIsBase64True:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for PutArticleTextByIdParamsContentEncoding.
-const (
-	PutArticleTextByIdParamsContentEncodingGzip PutArticleTextByIdParamsContentEncoding = "gzip"
-)
-
-// Valid indicates whether the value is a known member of the PutArticleTextByIdParamsContentEncoding enum.
-func (e PutArticleTextByIdParamsContentEncoding) Valid() bool {
-	switch e {
-	case PutArticleTextByIdParamsContentEncodingGzip:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for PutArticleTextByIdParamsXContentIsBase64.
-const (
-	PutArticleTextByIdParamsXContentIsBase64True PutArticleTextByIdParamsXContentIsBase64 = "true"
-)
-
-// Valid indicates whether the value is a known member of the PutArticleTextByIdParamsXContentIsBase64 enum.
-func (e PutArticleTextByIdParamsXContentIsBase64) Valid() bool {
-	switch e {
-	case PutArticleTextByIdParamsXContentIsBase64True:
-		return true
-	default:
-		return false
-	}
-}
-
 // ArticleMetaData defines model for ArticleMetaData.
 type ArticleMetaData struct {
 	Id     *string `json:"id,omitempty"`
@@ -105,32 +45,8 @@ type PatchArticleByIdJSONBody struct {
 // PostArticleTextByIdTextBody defines parameters for PostArticleTextById.
 type PostArticleTextByIdTextBody = string
 
-// PostArticleTextByIdParams defines parameters for PostArticleTextById.
-type PostArticleTextByIdParams struct {
-	ContentEncoding  *PostArticleTextByIdParamsContentEncoding  `json:"Content-Encoding,omitempty"`
-	XContentIsBase64 *PostArticleTextByIdParamsXContentIsBase64 `json:"X-Content-Is-Base64,omitempty"`
-}
-
-// PostArticleTextByIdParamsContentEncoding defines parameters for PostArticleTextById.
-type PostArticleTextByIdParamsContentEncoding string
-
-// PostArticleTextByIdParamsXContentIsBase64 defines parameters for PostArticleTextById.
-type PostArticleTextByIdParamsXContentIsBase64 string
-
 // PutArticleTextByIdTextBody defines parameters for PutArticleTextById.
 type PutArticleTextByIdTextBody = string
-
-// PutArticleTextByIdParams defines parameters for PutArticleTextById.
-type PutArticleTextByIdParams struct {
-	ContentEncoding  *PutArticleTextByIdParamsContentEncoding  `json:"Content-Encoding,omitempty"`
-	XContentIsBase64 *PutArticleTextByIdParamsXContentIsBase64 `json:"X-Content-Is-Base64,omitempty"`
-}
-
-// PutArticleTextByIdParamsContentEncoding defines parameters for PutArticleTextById.
-type PutArticleTextByIdParamsContentEncoding string
-
-// PutArticleTextByIdParamsXContentIsBase64 defines parameters for PutArticleTextById.
-type PutArticleTextByIdParamsXContentIsBase64 string
 
 // PostArticlesJSONRequestBody defines body for PostArticles for application/json ContentType.
 type PostArticlesJSONRequestBody PostArticlesJSONBody
