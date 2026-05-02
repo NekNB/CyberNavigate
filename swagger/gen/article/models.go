@@ -32,10 +32,14 @@ type ArticleMetaData struct {
 }
 
 // ArticleAlreadyExists defines model for ArticleAlreadyExists.
-type ArticleAlreadyExists = map[string]interface{}
+type ArticleAlreadyExists struct {
+	Message *string `json:"message,omitempty"`
+}
 
 // ArticleNotFound defines model for ArticleNotFound.
-type ArticleNotFound = map[string]interface{}
+type ArticleNotFound struct {
+	Message *string `json:"message,omitempty"`
+}
 
 // PostArticlesJSONBody defines parameters for PostArticles.
 type PostArticlesJSONBody struct {
