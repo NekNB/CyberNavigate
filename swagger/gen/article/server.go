@@ -28,12 +28,12 @@ type ServerInterface interface {
 	// Article Text By articleId
 	// (GET /articles/{articleId}/text)
 	GetArticleTextById(c *fiber.Ctx, articleId string) error
-	// Update Article Text by ArticleId
-	// (PATCH /articles/{articleId}/text)
-	PostArticleTextById(c *fiber.Ctx, articleId string, params PostArticleTextByIdParams) error
 	// Upload Article Text by articleId
 	// (POST /articles/{articleId}/text)
 	PostArticleTextById(c *fiber.Ctx, articleId string, params PostArticleTextByIdParams) error
+	// Update Article Text by ArticleId
+	// (PUT /articles/{articleId}/text)
+	PutArticleTextById(c *fiber.Ctx, articleId string, params PutArticleTextByIdParams) error
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -141,8 +141,8 @@ func (siw *ServerInterfaceWrapper) PostArticleTextById(c *fiber.Ctx) error {
 	return siw.Handler.PostArticleTextById(c, articleId, params)
 }
 
-// PostArticleTextById operation middleware
-func (siw *ServerInterfaceWrapper) PostArticleTextById(c *fiber.Ctx) error {
+// PutArticleTextById operation middleware
+func (siw *ServerInterfaceWrapper) PutArticleTextById(c *fiber.Ctx) error {
 
 	var err error
 
@@ -155,13 +155,13 @@ func (siw *ServerInterfaceWrapper) PostArticleTextById(c *fiber.Ctx) error {
 	}
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params PostArticleTextByIdParams
+	var params PutArticleTextByIdParams
 
 	headers := c.GetReqHeaders()
 
 	// ------------- Optional header parameter "Content-Encoding" -------------
 	if valueList, found := headers[http.CanonicalHeaderKey("Content-Encoding")]; found {
-		var ContentEncoding PostArticleTextByIdParamsContentEncoding
+		var ContentEncoding PutArticleTextByIdParamsContentEncoding
 		n := len(valueList)
 		if n != 1 {
 			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Too many values for ParamName Content-Encoding, 1 is required, but %d found", n))
@@ -176,7 +176,7 @@ func (siw *ServerInterfaceWrapper) PostArticleTextById(c *fiber.Ctx) error {
 
 	}
 
-	return siw.Handler.PostArticleTextById(c, articleId, params)
+	return siw.Handler.PutArticleTextById(c, articleId, params)
 }
 
 // FiberServerOptions provides options for the Fiber server.
@@ -210,8 +210,8 @@ func RegisterHandlersWithOptions(router fiber.Router, si ServerInterface, option
 
 	router.Get(options.BaseURL+"/articles/:articleId/text", wrapper.GetArticleTextById)
 
-	router.Patch(options.BaseURL+"/articles/:articleId/text", wrapper.PostArticleTextById)
-
 	router.Post(options.BaseURL+"/articles/:articleId/text", wrapper.PostArticleTextById)
+
+	router.Put(options.BaseURL+"/articles/:articleId/text", wrapper.PutArticleTextById)
 
 }

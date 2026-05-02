@@ -11,13 +11,28 @@ const ServerUrlLocalAPIGatewayServer = "http://localhost:9000/api/v1"
 
 // Defines values for PostArticleTextByIdParamsContentEncoding.
 const (
-	Gzip PostArticleTextByIdParamsContentEncoding = "gzip"
+	PostArticleTextByIdParamsContentEncodingGzip PostArticleTextByIdParamsContentEncoding = "gzip"
 )
 
 // Valid indicates whether the value is a known member of the PostArticleTextByIdParamsContentEncoding enum.
 func (e PostArticleTextByIdParamsContentEncoding) Valid() bool {
 	switch e {
-	case Gzip:
+	case PostArticleTextByIdParamsContentEncodingGzip:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PutArticleTextByIdParamsContentEncoding.
+const (
+	PutArticleTextByIdParamsContentEncodingGzip PutArticleTextByIdParamsContentEncoding = "gzip"
+)
+
+// Valid indicates whether the value is a known member of the PutArticleTextByIdParamsContentEncoding enum.
+func (e PutArticleTextByIdParamsContentEncoding) Valid() bool {
+	switch e {
+	case PutArticleTextByIdParamsContentEncodingGzip:
 		return true
 	default:
 		return false
@@ -63,16 +78,16 @@ type PostArticleTextByIdParams struct {
 // PostArticleTextByIdParamsContentEncoding defines parameters for PostArticleTextById.
 type PostArticleTextByIdParamsContentEncoding string
 
-// PostArticleTextByIdTextBody defines parameters for PostArticleTextById.
-type PostArticleTextByIdTextBody = string
+// PutArticleTextByIdTextBody defines parameters for PutArticleTextById.
+type PutArticleTextByIdTextBody = string
 
-// PostArticleTextByIdParams defines parameters for PostArticleTextById.
-type PostArticleTextByIdParams struct {
-	ContentEncoding *PostArticleTextByIdParamsContentEncoding `json:"Content-Encoding,omitempty"`
+// PutArticleTextByIdParams defines parameters for PutArticleTextById.
+type PutArticleTextByIdParams struct {
+	ContentEncoding *PutArticleTextByIdParamsContentEncoding `json:"Content-Encoding,omitempty"`
 }
 
-// PostArticleTextByIdParamsContentEncoding defines parameters for PostArticleTextById.
-type PostArticleTextByIdParamsContentEncoding string
+// PutArticleTextByIdParamsContentEncoding defines parameters for PutArticleTextById.
+type PutArticleTextByIdParamsContentEncoding string
 
 // PostArticlesJSONRequestBody defines body for PostArticles for application/json ContentType.
 type PostArticlesJSONRequestBody PostArticlesJSONBody
@@ -83,5 +98,5 @@ type PatchArticleByIdJSONRequestBody PatchArticleByIdJSONBody
 // PostArticleTextByIdTextRequestBody defines body for PostArticleTextById for text/plain ContentType.
 type PostArticleTextByIdTextRequestBody = PostArticleTextByIdTextBody
 
-// PostArticleTextByIdTextRequestBody defines body for PostArticleTextById for text/plain ContentType.
-type PostArticleTextByIdTextRequestBody = PostArticleTextByIdTextBody
+// PutArticleTextByIdTextRequestBody defines body for PutArticleTextById for text/plain ContentType.
+type PutArticleTextByIdTextRequestBody = PutArticleTextByIdTextBody
