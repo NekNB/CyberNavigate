@@ -20,16 +20,16 @@ type ServerInterface interface {
 	PostArticles(c *fiber.Ctx) error
 	// Find article by Id
 	// (GET /articles/{articleId})
-	GetPetsById(c *fiber.Ctx, articleId string) error
+	GetArticleById(c *fiber.Ctx, articleId string) error
 	// Update article by Id
 	// (PATCH /articles/{articleId})
-	PatchArticlesArticleId(c *fiber.Ctx, articleId string) error
+	PatchArticleById(c *fiber.Ctx, articleId string) error
 	// Article Text By articleId
 	// (GET /articles/{articleId}/text)
-	GetArticlesArticleIdText(c *fiber.Ctx, articleId string) error
+	GetArticleTextById(c *fiber.Ctx, articleId string) error
 	// Upload Article Text by articleId
 	// (POST /articles/{articleId}/text)
-	PostArticlesArticleIdText(c *fiber.Ctx, articleId string) error
+	PostArticleTextById(c *fiber.Ctx, articleId string) error
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -51,8 +51,8 @@ func (siw *ServerInterfaceWrapper) PostArticles(c *fiber.Ctx) error {
 	return siw.Handler.PostArticles(c)
 }
 
-// GetPetsById operation middleware
-func (siw *ServerInterfaceWrapper) GetPetsById(c *fiber.Ctx) error {
+// GetArticleById operation middleware
+func (siw *ServerInterfaceWrapper) GetArticleById(c *fiber.Ctx) error {
 
 	var err error
 
@@ -64,11 +64,11 @@ func (siw *ServerInterfaceWrapper) GetPetsById(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter articleId: %w", err).Error())
 	}
 
-	return siw.Handler.GetPetsById(c, articleId)
+	return siw.Handler.GetArticleById(c, articleId)
 }
 
-// PatchArticlesArticleId operation middleware
-func (siw *ServerInterfaceWrapper) PatchArticlesArticleId(c *fiber.Ctx) error {
+// PatchArticleById operation middleware
+func (siw *ServerInterfaceWrapper) PatchArticleById(c *fiber.Ctx) error {
 
 	var err error
 
@@ -80,11 +80,11 @@ func (siw *ServerInterfaceWrapper) PatchArticlesArticleId(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter articleId: %w", err).Error())
 	}
 
-	return siw.Handler.PatchArticlesArticleId(c, articleId)
+	return siw.Handler.PatchArticleById(c, articleId)
 }
 
-// GetArticlesArticleIdText operation middleware
-func (siw *ServerInterfaceWrapper) GetArticlesArticleIdText(c *fiber.Ctx) error {
+// GetArticleTextById operation middleware
+func (siw *ServerInterfaceWrapper) GetArticleTextById(c *fiber.Ctx) error {
 
 	var err error
 
@@ -96,11 +96,11 @@ func (siw *ServerInterfaceWrapper) GetArticlesArticleIdText(c *fiber.Ctx) error 
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter articleId: %w", err).Error())
 	}
 
-	return siw.Handler.GetArticlesArticleIdText(c, articleId)
+	return siw.Handler.GetArticleTextById(c, articleId)
 }
 
-// PostArticlesArticleIdText operation middleware
-func (siw *ServerInterfaceWrapper) PostArticlesArticleIdText(c *fiber.Ctx) error {
+// PostArticleTextById operation middleware
+func (siw *ServerInterfaceWrapper) PostArticleTextById(c *fiber.Ctx) error {
 
 	var err error
 
@@ -112,7 +112,7 @@ func (siw *ServerInterfaceWrapper) PostArticlesArticleIdText(c *fiber.Ctx) error
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter articleId: %w", err).Error())
 	}
 
-	return siw.Handler.PostArticlesArticleIdText(c, articleId)
+	return siw.Handler.PostArticleTextById(c, articleId)
 }
 
 // FiberServerOptions provides options for the Fiber server.
@@ -140,12 +140,12 @@ func RegisterHandlersWithOptions(router fiber.Router, si ServerInterface, option
 
 	router.Post(options.BaseURL+"/articles", wrapper.PostArticles)
 
-	router.Get(options.BaseURL+"/articles/:articleId", wrapper.GetPetsById)
+	router.Get(options.BaseURL+"/articles/:articleId", wrapper.GetArticleById)
 
-	router.Patch(options.BaseURL+"/articles/:articleId", wrapper.PatchArticlesArticleId)
+	router.Patch(options.BaseURL+"/articles/:articleId", wrapper.PatchArticleById)
 
-	router.Get(options.BaseURL+"/articles/:articleId/text", wrapper.GetArticlesArticleIdText)
+	router.Get(options.BaseURL+"/articles/:articleId/text", wrapper.GetArticleTextById)
 
-	router.Post(options.BaseURL+"/articles/:articleId/text", wrapper.PostArticlesArticleIdText)
+	router.Post(options.BaseURL+"/articles/:articleId/text", wrapper.PostArticleTextById)
 
 }
