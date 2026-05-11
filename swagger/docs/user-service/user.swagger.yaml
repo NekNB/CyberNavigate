@@ -1,0 +1,256 @@
+openapi: 3.0.3
+
+info:
+  title: API CyberNavigate
+  version: "1.0"
+  description: |
+    API сервиса пользователей с авторизацией по username/password.
+    Аутентификация реализована через access и refresh JWT токены.
+servers:
+  - url: http://localhost:9000/api/v1
+    description: Local API Gateway Server
+  - url: http://127.0.0.1:9000/api/v1
+    description: Local API Gateway Server
+  - url: http://cyber-navigate_gateway-server/api/v1
+    description: Internal Docker API Gateway Server
+
+tags:
+  - name: Auth
+    description: Методы авторизации и аутентификации
+  - name: Users
+    description: Методы работы с пользователем
+
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Авторизация пользователя
+      description: Возвращает access и refresh токены
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Успешная авторизация
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenPairResponse"
+        "401":
+          description: Неверный username или password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/refresh:
+    post:
+      tags:
+        - Auth
+      summary: Обновление access токена
+      description: Выдает новую пару access/refresh токенов
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshTokenRequest"
+      responses:
+        "200":
+          description: Токены успешно обновлены
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenPairResponse"
+        "401":
+          description: Refresh токен невалиден или истек
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: Выход пользователя
+      description: Инвалидирует refresh токен
+      operationId: logout
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshTokenRequest"
+      responses:
+        "204":
+          description: Успешный logout
+        "401":
+          description: Неавторизован
+
+  /users/me:
+    get:
+      tags:
+        - Users
+      summary: Получить текущего пользователя
+      operationId: getCurrentUser
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Информация о текущем пользователе
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: Неавторизован
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Пользователь не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users:
+    get:
+      tags:
+        - Users
+      summary: Получить список пользователей
+      operationId: getAllUsers
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Информация о всех пользователях
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: Неавторизован
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    post:
+      tags:
+        - Users
+      summary: Создать пользователя
+      operationId: postNewUser
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Информация о всех пользователях
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserResponse"
+        "400":
+          description: Пользователь уже существует
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: johndoe
+        password:
+          type: string
+          format: password
+          example: secret123
+
+    RefreshTokenRequest:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+    TokenPairResponse:
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+        - tokenType
+        - expiresIn
+      properties:
+        accessToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        refreshToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        tokenType:
+          type: string
+          example: Bearer
+        expiresIn:
+          type: integer
+          description: Время жизни access токена в секундах
+          example: 3600
+
+    UserResponse:
+      type: object
+      required:
+        - id
+        - username
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+        username:
+          type: string
+          example: johndoe
+        createdAt:
+          type: string
+          format: date-time
+          example: 2026-05-11T10:00:00Z
+
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: UNAUTHORIZED
+        message:
+          type: string
+          example: Invalid credentials
