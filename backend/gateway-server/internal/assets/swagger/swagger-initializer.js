@@ -12,7 +12,7 @@ window.onload = function () {
       // TODO: Добавить новые пути
       {
         name: "Article Service",
-        url: "/specs/article/article.swagger.json"
+        url: "/specs/article-service/article.swagger.yaml"
       }
     ],
     dom_id: '#swagger-ui',

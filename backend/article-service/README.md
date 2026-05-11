@@ -1,0 +1,1 @@
+swag init -g main.go -o ./internal/assets/docs/article/ --outputTypes json --instanceName article --dir ./../article-service/cmd

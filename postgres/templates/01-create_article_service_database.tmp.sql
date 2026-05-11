@@ -53,24 +53,48 @@ TO article_service_role;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO article_service_role;
 
-
-
 -- =============================================
--- 4. CREATE TABLES
+-- 4. CREATE TYPES
 -- =============================================
 
+CREATE TYPE article_status AS ENUM (
+    'published',
+    'draft',
+    'archived'
+);
 
+-- =============================================
+-- 5. CREATE TABLES
+-- =============================================
+
+CREATE TABLE metadata (
+uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    
+title VARCHAR UNIQUE NOT NULL,
+status article_status NOT NULL DEFAULT 'draft',
+text_id VARCHAR UNIQUE,
+video_url VARCHAR UNIQUE,
+
+created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
  
-
+);
 -- =============================================
--- 5. FUNCTIONS
--- =============================================
-
-
-
-
-
--- =============================================
--- 6. TRIGGERS
+-- 6. FUNCTIONS
 -- =============================================
 
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- =============================================
+-- 7. TRIGGERS
+-- =============================================
+CREATE TRIGGER metadata_updated_at
+    BEFORE UPDATE ON metadata
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();

@@ -25,9 +25,13 @@ func main() {
 		panic(err)
 	}
 
-	application := app.New(log, cfg.GRPC.Port, cfg.StoragePath, cfg.TokenTtl)
+	app, err := app.New(cfg, log)
+	if err != nil {
+		log.Error(err)
+		panic(err)
+	}
 
-	go application.GRPCSrv.MustRun()
+	go app.Start()
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
@@ -35,7 +39,7 @@ func main() {
 	sign := <-stop
 	log.Info("stopping application", slog.String("signal", sign.String()))
 
-	application.GRPCSrv.Stop()
+	app.Stop()
 
 	log.Info("application stopped")
 }

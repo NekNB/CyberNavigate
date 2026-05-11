@@ -3,163 +3,157 @@ package article
 import (
 	"context"
 	"errors"
-	"fmt"
-	"log/slog"
-	"time"
 
-	"github.com/NekNB/CyberNavigate/backend/article-service/internal/domain/models"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/NekNB/CyberNavigate/backend/article-service/internal/http"
+	"github.com/NekNB/CyberNavigate/backend/article-service/internal/storage"
+	"github.com/NekNB/CyberNavigate/swagger/gen/article"
+	"github.com/sirupsen/logrus"
 )
 
-type Auth struct {
-	log         *slog.Logger
-	tokenTTL    time.Duration
-	usrSaver    UserSaver
-	usrProvider UserProvider
-	appProvider AppProvider
+var _ http.ArticleServiceInterface = (*ArticleService)(nil)
+
+type ArticleContentProvider interface {
+	ArticleTextById(ctx context.Context, id string) (string, error)
+	SaveText(ctx context.Context, articleText string) (string, error)
+	UpdateText(ctx context.Context, id string, articleText string) error
 }
 
-type UserSaver interface {
-	SaveUser(
-		ctx context.Context,
-		email string,
-		passHash []byte,
-	) (uid int64, err error)
+type ArticleMetaProvider interface {
+	Articles() (*[]article.ArticleMetaData, error)
+	ArticleByUUID(articleUUID string) (*article.ArticleMetaData, error)
+	ArticleTextIDByUUID(articleUUID string) (textID string, err error)
+	CreateArticle(articleName *string) (*article.ArticleMetaData, error)
+	UpdateArticleByUUID(uuid, title, textID, status, videoUrl string) (*article.ArticleMetaData, error)
 }
 
-type UserProvider interface {
-	User(ctx context.Context, email string) (models.User, error)
-	IsAdmin(ctx context.Context, userID int64) (bool, error)
+type ArticleService struct {
+	log                    *logrus.Logger
+	articleContentProvider ArticleContentProvider
+	articleMetaProvider    ArticleMetaProvider
 }
-
-type AppProvider interface {
-	App(ctx context.Context, appID int) (models.App, error)
-}
-
-var (
-	ErrArticleExists   = errors.New("article already exists")
-	ErrArticleNotFound = errors.New("article not found")
-)
 
 func New(
-	log *slog.Logger,
-	userSaver UserSaver,
-	userProvider UserProvider,
-	appProvider AppProvider,
-	tokenTTL time.Duration,
-) *Auth {
-	return &Auth{
-		log:         log,
-		usrSaver:    userSaver,
-		usrProvider: userProvider,
-		appProvider: appProvider,
-		tokenTTL:    tokenTTL,
+	log *logrus.Logger,
+	articleContentProvider ArticleContentProvider,
+	articleMetaProvider ArticleMetaProvider,
+) *ArticleService {
+	return &ArticleService{
+		log:                    log,
+		articleContentProvider: articleContentProvider,
+		articleMetaProvider:    articleMetaProvider,
 	}
 }
 
-func (a *Auth) Login(
-	ctx context.Context,
-	email string,
-	password string,
-	appID int,
-) (string, error) {
-	const op = "auth.Login"
-
-	log := a.log.With(
-		slog.String("op", op),
-		slog.String("email", email),
-	)
-	log.Info("attemting to login user")
-
-	user, err := a.usrProvider.User(ctx, email)
+// Возвращает списко MetaData статей
+func (a *ArticleService) Articles() (*[]article.ArticleMetaData, error) {
+	metadata, err := a.articleMetaProvider.Articles()
 	if err != nil {
-		if errors.Is(err, storage.ErrUserNotFound) {
-			a.log.Warn("user not found", sl.Err(err))
-
-			return "", fmt.Errorf("%s: %w", op, ErrInvalidCredentials)
-		}
-		log.Error("failed to get user", sl.Err(err))
-		return "", fmt.Errorf("%s: %w", op, err)
+		a.log.Error(err)
+		return nil, err
 	}
-
-	if err := bcrypt.CompareHashAndPassword(user.PassHash, []byte(password)); err != nil {
-		a.log.Info("invalid credenials", sl.Err(err))
-		return "", fmt.Errorf("%s: %w", op, ErrInvalidCredentials)
-	}
-
-	app, err := a.appProvider.App(ctx, appID)
-	if err != nil {
-		log.Error("failed to get user", sl.Err(err))
-		return "", fmt.Errorf("%s: %w", op, err)
-	}
-
-	log.Info("user logged succesfully")
-
-	token, err := jwt.NewToken(user, app, a.tokenTTL)
-	if err != nil {
-		a.log.Error("failed to generate token", sl.Err(err))
-		return "", fmt.Errorf("%s: %w", op, err)
-	}
-
-	return token, nil
+	return metadata, nil
 }
 
-func (a *Auth) RegisterNewUser(
-	ctx context.Context,
-	email string,
-	password string,
-) (int64, error) {
-	const op = "auth.RegisterNewUser"
-
-	log := a.log.With(
-		slog.String("op", op),
-		slog.String("email", email),
-	)
-
-	log.Info("registering user")
-	passHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-
+func (a *ArticleService) ArticleByUUID(articleId string) (*article.ArticleMetaData, error) {
+	metadata, err := a.articleMetaProvider.ArticleByUUID(articleId)
 	if err != nil {
-		log.Error("failed to generate password hash", sl.Err(err))
-		return 0, fmt.Errorf("%s: %w", op, err)
+		a.log.Error(err)
+		return nil, err
 	}
-
-	id, err := a.usrSaver.SaveUser(ctx, email, passHash)
-	if err != nil {
-		if errors.Is(err, storage.ErrUserExists) {
-			log.Warn("user already exists", sl.Err(err))
-
-			return 0, fmt.Errorf("%s: %w", op, ErrUserExists)
-		}
-
-		log.Error("failed to save user", sl.Err(err))
-		return 0, fmt.Errorf("%s: %w", op, err)
-	}
-
-	return id, err
+	return metadata, nil
 }
 
-func (a *Auth) IsAdmin(
-	ctx context.Context,
-	userID int64,
-) (bool, error) {
-	const op = "auth.IsAdmin"
-	log := a.log.With(
-		slog.String("op", op),
-		slog.Int64("user_id", userID),
-	)
+func (a *ArticleService) ArticleTextByUUID(ctx context.Context, articleId string) (string, error) {
+	mP := a.articleMetaProvider
+	cP := a.articleContentProvider
 
-	isAdmin, err := a.usrProvider.IsAdmin(ctx, userID)
+	textId, err := mP.ArticleTextIDByUUID(articleId)
 	if err != nil {
-		if errors.Is(err, storage.ErrAppNotFound) {
-			log.Warn("user not found", sl.Err(err))
-
-			return false, fmt.Errorf("%s: %w", op, ErrInvalidAppID)
+		if !errors.Is(err, storage.ErrArticleTextNotCreatedYet) {
+			a.log.Error(err)
 		}
-		return false, fmt.Errorf("%s: %w", op, err)
+
+		return "", err
 	}
 
-	log.Info("checked if user id admin", slog.Bool("is_admin", isAdmin))
+	text, err := cP.ArticleTextById(ctx, textId)
+	if err != nil {
+		a.log.Error(err)
+		return text, err
+	}
 
-	return isAdmin, nil
+	return text, nil
+}
+
+func (a *ArticleService) CreateArticle(title *string) (*article.ArticleMetaData, error) {
+	metadata, err := a.articleMetaProvider.CreateArticle(title)
+	if err != nil {
+		a.log.Error(err)
+		return nil, err
+	}
+	return metadata, err
+}
+
+func (a *ArticleService) SaveArticleTextByUUID(ctx context.Context, articleId, text string) (*article.ArticleMetaData, error) {
+	mP := a.articleMetaProvider
+	cP := a.articleContentProvider
+
+	textId, err := cP.SaveText(ctx, text)
+	if err != nil {
+		a.log.Error(err)
+		return nil, err
+	}
+
+	metadata, err := mP.UpdateArticleByUUID(
+		articleId,
+		"",
+		textId,
+		"",
+		"",
+	)
+	if err != nil {
+		a.log.Error(err)
+		return nil, err
+	}
+	return metadata, nil
+}
+
+func (a *ArticleService) UpdateArticleByUUID(articleId, text, title, videoURL, status string) (*article.ArticleMetaData, error) {
+	metadata, err := a.articleMetaProvider.UpdateArticleByUUID(
+		articleId,
+		text,
+		title,
+		videoURL,
+		status,
+	)
+	if err != nil {
+		a.log.Error(err)
+		return nil, err
+	}
+	return metadata, err
+}
+
+func (a *ArticleService) UpdateArticleTextByUUID(ctx context.Context, articleId, text string) (*article.ArticleMetaData, error) {
+	mP := a.articleMetaProvider
+	cP := a.articleContentProvider
+
+	textId, err := mP.ArticleTextIDByUUID(articleId)
+	if err != nil {
+		a.log.Error(err)
+		return nil, err
+	}
+	a.log.Debug(textId)
+	if err := cP.UpdateText(ctx, textId, text); err != nil {
+		a.log.Error(err)
+		return nil, err
+	}
+
+	metadata, err := mP.ArticleByUUID(
+		articleId,
+	)
+	if err != nil {
+		a.log.Error(err)
+		return nil, err
+	}
+	return metadata, nil
 }
