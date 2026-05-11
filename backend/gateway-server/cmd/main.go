@@ -20,10 +20,9 @@ func main() {
 
 	app, err := app.New(cfg, log)
 	if err != nil {
-		log.Error(err)
-		panic(err)
+		log.Errorln(err)
+		os.Exit(1)
 	}
-	go app.Start()
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)

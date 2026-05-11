@@ -5,19 +5,9 @@ window.onload = function () {
   window.ui = SwaggerUIBundle({
     urls: [
       {
-        name: "User Service",
-        url: "/specs/docs/user/user.swagger.json", // Ссылка должна совпадать с тем, что в Go коде
-      },
-
-      // TODO: Добавить новые пути
-      {
         name: "Article Service",
-        url: "/specs/docs/article-service/article.swagger.json"
-      }
-
         url: "/specs/docs/article-service/article.swagger.yaml",
       },
-
     ],
     dom_id: "#swagger-ui",
     deepLinking: true,

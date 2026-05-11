@@ -1,10 +1,13 @@
 package app
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/app/proxy"
 	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/assets"
+
 	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/config"
 	"github.com/NekNB/CyberNavigate/swagger"
 	"github.com/gofiber/fiber/v3"
@@ -21,6 +24,7 @@ import (
 type Server struct {
 	cfg *config.Config
 	app *fiber.App
+	log *logrus.Logger
 }
 
 func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
@@ -62,13 +66,18 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 		return c.SendString("pong")
 	})
 
-	return &Server{app: app, cfg: cfg}, nil
+	return &Server{app: app, cfg: cfg, log: log}, nil
 }
 
-func (s *Server) Start() {
-	s.app.Listen(
-		fmt.Sprintf(":%d", s.cfg.Server.Port),
-	)
+func (s *Server) Run(ctx context.Context) {
+	port := fmt.Sprintf(":%d", s.cfg.Server.Port)
+
+	s.log.Infof("gateway on %s", port)
+	if err := s.app.Listen(port); err != nil && err != http.ErrServerClosed {
+		s.log.Error(err)
+
+		panic(err)
+	}
 }
 
 func (s *Server) Stop() error {
