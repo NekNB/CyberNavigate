@@ -3,7 +3,7 @@ module github.com/NekNB/CyberNavigate/backend/gateway-server
 go 1.26.2
 
 require (
-	github.com/NekNB/CyberNavigate/swagger v0.0.0-20260511163115-6e09635cb891
+	github.com/NekNB/CyberNavigate/swagger v0.0.0-20260511193710-97271a2df027
 	github.com/gofiber/fiber/v3 v3.2.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/sirupsen/logrus v1.9.4
@@ -20,7 +20,6 @@ require (
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.21 // indirect
-	github.com/oapi-codegen/runtime v1.4.0 // indirect
 	github.com/philhofer/fwd v1.2.0 // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/tinylib/msgp v1.6.4 // indirect

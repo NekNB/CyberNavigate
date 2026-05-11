@@ -59,6 +59,7 @@ services:
     secrets:
       - source: article_service_secret
         target: article_service_secret
+
     depends_on:
       - postgres
       - mongo
