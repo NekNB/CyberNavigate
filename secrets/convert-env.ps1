@@ -1,4 +1,4 @@
-# Получаем директорию, где лежит сам скрипт
+﻿# Получаем директорию, где лежит сам скрипт
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 # Ищем все файлы *.tmp.env рекурсивно
@@ -13,4 +13,4 @@ Get-ChildItem -Path $scriptDir -Recurse -Filter "*.tmp.env" | ForEach-Object {
     Write-Host "Создан: $newFilePath"
 }
 
-Write-Host "Готово."
+Write-Host "Готово"
