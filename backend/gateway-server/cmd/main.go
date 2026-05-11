@@ -24,6 +24,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	go app.Run()
+
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
 

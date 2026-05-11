@@ -1,7 +1,6 @@
 package app
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -69,7 +68,7 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 	return &Server{app: app, cfg: cfg, log: log}, nil
 }
 
-func (s *Server) Run(ctx context.Context) {
+func (s *Server) Run() {
 	port := fmt.Sprintf(":%d", s.cfg.Server.Port)
 
 	s.log.Infof("gateway on %s", port)
