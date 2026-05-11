@@ -16,7 +16,7 @@ run:
 
 # Требует ввести name
 build:
-	docker buil	d -f ./docker/${ARGS}.dockerfile -t cyber-navigate/${ARGS} .
+	docker build -f ./docker/${ARGS}.dockerfile -t cyber-navigate/${ARGS} .
 
 secrets_update: secrets_remove secrets_create
 
