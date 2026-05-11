@@ -59,7 +59,7 @@ func (siw *ServerInterfaceWrapper) Login(c fiber.Ctx) error {
 // Logout operation middleware
 func (siw *ServerInterfaceWrapper) Logout(c fiber.Ctx) error {
 
-	c.Context().SetUserValue((BearerAuthScopes), []string{})
+	c.Locals(BearerAuthScopes, []string{})
 
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.Logout(c)
@@ -97,7 +97,7 @@ func (siw *ServerInterfaceWrapper) RefreshToken(c fiber.Ctx) error {
 // GetAllUsers operation middleware
 func (siw *ServerInterfaceWrapper) GetAllUsers(c fiber.Ctx) error {
 
-	c.Context().SetUserValue((BearerAuthScopes), []string{})
+	c.Locals(BearerAuthScopes, []string{})
 
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.GetAllUsers(c)
@@ -117,7 +117,7 @@ func (siw *ServerInterfaceWrapper) GetAllUsers(c fiber.Ctx) error {
 // PostNewUser operation middleware
 func (siw *ServerInterfaceWrapper) PostNewUser(c fiber.Ctx) error {
 
-	c.Context().SetUserValue((BearerAuthScopes), []string{})
+	c.Locals(BearerAuthScopes, []string{})
 
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.PostNewUser(c)
@@ -137,7 +137,7 @@ func (siw *ServerInterfaceWrapper) PostNewUser(c fiber.Ctx) error {
 // GetCurrentUser operation middleware
 func (siw *ServerInterfaceWrapper) GetCurrentUser(c fiber.Ctx) error {
 
-	c.Context().SetUserValue((BearerAuthScopes), []string{})
+	c.Locals(BearerAuthScopes, []string{})
 
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.GetCurrentUser(c)
