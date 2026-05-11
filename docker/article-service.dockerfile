@@ -22,4 +22,5 @@ COPY /configs/article-service/dev.yaml ./
 ENV CONFIG_PATH=./dev.yaml
 
 RUN chmod +x ./start.sh
+RUN sed -i 's/\r$//'  ./start.sh
 CMD ["sh", "./start.sh"]

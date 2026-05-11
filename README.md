@@ -14,3 +14,6 @@ CyberNavigate - это круто
 
 - `make secrets_remove`|`make srm` - удаляет секреты
 - `make secrets_create`|`make scr` - создает секреты
+
+для конвертации secrets.tmp.env >> secrets.env
+В папке secrets запустить ./convert-env.ps1

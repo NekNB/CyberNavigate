@@ -9,3 +9,5 @@ RUN chmod 755 /usr/local/bin/gomplate
 COPY /databases/mongo/init /docker-entrypoint-initdb.d/
 
 COPY /databases/mongo/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+
+RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh
