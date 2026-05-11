@@ -3,8 +3,12 @@ info:
   title: API CyberNavigate
   version: "1.0"
 servers:
-  - url: /api/v1
-    description: API Gateway Server
+  - url: http://localhost:9000/api/v1
+    description: Local API Gateway Server
+  - url: http://127.0.0.1:9000/api/v1
+    description: Local API Gateway Server
+  - url: http://cyber-navigate_gateway-server/api/v1
+    description: Internal Docker API Gateway Server
 
 components:
   schemas:

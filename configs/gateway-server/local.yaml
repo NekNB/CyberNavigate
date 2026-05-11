@@ -2,9 +2,23 @@ env: "local"
 
 server:
   port: 9000
+<<<<<<< Updated upstream
   article: 
     host: localhost
     port: 44044
   user: 
     host: localhost
     port: 9000
+=======
+  services:
+    - article:
+        path: /api/v1/articles
+        protocol: http
+        host: localhost
+        port: 8000
+    - user:
+        path: /api/v1/users
+        protocol: http
+        host: localhost
+        port: 8080
+>>>>>>> Stashed changes

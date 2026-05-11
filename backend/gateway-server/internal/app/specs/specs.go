@@ -9,7 +9,7 @@ import (
 
 func NewSpecs() http.Handler {
 	// Открываем подсистему папки docs
-	specsDir, err := fs.Sub(assets.SpecsFS, "docs/proto")
+	specsDir, err := fs.Sub(assets.SwaggerUI, "docs/proto")
 	if err != nil {
 		panic(err)
 	}

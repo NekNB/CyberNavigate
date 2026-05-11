@@ -1,8 +1,6 @@
 package main
 
 import (
-	"context"
-
 	"os"
 	"os/signal"
 	"syscall"
@@ -13,10 +11,6 @@ import (
 )
 
 func main() {
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
 	cfg := config.MustLoad()
 
 	log, err := logger.Init(cfg.Env)
@@ -24,9 +18,12 @@ func main() {
 		panic(err)
 	}
 
-	app := app.New(ctx, cfg, log)
-
-	go app.Run()
+	app, err := app.New(cfg, log)
+	if err != nil {
+		log.Error(err)
+		panic(err)
+	}
+	go app.Start()
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
@@ -34,7 +31,7 @@ func main() {
 	sign := <-stop
 	log.WithField("signal", sign.String()).Info("stopping application")
 
-	app.Stop(ctx)
+	app.Stop()
 
 	log.Info("application stopped")
 }

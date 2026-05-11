@@ -6,24 +6,24 @@ window.onload = function () {
     urls: [
       {
         name: "User Service",
-        url: "/specs/user/user.swagger.json" // Ссылка должна совпадать с тем, что в Go коде
+        url: "/specs/docs/user/user.swagger.json", // Ссылка должна совпадать с тем, что в Go коде
       },
 
       // TODO: Добавить новые пути
       {
         name: "Article Service",
+<<<<<<< Updated upstream
         url: "/specs/article/article.swagger.json"
       }
+=======
+        url: "/specs/docs/article-service/article.swagger.yaml",
+      },
+>>>>>>> Stashed changes
     ],
-    dom_id: '#swagger-ui',
+    dom_id: "#swagger-ui",
     deepLinking: true,
-    presets: [
-      SwaggerUIBundle.presets.apis,
-      SwaggerUIStandalonePreset
-    ],
-    plugins: [
-      SwaggerUIBundle.plugins.DownloadUrl
-    ],
+    presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+    plugins: [SwaggerUIBundle.plugins.DownloadUrl],
     layout: "StandaloneLayout",
   });
 
