@@ -2,11 +2,15 @@ env: "local"
 
 server:
   port: 9000
-  article:
-    protocol: http
-    host: localhost
-    port: 8081
-  user:
-    protocol: http
-    host: localhost
-    port: 8080
+
+  services:
+    - article:
+        path: /api/v1/articles
+        protocol: http
+        host: localhost
+        port: 8000
+    - user:
+        path: /api/v1/users
+        protocol: http
+        host: localhost
+        port: 8080

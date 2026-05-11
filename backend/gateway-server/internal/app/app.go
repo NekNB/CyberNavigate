@@ -1,78 +1,84 @@
 package app
 
 import (
-	"context"
 	"fmt"
-	"net"
 	"net/http"
 
 	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/app/proxy"
-	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/app/specs"
-	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/app/swagger"
-	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/config"
-	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/middlewares"
+	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/assets"
 
+	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/config"
+	"github.com/NekNB/CyberNavigate/swagger"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/cors"
+	"github.com/gofiber/fiber/v3/middleware/logger"
+
+	"github.com/gofiber/fiber/v3/middleware/recover"
+	"github.com/gofiber/fiber/v3/middleware/static"
 	"github.com/sirupsen/logrus"
 )
 
-type App struct {
-	ctx    context.Context
-	cfg    *config.Config
-	log    *logrus.Logger
-	server *http.Server
-	port   int
+// Здесь реализуются методы LifeSpan сервера
+
+type Server struct {
+	cfg *config.Config
+	app *fiber.App
+	log *logrus.Logger
 }
 
-func New(ctx context.Context, cfg *config.Config, log *logrus.Logger) *App {
+func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 
-	return &App{
-		ctx:  ctx,
-		cfg:  cfg,
-		log:  log,
-		port: cfg.Server.Port,
-	}
-}
-
-func (a *App) Run(ctx context.Context) {
-
-	mux := http.NewServeMux()
-
-	specsHandler := specs.NewSpecs()
-	mux.Handle("/specs/", http.StripPrefix("/specs/", specsHandler))
-
-	swaggerHandler := swagger.NewSwagger()
-	mux.Handle("/swagger/", http.StripPrefix("/swagger/", swaggerHandler))
-
-	HTTPHandler, err := proxy.New(a.cfg)
-	if err != nil {
-		panic(err)
-	}
-	mux.Handle("/api/", HTTPHandler)
-
-	mainHandler := middlewares.Recovery(a.log)(middlewares.RequestLogging(a.log)(mux))
-
-	a.server = &http.Server{
-		Addr:    fmt.Sprintf("0.0.0.0:%d", a.cfg.Server.Port),
-		Handler: mainHandler,
-		BaseContext: func(net.Listener) context.Context {
-			return ctx
+	app := fiber.New(fiber.Config{
+		AppName: "Gateway Server",
+	})
+	app.Use(logger.New())
+	app.Use(recover.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: []string{
+			"http://localhost:9000",
+			"http://127.0.0.1:9000",
 		},
-	}
+		AllowMethods: []string{
+			"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS",
+		},
+		AllowHeaders: []string{
+			"Origin", "Content-Type", "Accept", "Authorization", "Content-Encoding",
+		},
+		AllowCredentials: true,
+	}))
 
-	a.log.Infof("gateway on : %s", a.server.Addr)
-	if err := a.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		a.log.Error(err)
+	proxy.Register(cfg, app.Name("GateWay"))
+
+	//Добавляем Specs директорию
+	app.Get("/specs/*", static.New("", static.Config{
+		FS:     swagger.SpecsFS,
+		Browse: true,
+	}))
+
+	// Добавляем swagger директорию
+	app.Get("/swagger/*", static.New("/swagger", static.Config{
+		FS:     assets.SwaggerUI,
+		Browse: true,
+	}))
+
+	app.Get("/ping", func(c fiber.Ctx) error {
+		return c.SendString("pong")
+	})
+
+	return &Server{app: app, cfg: cfg, log: log}, nil
+}
+
+func (s *Server) Run() {
+	port := fmt.Sprintf(":%d", s.cfg.Server.Port)
+
+	s.log.Infof("gateway on %s", port)
+	if err := s.app.Listen(port); err != nil && err != http.ErrServerClosed {
+		s.log.Error(err)
 
 		panic(err)
 	}
 }
 
-func (a *App) Stop(ctx context.Context) error {
-	if a.server == nil {
-		return nil
-	}
-
-	a.log.Infof("shutting down gateway...")
-
-	return a.server.Shutdown(ctx)
+func (s *Server) Stop() error {
+	return s.app.Shutdown()
 }

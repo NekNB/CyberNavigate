@@ -1,0 +1,15 @@
+env: "dev"
+
+server:
+  port: 9000
+  services:
+    - article:
+        path: /api/v1/articles
+        protocol: http
+        host: cyber-navigate_article-service
+        port: 8000
+    # - user:
+    #     path: /api/v1/users
+    #     protocol: http
+    #     host: cyber-navigate_postgres
+    #     port: 8080

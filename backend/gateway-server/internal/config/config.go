@@ -13,15 +13,15 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Port           int                `yaml:"port"`
-	ArticleService MicroServiceConfig `yaml:"article"`
-	UserService    MicroServiceConfig `yaml:"user"`
+	Port     int                     `yaml:"port"`
+	Services []map[string]ServiceCfg `yaml:"services"`
 }
 
-type MicroServiceConfig struct {
+type ServiceCfg struct {
+	Path     string `yaml:"path"`
 	Protocol string `yaml:"protocol" env-default:"http"`
-	Host     string `yaml:"host" env-default:"localhost"`
-	Port     int    `yaml:"port" env-default:"8000"`
+	Host     string `yaml:"host"`
+	Port     int    `yaml:"port"`
 }
 
 // "Must" means the function will panic rather than return an error
@@ -58,4 +58,24 @@ func fetchConfigPath() string {
 	}
 
 	return res
+}
+
+type Service struct {
+	Name string
+	Cfg  ServiceCfg
+}
+
+func Normalize(cfg *Config) []Service {
+	var result []Service
+
+	for _, item := range cfg.Server.Services {
+		for name, svc := range item {
+			result = append(result, Service{
+				Name: name,
+				Cfg:  svc,
+			})
+		}
+	}
+
+	return result
 }

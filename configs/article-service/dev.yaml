@@ -1,0 +1,19 @@
+env: "dev"
+
+http:
+  port: 8000
+  timeout: 10h
+
+storages:
+  postgres:
+    database: article_service_db
+    host: cyber-navigate_postgres
+    port: 5432
+    user: article_service_role
+
+  mongo:
+    database: article-storage
+    host: cyber-navigate_mongo
+    port: 27017
+    user: articleService
+    collection: articles

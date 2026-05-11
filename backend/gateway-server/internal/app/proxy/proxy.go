@@ -2,37 +2,29 @@ package proxy
 
 import (
 	"fmt"
-	"net/http"
-	"net/http/httputil"
-	"net/url"
 
 	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/config"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/proxy"
 )
 
-func New(cfg *config.Config) (*http.ServeMux, error) {
-	// Article
-	target, err := url.Parse(sockerFromParams(
-		cfg.Server.ArticleService.Protocol, cfg.Server.ArticleService.Host, cfg.Server.Port,
-	))
-	if err != nil {
-		return nil, err
+func Register(cfg *config.Config, router fiber.Router) {
+	services := config.Normalize(cfg)
+	for _, service := range services {
+		router.All(
+			service.Cfg.Path+"/*",
+			func(c fiber.Ctx) error {
+				target := fmt.Sprintf("%s://%s:%d",
+					service.Cfg.Protocol,
+					service.Cfg.Host,
+					service.Cfg.Port,
+				)
+
+				fmt.Println(c.Request())
+
+				path := c.Params("*")
+				return proxy.Do(c, target+service.Cfg.Path+path)
+			})
+
 	}
-	articleProxy := httputil.NewSingleHostReverseProxy(target)
-
-	mux := http.NewServeMux()
-	mux.Handle("/api/v1/articles/", articleProxy)
-
-	return mux, nil
-}
-
-func sockerFromParams(
-	protocol, host string,
-	port int,
-) string {
-	return fmt.Sprintf(
-		"%s://%s:%d",
-		protocol,
-		host,
-		port,
-	)
 }
