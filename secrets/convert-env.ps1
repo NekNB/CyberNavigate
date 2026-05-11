@@ -1,4 +1,4 @@
-# Получаем директорию, где лежит сам скрипт
+﻿# Получаем директорию, где лежит сам скрипт
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 # Ищем все файлы *.tmp.env рекурсивно

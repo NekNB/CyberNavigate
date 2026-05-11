@@ -3,5 +3,5 @@
 bin/*
 go.sum
 protos/go.sum
-
+package-lock.json
 **/.vscode/**
