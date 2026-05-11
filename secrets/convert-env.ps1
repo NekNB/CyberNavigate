@@ -13,4 +13,4 @@ Get-ChildItem -Path $scriptDir -Recurse -Filter "*.tmp.env" | ForEach-Object {
     Write-Host "Создан: $newFilePath"
 }
 
-Write-Host "Готово."
+Write-Host "Готово"

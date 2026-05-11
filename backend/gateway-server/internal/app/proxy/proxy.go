@@ -20,11 +20,8 @@ func Register(cfg *config.Config, router fiber.Router) {
 					service.Cfg.Port,
 				)
 
-				fmt.Println(c.Request())
-
 				path := c.Params("*")
-				return proxy.Do(c, target+service.Cfg.Path+path)
+				return proxy.Do(c, target+service.Cfg.Path+"/"+path)
 			})
-
 	}
 }

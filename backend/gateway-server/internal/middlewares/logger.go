@@ -1,56 +1,37 @@
 package middlewares
 
 import (
-	"net/http"
+	"fmt"
 	"time"
 
-	"github.com/sirupsen/logrus"
+	"github.com/gofiber/fiber/v3"
 )
 
-type responseWriter struct {
-	http.ResponseWriter
-	statusCode int
-}
+func DetailedLogger() fiber.Handler {
+	return func(c fiber.Ctx) error {
+		start := time.Now()
 
-func (rw *responseWriter) WriteHeader(code int) {
-	rw.statusCode = code
-	rw.ResponseWriter.WriteHeader(code)
-}
+		// Получаем полный URL
+		fullURL := c.BaseURL() + c.OriginalURL()
 
-func RequestLogging(log *logrus.Logger) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Printf("\n┌─────────────────────────────────────────────────────────────┐\n")
+		fmt.Printf("│ REQUEST\n")
+		fmt.Printf("├─────────────────────────────────────────────────────────────┤\n")
+		fmt.Printf("│ Method: %s\n", c.Method())
+		fmt.Printf("│ URL:    %s\n", fullURL)
+		fmt.Printf("│ Path:   %s\n", c.OriginalURL())
+		fmt.Printf("│ Body:   %s\n", string(c.Body()))
 
-			start := time.Now()
+		err := c.Next()
 
-			rw := &responseWriter{
-				ResponseWriter: w,
-				statusCode:     http.StatusOK,
-			}
+		fmt.Printf("├─────────────────────────────────────────────────────────────┤\n")
+		fmt.Printf("│ RESPONSE\n")
+		fmt.Printf("├─────────────────────────────────────────────────────────────┤\n")
+		fmt.Printf("│ Status: %d\n", c.Response().StatusCode())
+		fmt.Printf("│ Time:   %v\n", time.Since(start))
+		fmt.Printf("│ Body:   %s\n", string(c.Response().Body()))
+		fmt.Printf("└─────────────────────────────────────────────────────────────┘\n\n")
 
-			next.ServeHTTP(rw, r)
-
-			duration := time.Since(start)
-
-			entry := log.WithFields(logrus.Fields{
-				"method":   r.Method,
-				"path":     r.URL.Path,
-				"status":   rw.statusCode,
-				"duration": duration.String(),
-				"ip":       r.RemoteAddr,
-			})
-
-			if location := rw.Header().Get("Location"); location != "" {
-				entry = entry.WithField("redirect_to", location)
-			}
-
-			if rw.statusCode >= 500 {
-				entry.Error("server error")
-			} else if rw.statusCode >= 400 {
-				entry.Warn("client error")
-			} else if rw.statusCode >= 300 {
-				entry.Info("redirect")
-			}
-		})
+		return err
 	}
 }
