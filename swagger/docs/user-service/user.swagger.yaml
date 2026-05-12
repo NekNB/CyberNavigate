@@ -19,6 +19,8 @@ tags:
     description: Методы авторизации и аутентификации
   - name: Users
     description: Методы работы с пользователем
+  - name: Admin
+    description: Методы работы с пользователем для администраторов
 
 paths:
   /auth/login:
@@ -127,7 +129,7 @@ paths:
   /users:
     get:
       tags:
-        - Users
+        - Admin
       summary: Получить список пользователей
       operationId: getAllUsers
       security:
@@ -143,6 +145,12 @@ paths:
                   $ref: "#/components/schemas/UserResponse"
         "401":
           description: Неавторизован
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: В доступе отказано
           content:
             application/json:
               schema:
@@ -245,12 +253,8 @@ components:
     ErrorResponse:
       type: object
       required:
-        - code
         - message
       properties:
-        code:
-          type: string
-          example: UNAUTHORIZED
         message:
           type: string
           example: Invalid credentials

@@ -24,7 +24,6 @@ const ServerUrlLocalAPIGatewayServer1 = "http://127.0.0.1:9000/api/v1"
 
 // ErrorResponse defines model for ErrorResponse.
 type ErrorResponse struct {
-	Code    string `json:"code"`
 	Message string `json:"message"`
 }
 

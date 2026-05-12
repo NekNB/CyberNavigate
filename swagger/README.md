@@ -11,3 +11,5 @@ oapi-codegen -config ./configs/article/server.yaml ./docs/article-service/articl
 oapi-codegen -config ./configs/user/models.yaml ./docs/user-service/user.swagger.yaml
 oapi-codegen -config ./configs/user/client.yaml ./docs/user-service/user.swagger.yaml
 oapi-codegen -config ./configs/user/server.yaml ./docs/user-service/user.swagger.yaml
+
+c.Context().SetUserValue((BearerAuthScopes), []string{}) >> c.Locals(BearerAuthScopes, []string{})
