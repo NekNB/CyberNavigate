@@ -92,21 +92,19 @@ type ClientInterface interface {
 
 	Login(ctx context.Context, body LoginJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// LogoutWithBody request with any body
-	LogoutWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// Logout request
+	Logout(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	Logout(ctx context.Context, body LogoutJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// RefreshTokenWithBody request with any body
-	RefreshTokenWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	RefreshToken(ctx context.Context, body RefreshTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// RefreshToken request
+	RefreshToken(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetAllUsers request
 	GetAllUsers(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostNewUser request
-	PostNewUser(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// PostNewUserWithBody request with any body
+	PostNewUserWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostNewUser(ctx context.Context, body PostNewUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetCurrentUser request
 	GetCurrentUser(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -136,8 +134,8 @@ func (c *Client) Login(ctx context.Context, body LoginJSONRequestBody, reqEditor
 	return c.Client.Do(req)
 }
 
-func (c *Client) LogoutWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewLogoutRequestWithBody(c.Server, contentType, body)
+func (c *Client) Logout(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLogoutRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -148,32 +146,8 @@ func (c *Client) LogoutWithBody(ctx context.Context, contentType string, body io
 	return c.Client.Do(req)
 }
 
-func (c *Client) Logout(ctx context.Context, body LogoutJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewLogoutRequest(c.Server, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) RefreshTokenWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewRefreshTokenRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) RefreshToken(ctx context.Context, body RefreshTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewRefreshTokenRequest(c.Server, body)
+func (c *Client) RefreshToken(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRefreshTokenRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -196,8 +170,20 @@ func (c *Client) GetAllUsers(ctx context.Context, reqEditors ...RequestEditorFn)
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostNewUser(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostNewUserRequest(c.Server)
+func (c *Client) PostNewUserWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostNewUserRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostNewUser(ctx context.Context, body PostNewUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostNewUserRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -260,19 +246,8 @@ func NewLoginRequestWithBody(server string, contentType string, body io.Reader) 
 	return req, nil
 }
 
-// NewLogoutRequest calls the generic Logout builder with application/json body
-func NewLogoutRequest(server string, body LogoutJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewLogoutRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewLogoutRequestWithBody generates requests for Logout with any type of body
-func NewLogoutRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+// NewLogoutRequest generates requests for Logout
+func NewLogoutRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -290,29 +265,16 @@ func NewLogoutRequestWithBody(server string, contentType string, body io.Reader)
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
-
-	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
 
-// NewRefreshTokenRequest calls the generic RefreshToken builder with application/json body
-func NewRefreshTokenRequest(server string, body RefreshTokenJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewRefreshTokenRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewRefreshTokenRequestWithBody generates requests for RefreshToken with any type of body
-func NewRefreshTokenRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+// NewRefreshTokenRequest generates requests for RefreshToken
+func NewRefreshTokenRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -330,12 +292,10 @@ func NewRefreshTokenRequestWithBody(server string, contentType string, body io.R
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
-
-	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -367,8 +327,19 @@ func NewGetAllUsersRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewPostNewUserRequest generates requests for PostNewUser
-func NewPostNewUserRequest(server string) (*http.Request, error) {
+// NewPostNewUserRequest calls the generic PostNewUser builder with application/json body
+func NewPostNewUserRequest(server string, body PostNewUserJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostNewUserRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostNewUserRequestWithBody generates requests for PostNewUser with any type of body
+func NewPostNewUserRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -386,10 +357,12 @@ func NewPostNewUserRequest(server string) (*http.Request, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -469,21 +442,19 @@ type ClientWithResponsesInterface interface {
 
 	LoginWithResponse(ctx context.Context, body LoginJSONRequestBody, reqEditors ...RequestEditorFn) (*LoginResponse, error)
 
-	// LogoutWithBodyWithResponse request with any body
-	LogoutWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LogoutResponse, error)
+	// LogoutWithResponse request
+	LogoutWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*LogoutResponse, error)
 
-	LogoutWithResponse(ctx context.Context, body LogoutJSONRequestBody, reqEditors ...RequestEditorFn) (*LogoutResponse, error)
-
-	// RefreshTokenWithBodyWithResponse request with any body
-	RefreshTokenWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RefreshTokenResponse, error)
-
-	RefreshTokenWithResponse(ctx context.Context, body RefreshTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*RefreshTokenResponse, error)
+	// RefreshTokenWithResponse request
+	RefreshTokenWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*RefreshTokenResponse, error)
 
 	// GetAllUsersWithResponse request
 	GetAllUsersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetAllUsersResponse, error)
 
-	// PostNewUserWithResponse request
-	PostNewUserWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PostNewUserResponse, error)
+	// PostNewUserWithBodyWithResponse request with any body
+	PostNewUserWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostNewUserResponse, error)
+
+	PostNewUserWithResponse(ctx context.Context, body PostNewUserJSONRequestBody, reqEditors ...RequestEditorFn) (*PostNewUserResponse, error)
 
 	// GetCurrentUserWithResponse request
 	GetCurrentUserWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCurrentUserResponse, error)
@@ -553,7 +524,7 @@ func (r LogoutResponse) ContentType() string {
 type RefreshTokenResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *TokenPairResponse
+	JSON200      *MessageResponse
 	JSON401      *ErrorResponse
 }
 
@@ -693,34 +664,18 @@ func (c *ClientWithResponses) LoginWithResponse(ctx context.Context, body LoginJ
 	return ParseLoginResponse(rsp)
 }
 
-// LogoutWithBodyWithResponse request with arbitrary body returning *LogoutResponse
-func (c *ClientWithResponses) LogoutWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LogoutResponse, error) {
-	rsp, err := c.LogoutWithBody(ctx, contentType, body, reqEditors...)
+// LogoutWithResponse request returning *LogoutResponse
+func (c *ClientWithResponses) LogoutWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*LogoutResponse, error) {
+	rsp, err := c.Logout(ctx, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseLogoutResponse(rsp)
 }
 
-func (c *ClientWithResponses) LogoutWithResponse(ctx context.Context, body LogoutJSONRequestBody, reqEditors ...RequestEditorFn) (*LogoutResponse, error) {
-	rsp, err := c.Logout(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseLogoutResponse(rsp)
-}
-
-// RefreshTokenWithBodyWithResponse request with arbitrary body returning *RefreshTokenResponse
-func (c *ClientWithResponses) RefreshTokenWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RefreshTokenResponse, error) {
-	rsp, err := c.RefreshTokenWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseRefreshTokenResponse(rsp)
-}
-
-func (c *ClientWithResponses) RefreshTokenWithResponse(ctx context.Context, body RefreshTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*RefreshTokenResponse, error) {
-	rsp, err := c.RefreshToken(ctx, body, reqEditors...)
+// RefreshTokenWithResponse request returning *RefreshTokenResponse
+func (c *ClientWithResponses) RefreshTokenWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*RefreshTokenResponse, error) {
+	rsp, err := c.RefreshToken(ctx, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -736,9 +691,17 @@ func (c *ClientWithResponses) GetAllUsersWithResponse(ctx context.Context, reqEd
 	return ParseGetAllUsersResponse(rsp)
 }
 
-// PostNewUserWithResponse request returning *PostNewUserResponse
-func (c *ClientWithResponses) PostNewUserWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PostNewUserResponse, error) {
-	rsp, err := c.PostNewUser(ctx, reqEditors...)
+// PostNewUserWithBodyWithResponse request with arbitrary body returning *PostNewUserResponse
+func (c *ClientWithResponses) PostNewUserWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostNewUserResponse, error) {
+	rsp, err := c.PostNewUserWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostNewUserResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostNewUserWithResponse(ctx context.Context, body PostNewUserJSONRequestBody, reqEditors ...RequestEditorFn) (*PostNewUserResponse, error) {
+	rsp, err := c.PostNewUser(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -825,7 +788,7 @@ func ParseRefreshTokenResponse(rsp *http.Response) (*RefreshTokenResponse, error
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest TokenPairResponse
+		var dest MessageResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

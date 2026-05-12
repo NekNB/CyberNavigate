@@ -27,30 +27,15 @@ type ErrorResponse struct {
 	Message string `json:"message"`
 }
 
-// LoginRequest defines model for LoginRequest.
-type LoginRequest struct {
-	Password string `json:"password"`
-	Username string `json:"username"`
-}
-
 // MessageResponse defines model for MessageResponse.
 type MessageResponse struct {
 	Message string `json:"message"`
 }
 
-// RefreshTokenRequest defines model for RefreshTokenRequest.
-type RefreshTokenRequest struct {
-	RefreshToken string `json:"refreshToken"`
-}
-
-// TokenPairResponse defines model for TokenPairResponse.
-type TokenPairResponse struct {
-	AccessToken string `json:"accessToken"`
-
-	// ExpiresIn Время жизни access токена в секундах
-	ExpiresIn    int    `json:"expiresIn"`
-	RefreshToken string `json:"refreshToken"`
-	TokenType    string `json:"tokenType"`
+// UserRequest defines model for UserRequest.
+type UserRequest struct {
+	Password string `json:"password"`
+	Username string `json:"username"`
 }
 
 // UserResponse defines model for UserResponse.
@@ -64,10 +49,7 @@ type UserResponse struct {
 type bearerAuthContextKey string
 
 // LoginJSONRequestBody defines body for Login for application/json ContentType.
-type LoginJSONRequestBody = LoginRequest
+type LoginJSONRequestBody = UserRequest
 
-// LogoutJSONRequestBody defines body for Logout for application/json ContentType.
-type LogoutJSONRequestBody = RefreshTokenRequest
-
-// RefreshTokenJSONRequestBody defines body for RefreshToken for application/json ContentType.
-type RefreshTokenJSONRequestBody = RefreshTokenRequest
+// PostNewUserJSONRequestBody defines body for PostNewUser for application/json ContentType.
+type PostNewUserJSONRequestBody = UserRequest

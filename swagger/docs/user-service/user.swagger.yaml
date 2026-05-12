@@ -35,7 +35,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/LoginRequest"
+              $ref: "#/components/schemas/UserRequest"
       responses:
         "200":
           description: Успешная авторизация
@@ -70,19 +70,22 @@ paths:
       summary: Обновление access токена
       description: Выдает новую пару access/refresh токенов
       operationId: refreshToken
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RefreshTokenRequest"
+      security:
+        - bearerAuth: []
       responses:
         "200":
-          description: Токены успешно обновлены
+          description: Успешная авторизация
+          headers:
+            Set-Cookie:
+              description: |
+                Sets access and refresh tokens as HTTP-only cookies
+              schema:
+                type: string
+                example: "access_token=eyJhbGciOiJSUzI1NiIs...; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=900"
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TokenPairResponse"
+                $ref: "#/components/schemas/MessageResponse"
         "401":
           description: Refresh токен невалиден или истек
           content:
@@ -99,12 +102,6 @@ paths:
       operationId: logout
       security:
         - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RefreshTokenRequest"
       responses:
         "204":
           description: Успешный logout
@@ -174,8 +171,12 @@ paths:
         - Users
       summary: Создать пользователя
       operationId: postNewUser
-      security:
-        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRequest"
       responses:
         "200":
           description: Информация о всех пользователях
@@ -200,7 +201,7 @@ components:
       bearerFormat: JWT
 
   schemas:
-    LoginRequest:
+    UserRequest:
       type: object
       required:
         - username
@@ -213,37 +214,6 @@ components:
           type: string
           format: password
           example: secret123
-
-    RefreshTokenRequest:
-      type: object
-      required:
-        - refreshToken
-      properties:
-        refreshToken:
-          type: string
-          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-
-    TokenPairResponse:
-      type: object
-      required:
-        - accessToken
-        - refreshToken
-        - tokenType
-        - expiresIn
-      properties:
-        accessToken:
-          type: string
-          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-        refreshToken:
-          type: string
-          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-        tokenType:
-          type: string
-          example: Bearer
-        expiresIn:
-          type: integer
-          description: Время жизни access токена в секундах
-          example: 3600
 
     UserResponse:
       type: object

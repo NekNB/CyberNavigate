@@ -79,6 +79,8 @@ func (siw *ServerInterfaceWrapper) Logout(c fiber.Ctx) error {
 // RefreshToken operation middleware
 func (siw *ServerInterfaceWrapper) RefreshToken(c fiber.Ctx) error {
 
+	c.Locals(BearerAuthScopes, []string{})
+
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.RefreshToken(c)
 	}
@@ -116,8 +118,6 @@ func (siw *ServerInterfaceWrapper) GetAllUsers(c fiber.Ctx) error {
 
 // PostNewUser operation middleware
 func (siw *ServerInterfaceWrapper) PostNewUser(c fiber.Ctx) error {
-
-	c.Locals(BearerAuthScopes, []string{})
 
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.PostNewUser(c)
