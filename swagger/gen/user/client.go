@@ -492,7 +492,8 @@ type ClientWithResponsesInterface interface {
 type LoginResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *TokenPairResponse
+	JSON200      *MessageResponse
+	JSON400      *ErrorResponse
 	JSON401      *ErrorResponse
 }
 
@@ -768,11 +769,18 @@ func ParseLoginResponse(rsp *http.Response) (*LoginResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest TokenPairResponse
+		var dest MessageResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
 		var dest ErrorResponse

@@ -39,10 +39,23 @@ paths:
       responses:
         "200":
           description: Успешная авторизация
+          headers:
+            Set-Cookie:
+              description: |
+                Sets access and refresh tokens as HTTP-only cookies
+              schema:
+                type: string
+                example: "access_token=eyJhbGciOiJSUzI1NiIs...; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=900"
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TokenPairResponse"
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "401":
           description: Неверный username или password
           content:
@@ -249,6 +262,15 @@ components:
           type: string
           format: date-time
           example: 2026-05-11T10:00:00Z
+
+    MessageResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: All Ok
 
     ErrorResponse:
       type: object

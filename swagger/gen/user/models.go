@@ -33,6 +33,11 @@ type LoginRequest struct {
 	Username string `json:"username"`
 }
 
+// MessageResponse defines model for MessageResponse.
+type MessageResponse struct {
+	Message string `json:"message"`
+}
+
 // RefreshTokenRequest defines model for RefreshTokenRequest.
 type RefreshTokenRequest struct {
 	RefreshToken string `json:"refreshToken"`
