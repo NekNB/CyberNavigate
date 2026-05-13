@@ -51,7 +51,7 @@ type InternalServerErrorResponse = ErrorResponse
 
 // MessageResponse defines model for MessageResponse.
 type MessageResponse struct {
-	Message *string `json:"message,omitempty"`
+	Message string `json:"message"`
 }
 
 // NotFoundResponse defines model for NotFoundResponse.
