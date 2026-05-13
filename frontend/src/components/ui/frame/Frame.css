@@ -1,0 +1,79 @@
+.frame {
+  background-color: #ffffff;
+  display: flex;
+  min-height: 2512px;
+  min-width: 1762px;
+  width: 100%;
+}
+
+.frame .view {
+  background-color: #6f7d7d;
+  height: 2000px;
+  margin-left: 226px;
+  margin-top: 293px;
+  position: relative;
+  width: 1440px;
+}
+
+.frame .rectangle {
+  background-color: #aacbc4;
+  border-radius: 20px;
+  height: 43px;
+  left: 765px;
+  position: absolute;
+  top: 200px;
+  width: 545px;
+}
+
+.frame .sidebar {
+  background-color: #03624c;
+  border: 1px solid;
+  border-color: #0000001a;
+  border-radius: 2px;
+  height: 1394px;
+  left: 0;
+  position: absolute;
+  top: 156px;
+  width: 302px;
+}
+
+.frame .article {
+  background-color: #ffffff;
+  border: 1px solid;
+  border-color: #0000001a;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  height: 1219px;
+  left: 432px;
+  overflow: hidden;
+  position: absolute;
+  top: 287px;
+  width: 878px;
+}
+
+.frame .article-title {
+  color: #000000;
+  font-family: "Crimson Text", serif;
+  font-size: 36px;
+  font-weight: 700;
+  height: 47px;
+  letter-spacing: 0;
+  line-height: normal;
+  margin-left: 47px;
+  margin-top: 48px;
+  width: 320px;
+}
+
+.frame .article-text {
+  color: #000000;
+  font-family: "Crimson Text", serif;
+  font-size: 20px;
+  font-weight: 700;
+  height: 26px;
+  letter-spacing: 0;
+  line-height: normal;
+  margin-left: 47px;
+  width: 131px;
+}
