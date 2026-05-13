@@ -27,11 +27,6 @@ type ErrorResponse struct {
 	Message string `json:"message"`
 }
 
-// MessageResponse defines model for MessageResponse.
-type MessageResponse struct {
-	Message string `json:"message"`
-}
-
 // UserRequest defines model for UserRequest.
 type UserRequest struct {
 	Password string `json:"password"`
@@ -45,11 +40,34 @@ type UserResponse struct {
 	Username  string             `json:"username"`
 }
 
+// BadRequestResponse defines model for BadRequestResponse.
+type BadRequestResponse = ErrorResponse
+
+// ForbiddenResponse defines model for ForbiddenResponse.
+type ForbiddenResponse = ErrorResponse
+
+// InternalServerErrorResponse defines model for InternalServerErrorResponse.
+type InternalServerErrorResponse = ErrorResponse
+
+// MessageResponse defines model for MessageResponse.
+type MessageResponse struct {
+	Message *string `json:"message,omitempty"`
+}
+
+// NotFoundResponse defines model for NotFoundResponse.
+type NotFoundResponse = ErrorResponse
+
+// UnauthorizedResponse defines model for UnauthorizedResponse.
+type UnauthorizedResponse = ErrorResponse
+
+// UnprocessableEntityResponse defines model for UnprocessableEntityResponse.
+type UnprocessableEntityResponse = ErrorResponse
+
 // bearerAuthContextKey is the context key for bearerAuth security scheme
 type bearerAuthContextKey string
 
 // LoginJSONRequestBody defines body for Login for application/json ContentType.
 type LoginJSONRequestBody = UserRequest
 
-// PostNewUserJSONRequestBody defines body for PostNewUser for application/json ContentType.
-type PostNewUserJSONRequestBody = UserRequest
+// RegisterNewUserJSONRequestBody defines body for RegisterNewUser for application/json ContentType.
+type RegisterNewUserJSONRequestBody = UserRequest

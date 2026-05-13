@@ -5,3 +5,4 @@ go.sum
 protos/go.sum
 
 **/.vscode/**
+*.pem

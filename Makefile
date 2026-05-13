@@ -1,9 +1,12 @@
-.PHONY: echorun build start stop secrets_remove srm secrets_create scr secrets_update
-
+.PHONY: echorun build start stop secrets_remove srm secrets_create scr secrets_update init
 
 .SILENT:
 
 ARGS = $(filter-out $@,$(MAKECMDGOALS))
+
+init:
+	pwsh -Command "Push-Location ./ps1; ./convert-env.ps1; ./create-keys.ps1; Pop-Location"
+
 
 run:
 	$(MAKE) build ARGS=postgres

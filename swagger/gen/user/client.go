@@ -101,10 +101,10 @@ type ClientInterface interface {
 	// GetAllUsers request
 	GetAllUsers(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostNewUserWithBody request with any body
-	PostNewUserWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// RegisterNewUserWithBody request with any body
+	RegisterNewUserWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PostNewUser(ctx context.Context, body PostNewUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	RegisterNewUser(ctx context.Context, body RegisterNewUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetCurrentUser request
 	GetCurrentUser(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -170,8 +170,8 @@ func (c *Client) GetAllUsers(ctx context.Context, reqEditors ...RequestEditorFn)
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostNewUserWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostNewUserRequestWithBody(c.Server, contentType, body)
+func (c *Client) RegisterNewUserWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRegisterNewUserRequestWithBody(c.Server, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -182,8 +182,8 @@ func (c *Client) PostNewUserWithBody(ctx context.Context, contentType string, bo
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostNewUser(ctx context.Context, body PostNewUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostNewUserRequest(c.Server, body)
+func (c *Client) RegisterNewUser(ctx context.Context, body RegisterNewUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRegisterNewUserRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -265,7 +265,7 @@ func NewLogoutRequest(server string) (*http.Request, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -292,7 +292,7 @@ func NewRefreshTokenRequest(server string) (*http.Request, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -327,19 +327,19 @@ func NewGetAllUsersRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewPostNewUserRequest calls the generic PostNewUser builder with application/json body
-func NewPostNewUserRequest(server string, body PostNewUserJSONRequestBody) (*http.Request, error) {
+// NewRegisterNewUserRequest calls the generic RegisterNewUser builder with application/json body
+func NewRegisterNewUserRequest(server string, body RegisterNewUserJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewPostNewUserRequestWithBody(server, "application/json", bodyReader)
+	return NewRegisterNewUserRequestWithBody(server, "application/json", bodyReader)
 }
 
-// NewPostNewUserRequestWithBody generates requests for PostNewUser with any type of body
-func NewPostNewUserRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+// NewRegisterNewUserRequestWithBody generates requests for RegisterNewUser with any type of body
+func NewRegisterNewUserRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -451,10 +451,10 @@ type ClientWithResponsesInterface interface {
 	// GetAllUsersWithResponse request
 	GetAllUsersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetAllUsersResponse, error)
 
-	// PostNewUserWithBodyWithResponse request with any body
-	PostNewUserWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostNewUserResponse, error)
+	// RegisterNewUserWithBodyWithResponse request with any body
+	RegisterNewUserWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RegisterNewUserResponse, error)
 
-	PostNewUserWithResponse(ctx context.Context, body PostNewUserJSONRequestBody, reqEditors ...RequestEditorFn) (*PostNewUserResponse, error)
+	RegisterNewUserWithResponse(ctx context.Context, body RegisterNewUserJSONRequestBody, reqEditors ...RequestEditorFn) (*RegisterNewUserResponse, error)
 
 	// GetCurrentUserWithResponse request
 	GetCurrentUserWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCurrentUserResponse, error)
@@ -464,8 +464,9 @@ type LoginResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *MessageResponse
-	JSON400      *ErrorResponse
-	JSON401      *ErrorResponse
+	JSON401      *UnauthorizedResponse
+	JSON422      *UnprocessableEntityResponse
+	JSON500      *InternalServerErrorResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -495,6 +496,8 @@ func (r LoginResponse) ContentType() string {
 type LogoutResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON422      *UnprocessableEntityResponse
+	JSON500      *InternalServerErrorResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -525,7 +528,9 @@ type RefreshTokenResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *MessageResponse
-	JSON401      *ErrorResponse
+	JSON401      *UnauthorizedResponse
+	JSON422      *UnprocessableEntityResponse
+	JSON500      *InternalServerErrorResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -556,8 +561,10 @@ type GetAllUsersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *[]UserResponse
-	JSON401      *ErrorResponse
-	JSON403      *ErrorResponse
+	JSON401      *UnauthorizedResponse
+	JSON403      *ForbiddenResponse
+	JSON422      *UnprocessableEntityResponse
+	JSON500      *InternalServerErrorResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -584,15 +591,17 @@ func (r GetAllUsersResponse) ContentType() string {
 	return ""
 }
 
-type PostNewUserResponse struct {
+type RegisterNewUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *[]UserResponse
-	JSON400      *ErrorResponse
+	JSON201      *MessageResponse
+	JSON400      *BadRequestResponse
+	JSON422      *UnprocessableEntityResponse
+	JSON500      *InternalServerErrorResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r PostNewUserResponse) Status() string {
+func (r RegisterNewUserResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -600,7 +609,7 @@ func (r PostNewUserResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PostNewUserResponse) StatusCode() int {
+func (r RegisterNewUserResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -608,7 +617,7 @@ func (r PostNewUserResponse) StatusCode() int {
 }
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
-func (r PostNewUserResponse) ContentType() string {
+func (r RegisterNewUserResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -619,8 +628,10 @@ type GetCurrentUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *UserResponse
-	JSON401      *ErrorResponse
-	JSON404      *ErrorResponse
+	JSON401      *UnauthorizedResponse
+	JSON404      *NotFoundResponse
+	JSON422      *UnprocessableEntityResponse
+	JSON500      *InternalServerErrorResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -691,21 +702,21 @@ func (c *ClientWithResponses) GetAllUsersWithResponse(ctx context.Context, reqEd
 	return ParseGetAllUsersResponse(rsp)
 }
 
-// PostNewUserWithBodyWithResponse request with arbitrary body returning *PostNewUserResponse
-func (c *ClientWithResponses) PostNewUserWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostNewUserResponse, error) {
-	rsp, err := c.PostNewUserWithBody(ctx, contentType, body, reqEditors...)
+// RegisterNewUserWithBodyWithResponse request with arbitrary body returning *RegisterNewUserResponse
+func (c *ClientWithResponses) RegisterNewUserWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RegisterNewUserResponse, error) {
+	rsp, err := c.RegisterNewUserWithBody(ctx, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostNewUserResponse(rsp)
+	return ParseRegisterNewUserResponse(rsp)
 }
 
-func (c *ClientWithResponses) PostNewUserWithResponse(ctx context.Context, body PostNewUserJSONRequestBody, reqEditors ...RequestEditorFn) (*PostNewUserResponse, error) {
-	rsp, err := c.PostNewUser(ctx, body, reqEditors...)
+func (c *ClientWithResponses) RegisterNewUserWithResponse(ctx context.Context, body RegisterNewUserJSONRequestBody, reqEditors ...RequestEditorFn) (*RegisterNewUserResponse, error) {
+	rsp, err := c.RegisterNewUser(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostNewUserResponse(rsp)
+	return ParseRegisterNewUserResponse(rsp)
 }
 
 // GetCurrentUserWithResponse request returning *GetCurrentUserResponse
@@ -738,19 +749,26 @@ func ParseLoginResponse(rsp *http.Response) (*LoginResponse, error) {
 		}
 		response.JSON200 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ErrorResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest ErrorResponse
+		var dest UnauthorizedResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntityResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 
@@ -768,6 +786,23 @@ func ParseLogoutResponse(rsp *http.Response) (*LogoutResponse, error) {
 	response := &LogoutResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntityResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
 	}
 
 	return response, nil
@@ -795,11 +830,25 @@ func ParseRefreshTokenResponse(rsp *http.Response) (*RefreshTokenResponse, error
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest ErrorResponse
+		var dest UnauthorizedResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntityResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 
@@ -828,51 +877,79 @@ func ParseGetAllUsersResponse(rsp *http.Response) (*GetAllUsersResponse, error) 
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest ErrorResponse
+		var dest UnauthorizedResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest ErrorResponse
+		var dest ForbiddenResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntityResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 
 	return response, nil
 }
 
-// ParsePostNewUserResponse parses an HTTP response from a PostNewUserWithResponse call
-func ParsePostNewUserResponse(rsp *http.Response) (*PostNewUserResponse, error) {
+// ParseRegisterNewUserResponse parses an HTTP response from a RegisterNewUserWithResponse call
+func ParseRegisterNewUserResponse(rsp *http.Response) (*RegisterNewUserResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PostNewUserResponse{
+	response := &RegisterNewUserResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest []UserResponse
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest MessageResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON200 = &dest
+		response.JSON201 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ErrorResponse
+		var dest BadRequestResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntityResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 
@@ -901,18 +978,32 @@ func ParseGetCurrentUserResponse(rsp *http.Response) (*GetCurrentUserResponse, e
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest ErrorResponse
+		var dest UnauthorizedResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest ErrorResponse
+		var dest NotFoundResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntityResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalServerErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 

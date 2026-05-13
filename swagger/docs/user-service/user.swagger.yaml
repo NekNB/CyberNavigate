@@ -46,32 +46,29 @@ paths:
               schema:
                 type: string
                 example: "access_token=eyJhbGciOiJSUzI1NiIs...; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=900"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/MessageResponse"
-        "400":
-          description: Некорректный запрос
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "#/components/responses/MessageResponse"
+          example:
+            message: "Ok"
         "401":
-          description: Неверный username или password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          description: Неверные логин или пароль
+          $ref: "#/components/responses/UnauthorizedResponse"
+          example:
+            message: "Invalid login or password"
+        "422":
+          description: Некорректный запрос
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+        "500":
+          description: Ошибка обработки
+          $ref: "#/components/responses/InternalServerErrorResponse"
 
   /auth/refresh:
-    post:
+    put:
       tags:
         - Auth
       summary: Обновление access токена
       description: Выдает новую пару access/refresh токенов
       operationId: refreshToken
-      security:
-        - bearerAuth: []
+      security: []
       responses:
         "200":
           description: Успешная авторизация
@@ -82,19 +79,20 @@ paths:
               schema:
                 type: string
                 example: "access_token=eyJhbGciOiJSUzI1NiIs...; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=900"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/MessageResponse"
+
+          $ref: "#/components/responses/MessageResponse"
         "401":
           description: Refresh токен невалиден или истек
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "422":
+          description: Некорректный запрос
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+        "500":
+          description: Ошибка обработки
+          $ref: "#/components/responses/InternalServerErrorResponse"
 
   /auth/logout:
-    post:
+    delete:
       tags:
         - Auth
       summary: Выход пользователя
@@ -105,8 +103,12 @@ paths:
       responses:
         "204":
           description: Успешный logout
-        "401":
-          description: Неавторизован
+        "422":
+          description: Некорректный запрос
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+        "500":
+          description: Ошибка обработки
+          $ref: "#/components/responses/InternalServerErrorResponse"
 
   /users/me:
     get:
@@ -125,17 +127,16 @@ paths:
                 $ref: "#/components/schemas/UserResponse"
         "401":
           description: Неавторизован
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "#/components/responses/UnauthorizedResponse"
         "404":
           description: Пользователь не найден
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          description: Некорректный запрос
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+        "500":
+          description: Ошибка обработки
+          $ref: "#/components/responses/InternalServerErrorResponse"
   /users:
     get:
       tags:
@@ -155,22 +156,23 @@ paths:
                   $ref: "#/components/schemas/UserResponse"
         "401":
           description: Неавторизован
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "#/components/responses/UnauthorizedResponse"
+
         "403":
           description: В доступе отказано
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "#/components/responses/ForbiddenResponse"
+        "422":
+          description: Некорректный запрос
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+        "500":
+          description: Ошибка обработки
+          $ref: "#/components/responses/InternalServerErrorResponse"
 
     post:
       tags:
         - Users
-      summary: Создать пользователя
-      operationId: postNewUser
+      summary: Зарегистрировать пользователя
+      operationId: registerNewUser
       requestBody:
         required: true
         content:
@@ -178,20 +180,18 @@ paths:
             schema:
               $ref: "#/components/schemas/UserRequest"
       responses:
-        "200":
-          description: Информация о всех пользователях
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/UserResponse"
+        "201":
+          description: Успешно создан пользователь
+          $ref: "#/components/responses/MessageResponse"
         "400":
           description: Пользователь уже существует
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "#/components/responses/BadRequestResponse"
+        "422":
+          description: Некорректный запрос
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+        "500":
+          description: Ошибка обработки
+          $ref: "#/components/responses/InternalServerErrorResponse"
 
 components:
   securitySchemes:
@@ -199,6 +199,68 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+  responses:
+    BadRequestResponse:
+      description: Bad Request - Invalid request parameters or body
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: "Invalid email format"
+
+    MessageResponse:
+      description: Response with message
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          example:
+            message: "Successfully"
+
+    UnauthorizedResponse:
+      description: Unauthorized - Authentication is required or token is invalid/expired
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: "Missing or invalid authentication token"
+    ForbiddenResponse:
+      description: Forbidden - You don't have permission to access this resource
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: "Insufficient permissions to perform this action"
+    NotFoundResponse:
+      description: Not Found - Requested resource does not exist
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: "Resource with id 123 not found"
+    UnprocessableEntityResponse:
+      description: Unprocessable Entity - Validation failed
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: "Validation failed: fields 'username' is required"
+    InternalServerErrorResponse:
+      description: Internal Server Error - Something went wrong on the server
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: "An unexpected error occurred. Please try again later."
 
   schemas:
     UserRequest:
@@ -233,15 +295,6 @@ components:
           format: date-time
           example: 2026-05-11T10:00:00Z
 
-    MessageResponse:
-      type: object
-      required:
-        - message
-      properties:
-        message:
-          type: string
-          example: All Ok
-
     ErrorResponse:
       type: object
       required:
@@ -249,4 +302,3 @@ components:
       properties:
         message:
           type: string
-          example: Invalid credentials

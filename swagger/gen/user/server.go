@@ -13,17 +13,17 @@ type ServerInterface interface {
 	// (POST /auth/login)
 	Login(c fiber.Ctx) error
 	// Выход пользователя
-	// (POST /auth/logout)
+	// (DELETE /auth/logout)
 	Logout(c fiber.Ctx) error
 	// Обновление access токена
-	// (POST /auth/refresh)
+	// (PUT /auth/refresh)
 	RefreshToken(c fiber.Ctx) error
 	// Получить список пользователей
 	// (GET /users)
 	GetAllUsers(c fiber.Ctx) error
-	// Создать пользователя
+	// Зарегистрировать пользователя
 	// (POST /users)
-	PostNewUser(c fiber.Ctx) error
+	RegisterNewUser(c fiber.Ctx) error
 	// Получить текущего пользователя
 	// (GET /users/me)
 	GetCurrentUser(c fiber.Ctx) error
@@ -79,8 +79,6 @@ func (siw *ServerInterfaceWrapper) Logout(c fiber.Ctx) error {
 // RefreshToken operation middleware
 func (siw *ServerInterfaceWrapper) RefreshToken(c fiber.Ctx) error {
 
-	c.Locals(BearerAuthScopes, []string{})
-
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.RefreshToken(c)
 	}
@@ -116,11 +114,11 @@ func (siw *ServerInterfaceWrapper) GetAllUsers(c fiber.Ctx) error {
 	return handler(c)
 }
 
-// PostNewUser operation middleware
-func (siw *ServerInterfaceWrapper) PostNewUser(c fiber.Ctx) error {
+// RegisterNewUser operation middleware
+func (siw *ServerInterfaceWrapper) RegisterNewUser(c fiber.Ctx) error {
 
 	handler := func(c fiber.Ctx) error {
-		return siw.Handler.PostNewUser(c)
+		return siw.Handler.RegisterNewUser(c)
 	}
 
 	for i := len(siw.HandlerMiddlewares) - 1; i >= 0; i-- {
@@ -179,13 +177,13 @@ func RegisterHandlersWithOptions(router fiber.Router, si ServerInterface, option
 
 	router.Post(options.BaseURL+"/auth/login", wrapper.Login)
 
-	router.Post(options.BaseURL+"/auth/logout", wrapper.Logout)
+	router.Delete(options.BaseURL+"/auth/logout", wrapper.Logout)
 
-	router.Post(options.BaseURL+"/auth/refresh", wrapper.RefreshToken)
+	router.Put(options.BaseURL+"/auth/refresh", wrapper.RefreshToken)
 
 	router.Get(options.BaseURL+"/users", wrapper.GetAllUsers)
 
-	router.Post(options.BaseURL+"/users", wrapper.PostNewUser)
+	router.Post(options.BaseURL+"/users", wrapper.RegisterNewUser)
 
 	router.Get(options.BaseURL+"/users/me", wrapper.GetCurrentUser)
 
