@@ -283,12 +283,16 @@ components:
       type: object
       required:
         - id
+        - is_admin
         - username
       properties:
         id:
           type: string
           format: uuid
           example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+        is_admin:
+          type: boolean
+          example: false
         username:
           type: string
           example: johndoe

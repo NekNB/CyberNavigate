@@ -37,6 +37,7 @@ type UserRequest struct {
 type UserResponse struct {
 	CreatedAt *time.Time         `json:"createdAt,omitempty"`
 	Id        openapi_types.UUID `json:"id"`
+	IsAdmin   bool               `json:"is_admin"`
 	Username  string             `json:"username"`
 }
 
