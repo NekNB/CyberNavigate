@@ -9,6 +9,10 @@ window.onload = function () {
         name: "Article Service",
         url: "/specs/docs/article-service/article.swagger.yaml",
       },
+      {
+        name: "User Service",
+        url: "/specs/docs/user-service/user.swagger.yaml",
+      },
     ],
     dom_id: "#swagger-ui",
     deepLinking: true,

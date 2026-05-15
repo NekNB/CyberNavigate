@@ -7,6 +7,8 @@ servers:
     description: Local API Gateway Server
   - url: http://127.0.0.1:9000/api/v1
     description: Local API Gateway Server
+  - url: http://127.0.0.1:8000/api/v1
+    description: Local Service
   - url: http://cyber-navigate_gateway-server/api/v1
     description: Internal Docker API Gateway Server
 
@@ -36,7 +38,7 @@ components:
               message:
                 type: string
             example:
-              - message: "Article With ArticleID Not Found"
+              message: "Article With ArticleID Not Found"
     ArticleTextNotCreatedYet:
       description: Article Text Not Created
       content:
@@ -47,7 +49,7 @@ components:
               message:
                 type: string
             example:
-              - message: "Article Text With ArticleID Not Created Yet"
+              message: "Article Text With ArticleID Not Created Yet"
     ArticleAlreadyExists:
       description: Article Already Exists
       content:

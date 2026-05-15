@@ -8,8 +8,13 @@ server:
         protocol: http
         host: cyber-navigate_article-service
         port: 8000
-    # - user:
-    #     path: /api/v1/users
-    #     protocol: http
-    #     host: cyber-navigate_postgres
-    #     port: 8080
+    - user:
+        path: /api/v1/users
+        protocol: http
+        host: cyber-navigate_user-service
+        port: 8000
+    - auth:
+        path: /api/v1/auth
+        protocol: http
+        host: cyber-navigate_user-service
+        port: 8000
