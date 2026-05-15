@@ -5,8 +5,8 @@ window.onload = function () {
   window.ui = SwaggerUIBundle({
     urls: [
       {
-        name: "Article Service",
-        url: "/specs/docs/user-service/article.swagger.yaml",
+        name: "User Service",
+        url: "/specs/docs/user-service/user.swagger.yaml",
       },
     ],
     dom_id: "#swagger-ui",

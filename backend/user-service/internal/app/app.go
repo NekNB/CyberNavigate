@@ -6,6 +6,8 @@ import (
 	"github.com/NekNB/CyberNavigate/backend/user-service/internal/assets"
 	"github.com/NekNB/CyberNavigate/backend/user-service/internal/config"
 	userAPI "github.com/NekNB/CyberNavigate/backend/user-service/internal/http"
+	"github.com/NekNB/CyberNavigate/backend/user-service/internal/middlewares"
+	"github.com/NekNB/CyberNavigate/backend/user-service/internal/services/session"
 	userService "github.com/NekNB/CyberNavigate/backend/user-service/internal/services/user"
 	"github.com/NekNB/CyberNavigate/backend/user-service/internal/storage/postgres"
 	"github.com/NekNB/CyberNavigate/swagger"
@@ -28,11 +30,34 @@ type Server struct {
 
 func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 
+	postgresStorage, err := postgres.New(log, fmt.Sprintf(
+		"postgres://%s:%s@%s:%d/%s?sslmode=disable",
+		cfg.Storage.Postgres.User,
+		cfg.Storage.Postgres.Password,
+		cfg.Storage.Postgres.Host,
+		cfg.Storage.Postgres.Port,
+		cfg.Storage.Postgres.Database,
+	))
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+
+	sessionService, err := session.New(cfg, log, postgresStorage)
+	if err != nil {
+		panic(err)
+	}
+	userService := userService.New(log, postgresStorage, sessionService)
+
 	app := fiber.New(fiber.Config{
 		AppName: "ArStore userServiceV1",
 	})
 	app.Use(logger.New())
 	app.Use(recover.New())
+	app.Use(middlewares.AuthMiddleware(sessionService))
+	// app.Use(encryptcookie.New(encryptcookie.Config{
+	// 	Key: encryptcookie.GenerateKey(16),
+	// }))
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: []string{
 			"http://localhost:9000",
@@ -47,22 +72,7 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 		AllowCredentials: true,
 	}))
 
-	postgresStorage, err := postgres.New(log, fmt.Sprintf(
-		"postgres://%s:%s@%s:%d/%s?sslmode=disable",
-		cfg.Storage.Postgres.User,
-		cfg.Storage.Postgres.Password,
-		cfg.Storage.Postgres.Host,
-		cfg.Storage.Postgres.Port,
-		cfg.Storage.Postgres.Database,
-	))
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
-
-	userService := userService.New(log, mongoStorage, postgresStorage)
-
-	userAPI := userAPI.New(log, userService)
+	userAPI := userAPI.New(cfg, log, userService, sessionService)
 
 	user.RegisterHandlersWithOptions(app.Name("API"), userAPI, user.FiberServerOptions{
 		BaseURL: "/api/v1",
@@ -79,6 +89,9 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 		FS:     assets.SwaggerUI,
 		Browse: true,
 	}))
+	app.Get("/", func(c fiber.Ctx) error {
+		return c.Status(fiber.StatusPermanentRedirect).Redirect().To("/swagger")
+	})
 
 	return &Server{app: app, cfg: cfg}, nil
 }

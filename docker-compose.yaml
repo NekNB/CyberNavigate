@@ -63,6 +63,15 @@ services:
     depends_on:
       - postgres
       - mongo
+  user-service:
+    image: cyber-navigate/user-service
+    secrets:
+      - source: user_service_secret
+        target: user_service_secret
+
+    depends_on:
+      - postgres
+ 
     
 
 
@@ -78,4 +87,6 @@ secrets:
   mongo_secret:
     external: true
   article_service_secret:
+    external: true
+  user_service_secret:
     external: true

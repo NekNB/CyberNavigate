@@ -5,7 +5,10 @@ import (
 )
 
 var (
-	ErrArticleExists            = errors.New("article already exists")
-	ErrArticleNotFound          = errors.New("article not found")
-	ErrArticleTextNotCreatedYet = errors.New("article text not created yet")
+	ErrUserExists   = errors.New("user already exists")
+	ErrUserNotFound = errors.New("user not found")
+
+	ErrRefreshNotValid = errors.New("refresh token expired or not found")
+
+	ErrSessionNotFound = errors.New("session not found")
 )

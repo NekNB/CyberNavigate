@@ -4,9 +4,11 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/NekNB/CyberNavigate/backend/user-service/internal/domain/models"
+	sessionService "github.com/NekNB/CyberNavigate/backend/user-service/internal/services/session"
 	userService "github.com/NekNB/CyberNavigate/backend/user-service/internal/services/user"
 	"github.com/NekNB/CyberNavigate/backend/user-service/internal/storage"
-	"github.com/NekNB/CyberNavigate/swagger/gen/article"
+
 	"github.com/lib/pq"
 	"github.com/lib/pq/pqerror"
 	"github.com/sirupsen/logrus"
@@ -16,7 +18,9 @@ type PostgresStorage struct {
 	db *sql.DB
 }
 
-var _ userService.ArticleMetaProvider = (*PostgresStorage)(nil)
+var _ userService.UserDataProvider = (*PostgresStorage)(nil)
+
+var _ sessionService.SessionProvider = (*PostgresStorage)(nil)
 
 func New(log *logrus.Logger, uri string) (*PostgresStorage, error) {
 	db, err := sql.Open("postgres", uri)
@@ -31,42 +35,42 @@ func New(log *logrus.Logger, uri string) (*PostgresStorage, error) {
 	return &PostgresStorage{db: db}, nil
 }
 
-// Выборка все article metadata
-func (p *PostgresStorage) Articles() (*[]article.ArticleMetaData, error) {
+// ============ USERS =====================
+func (p *PostgresStorage) Users() ([]*models.UserDTO, error) {
 	rows, err := p.db.Query(
 		`
-			SELECT uuid, title, status 
-			FROM metadata;
+			SELECT uuid, username, is_admin, created_at
+			FROM users;
 		`,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	var articleSlice []article.ArticleMetaData
+	var users []*models.UserDTO
 
 	for rows.Next() {
-		metadata := article.ArticleMetaData{}
+		user := models.UserDTO{}
 		if err := rows.Scan(
-			&metadata.Id,
-			&metadata.Title,
-			&metadata.Status,
+			&user.UserId,
+			&user.Username,
+			&user.IsAdmin,
+			&user.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
 
-		articleSlice = append(articleSlice, metadata)
+		users = append(users, &user)
 	}
 
-	return &articleSlice, nil
+	return users, nil
 }
 
-// Получение конкретного article metadata по uuid
-func (p *PostgresStorage) ArticleByUUID(articleUUID string) (*article.ArticleMetaData, error) {
+func (p *PostgresStorage) UserByUserId(userId string) (*models.UserDTO, error) {
 	stmt, err := p.db.Prepare(
 		`
-			SELECT uuid, title, status 
-			FROM metadata
+			SELECT uuid, username, is_admin, created_at
+			FROM users
 			WHERE uuid = $1;
 		`,
 	)
@@ -74,94 +78,170 @@ func (p *PostgresStorage) ArticleByUUID(articleUUID string) (*article.ArticleMet
 		return nil, err
 	}
 
-	var articleMetadata article.ArticleMetaData
+	var user models.UserDTO
 
-	if err = stmt.QueryRow(articleUUID).Scan(
-		&articleMetadata.Id,
-		&articleMetadata.Title,
-		&articleMetadata.Status,
+	if err = stmt.QueryRow(userId).Scan(
+		&user.UserId,
+		&user.Username,
+		&user.IsAdmin,
+		&user.CreatedAt,
 	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, storage.ErrArticleNotFound
+			return nil, storage.ErrUserNotFound
 		}
 		return nil, err
 	}
 
-	return &articleMetadata, nil
+	return &user, nil
+}
+func (p *PostgresStorage) UserByUsername(username string) (*models.UserDTO, error) {
+	stmt, err := p.db.Prepare(
+		`
+			SELECT uuid, username, is_admin, created_at
+			FROM users
+			WHERE username = $1;
+		`,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var user models.UserDTO
+
+	if err = stmt.QueryRow(username).Scan(
+		&user.UserId,
+		&user.Username,
+		&user.IsAdmin,
+		&user.CreatedAt,
+	); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, storage.ErrUserNotFound
+		}
+		return nil, err
+	}
+
+	return &user, nil
+}
+func (p *PostgresStorage) PasswordSaltByUsername(username string) (passwordHash, salt string, err error) {
+	if err = p.db.QueryRow(
+		`
+			SELECT password_hash, salt
+			FROM users
+			WHERE username = $1;
+		`, username).
+		Scan(
+			&passwordHash,
+			&salt,
+		); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = storage.ErrUserNotFound
+			return
+		}
+		return
+	}
+
+	return
 }
 
-// Получение конкретного article text по uuid
-func (p *PostgresStorage) ArticleTextIDByUUID(articleUUID string) (string, error) {
+func (p *PostgresStorage) NewUser(username, passwordHash, salt string) error {
+	if _, err := p.db.Exec(`
+		INSERT INTO users (username, password_hash, salt)
+		VALUES ($1, $2, $3);
+	`, username, passwordHash, salt); err != nil {
+		var pgerr *pq.Error
+		if errors.As(err, &pgerr) && pgerr.Code == pqerror.UniqueViolation {
+			return storage.ErrUserExists
+		}
+		return err
+	}
 
-	var textIdNull sql.NullString
+	return nil
+}
+
+// ============ SESSIONS =====================
+func (p *PostgresStorage) UserInfoByRefreshToken(refreshToken string) (*models.UserDTO, error) {
+
+	var user models.UserDTO
 	if err := p.db.QueryRow(
 		`
-			SELECT text_id
-			FROM metadata
-			WHERE uuid = $1;
+			SELECT 
+					u.uuid,
+					u.is_admin
+			FROM sessions s
+			JOIN users u ON s.user_id = u.uuid
+			WHERE 
+					s.refresh_token = $1;
 		`,
-		articleUUID,
-	).Scan(&textIdNull); err != nil {
+		refreshToken).
+		Scan(
+			&user.UserId,
+			&user.IsAdmin,
+		); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return "", storage.ErrArticleNotFound
-		}
-		return "", err
-	}
-	if textIdNull.Valid {
-		return textIdNull.String, nil
-	}
-	return "", storage.ErrArticleTextNotCreatedYet
-}
-
-// Создание сущности Article
-func (p *PostgresStorage) CreateArticle(articleTitle *string) (*article.ArticleMetaData, error) {
-	var metadata article.ArticleMetaData
-
-	if err := p.db.QueryRow(`
-		INSERT INTO metadata (title)
-		VALUES ($1)
-		RETURNING uuid, title, status;
-	`, articleTitle).
-		Scan(
-			&metadata.Id,
-			&metadata.Title,
-			&metadata.Status,
-		); err != nil {
-		var pgerr *pq.Error
-		if errors.As(err, &pgerr) && pgerr.Code == pqerror.UniqueViolation {
-			return nil, storage.ErrArticleExists
+			return nil, storage.ErrRefreshNotValid
 		}
 		return nil, err
 	}
 
-	return &metadata, nil
+	return &user, nil
 }
 
-// Обновление сущности Article по UUID
-func (p *PostgresStorage) UpdateArticleByUUID(uuid, title, textID, status, videoUrl string) (*article.ArticleMetaData, error) {
-	var metadata article.ArticleMetaData
+func (p *PostgresStorage) ExtendSession(refreshToken string, expires int) (sessionId string, err error) {
 
-	if err := p.db.QueryRow(`
-		UPDATE metadata
-		SET
-			title = COALESCE(NULLIF($2, ''), title),
-			text_id = COALESCE(NULLIF($3, ''), text_id),
-			status = COALESCE(NULLIF($4, '')::article_status, status),
-			video_url = COALESCE(NULLIF($5, ''), video_url)
-		WHERE uuid = $1
-		RETURNING uuid, title, status;
-	`, uuid, title, textID, status, videoUrl).
+	if err = p.db.QueryRow(`
+		UPDATE sessions 
+		SET 
+				expires_at = CURRENT_TIMESTAMP + $2::INTERVAL,
+				updated_at = CURRENT_TIMESTAMP
+		WHERE 
+				refresh_token = $1 
+				AND expires_at > CURRENT_TIMESTAMP 
+				AND revoked = false
+		RETURNING uuid;
+	`, refreshToken, expires).
 		Scan(
-			&metadata.Id,
-			&metadata.Title,
-			&metadata.Status,
+			&sessionId,
 		); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = storage.ErrRefreshNotValid
+			return
+		}
+		return
+	}
+
+	return
+}
+
+func (p *PostgresStorage) NewSession(userId string, refreshTokenExpiration int) (*models.SessionDTO, error) {
+	var session models.SessionDTO
+	if err := p.db.QueryRow(`
+		INSERT INTO sessions (user_id, expires_at)
+		VALUES ($1, CURRENT_TIMESTAMP + $2::INTERVAL)
+		RETURNING uuid, refresh_token;
+	`, userId, refreshTokenExpiration).Scan(
+		&session.SessionId,
+		&session.RefreshToken,
+	); err != nil {
 		var pgerr *pq.Error
-		if errors.As(err, &pgerr) && pgerr.Code == pqerror.UniqueViolation {
-			return nil, storage.ErrArticleNotFound
+		if errors.As(err, &pgerr) && pgerr.Code == pqerror.ForeignKeyViolation {
+			return nil, storage.ErrUserNotFound
 		}
 		return nil, err
 	}
 
-	return &metadata, nil
+	return &session, nil
+}
+
+func (p *PostgresStorage) RevokeSession(sessionId string) error {
+	if _, err := p.db.Exec(`
+		UPDATE sessions
+		SET revoked = True
+		WHERE session_id = $1
+	`, sessionId); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return storage.ErrSessionNotFound
+		}
+		return err
+	}
+	return nil
 }

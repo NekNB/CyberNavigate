@@ -1,157 +1,90 @@
 package article
 
 import (
-	"context"
 	"errors"
 
+	"github.com/NekNB/CyberNavigate/backend/user-service/internal/domain/models"
 	"github.com/NekNB/CyberNavigate/backend/user-service/internal/http"
+	"github.com/NekNB/CyberNavigate/backend/user-service/internal/lib/hash"
+	"github.com/NekNB/CyberNavigate/backend/user-service/internal/services/session"
 	"github.com/NekNB/CyberNavigate/backend/user-service/internal/storage"
-	"github.com/NekNB/CyberNavigate/swagger/gen/article"
 	"github.com/sirupsen/logrus"
 )
 
-var _ http.ArticleServiceInterface = (*ArticleService)(nil)
+var (
+	AuthenticationError = errors.New("Authorization Error: Incorrect Login or Password")
+)
 
-type ArticleContentProvider interface {
-	ArticleTextById(ctx context.Context, id string) (string, error)
-	SaveText(ctx context.Context, articleText string) (string, error)
-	UpdateText(ctx context.Context, id string, articleText string) error
+var _ http.UserServiceInterface = (*UserService)(nil)
+
+type UserDataProvider interface {
+	Users() ([]*models.UserDTO, error)
+	UserByUsername(username string) (user *models.UserDTO, err error)
+	UserByUserId(userId string) (user *models.UserDTO, err error)
+	PasswordSaltByUsername(username string) (passwordHash string, salt string, err error)
+	NewUser(username, passwordHash, salt string) error
 }
 
-type ArticleMetaProvider interface {
-	Articles() (*[]article.ArticleMetaData, error)
-	ArticleByUUID(articleUUID string) (*article.ArticleMetaData, error)
-	ArticleTextIDByUUID(articleUUID string) (textID string, err error)
-	CreateArticle(articleName *string) (*article.ArticleMetaData, error)
-	UpdateArticleByUUID(uuid, title, textID, status, videoUrl string) (*article.ArticleMetaData, error)
-}
-
-type ArticleService struct {
-	log                    *logrus.Logger
-	articleContentProvider ArticleContentProvider
-	articleMetaProvider    ArticleMetaProvider
+type UserService struct {
+	log              *logrus.Logger
+	userDataProvider UserDataProvider
+	sessionService   *session.SessionService
 }
 
 func New(
 	log *logrus.Logger,
-	articleMetaProvider ArticleMetaProvider,
-) *ArticleService {
-	return &ArticleService{
-		log:                 log,
-		articleMetaProvider: articleMetaProvider,
+	userDataProvider UserDataProvider,
+	sessionService *session.SessionService,
+) *UserService {
+	return &UserService{
+		log:              log,
+		userDataProvider: userDataProvider,
+		sessionService:   sessionService,
 	}
 }
 
-// Возвращает списко MetaData статей
-func (a *ArticleService) Articles() (*[]article.ArticleMetaData, error) {
-	metadata, err := a.articleMetaProvider.Articles()
-	if err != nil {
-		a.log.Error(err)
-		return nil, err
-	}
-	return metadata, nil
+// Возвращает список Всех пользователей
+func (u *UserService) AllUsers() ([]*models.UserDTO, error) {
+	return u.userDataProvider.Users()
 }
 
-func (a *ArticleService) ArticleByUUID(articleId string) (*article.ArticleMetaData, error) {
-	metadata, err := a.articleMetaProvider.ArticleByUUID(articleId)
+func (u *UserService) Login(username, password string) (*models.TokensDTO, error) {
+	storedHash, salt, err := u.userDataProvider.PasswordSaltByUsername(username)
 	if err != nil {
-		a.log.Error(err)
-		return nil, err
-	}
-	return metadata, nil
-}
-
-func (a *ArticleService) ArticleTextByUUID(ctx context.Context, articleId string) (string, error) {
-	mP := a.articleMetaProvider
-	cP := a.articleContentProvider
-
-	textId, err := mP.ArticleTextIDByUUID(articleId)
-	if err != nil {
-		if !errors.Is(err, storage.ErrArticleTextNotCreatedYet) {
-			a.log.Error(err)
+		if errors.Is(err, storage.ErrUserNotFound) {
+			return nil, AuthenticationError
 		}
-
-		return "", err
+		u.log.Error(err)
+		return nil, err
 	}
 
-	text, err := cP.ArticleTextById(ctx, textId)
+	// Проверяем валидность пароля
+	if !hash.VerifyPassword(password, salt, storedHash) {
+		return nil, AuthenticationError
+	}
+
+	user, err := u.userDataProvider.UserByUsername(username)
 	if err != nil {
-		a.log.Error(err)
-		return text, err
+		return nil, err
 	}
 
-	return text, nil
+	return u.sessionService.CreateSession(user.UserId, user.IsAdmin)
 }
 
-func (a *ArticleService) CreateArticle(title *string) (*article.ArticleMetaData, error) {
-	metadata, err := a.articleMetaProvider.CreateArticle(title)
-	if err != nil {
-		a.log.Error(err)
-		return nil, err
-	}
-	return metadata, err
+func (u *UserService) Logout(sessionId string) error {
+	return u.sessionService.RevokeSession(sessionId)
 }
 
-func (a *ArticleService) SaveArticleTextByUUID(ctx context.Context, articleId, text string) (*article.ArticleMetaData, error) {
-	mP := a.articleMetaProvider
-	cP := a.articleContentProvider
-
-	textId, err := cP.SaveText(ctx, text)
+func (u *UserService) Register(username, password string) error {
+	hashPassword, salt, err := hash.HashPasswordWithSalt(password)
 	if err != nil {
-		a.log.Error(err)
-		return nil, err
+		u.log.Error(err)
+		return err
 	}
 
-	metadata, err := mP.UpdateArticleByUUID(
-		articleId,
-		"",
-		textId,
-		"",
-		"",
-	)
-	if err != nil {
-		a.log.Error(err)
-		return nil, err
-	}
-	return metadata, nil
+	return u.userDataProvider.NewUser(username, hashPassword, salt)
 }
 
-func (a *ArticleService) UpdateArticleByUUID(articleId, text, title, videoURL, status string) (*article.ArticleMetaData, error) {
-	metadata, err := a.articleMetaProvider.UpdateArticleByUUID(
-		articleId,
-		text,
-		title,
-		videoURL,
-		status,
-	)
-	if err != nil {
-		a.log.Error(err)
-		return nil, err
-	}
-	return metadata, err
-}
-
-func (a *ArticleService) UpdateArticleTextByUUID(ctx context.Context, articleId, text string) (*article.ArticleMetaData, error) {
-	mP := a.articleMetaProvider
-	cP := a.articleContentProvider
-
-	textId, err := mP.ArticleTextIDByUUID(articleId)
-	if err != nil {
-		a.log.Error(err)
-		return nil, err
-	}
-	a.log.Debug(textId)
-	if err := cP.UpdateText(ctx, textId, text); err != nil {
-		a.log.Error(err)
-		return nil, err
-	}
-
-	metadata, err := mP.ArticleByUUID(
-		articleId,
-	)
-	if err != nil {
-		a.log.Error(err)
-		return nil, err
-	}
-	return metadata, nil
+func (u *UserService) UserByUserId(userId string) (*models.UserDTO, error) {
+	return u.userDataProvider.UserByUserId(userId)
 }

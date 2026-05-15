@@ -8,10 +8,19 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
+const (
+	UserIdPayload    string = "userId"
+	IsAdminPayload   string = "isAdmin"
+	SessionIdPayload string = "sessionId"
+)
+
 type Config struct {
-	Env     string         `yaml:"env" env-default:"local"`
-	HTTP    HTTPConfig     `yaml:"http"`
-	Storage StoragesConfig `yaml:"storages"`
+	Env            string         `yaml:"env" env-default:"local"`
+	HTTP           HTTPConfig     `yaml:"http"`
+	Storage        StoragesConfig `yaml:"storages"`
+	Tokens         TokenList      `yaml:"tokens"`
+	PrivateKeyPath string         `yaml:"private_key_path"`
+	PublicKeyPath  string         `yaml:"public_key_path"`
 }
 
 type HTTPConfig struct {
@@ -21,7 +30,14 @@ type HTTPConfig struct {
 
 type StoragesConfig struct {
 	Postgres DatabaseConfig `yaml:"postgres"`
-	Mongo    DatabaseConfig `yaml:"mongo"`
+}
+type TokenList struct {
+	Access  TokenConfig `yaml:"access"`
+	Refresh TokenConfig `yaml:"refresh"`
+}
+
+type TokenConfig struct {
+	Expiration int `yaml:"expiration"`
 }
 
 type DatabaseConfig struct {
@@ -76,5 +92,4 @@ func fetchConfigPath() string {
 // Получение паролей к базам данных из Env
 func fetchDatabasePasswords(cfg *Config) {
 	cfg.Storage.Postgres.Password = os.Getenv("POSTGRES_PASSWORD")
-	cfg.Storage.Mongo.Password = os.Getenv("MONGO_PASSWORD")
 }
