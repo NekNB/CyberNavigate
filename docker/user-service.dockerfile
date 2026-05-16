@@ -19,7 +19,9 @@ COPY --from=builder /build/user-service .
 COPY /backend/user-service/scripts/start.sh .
 
 COPY /configs/user-service/dev.yaml ./
-COPY /secrets/keys /keys
+COPY /secrets/keys ./keys
+COPY /secrets/certs/user-service ./certs
+
 ENV CONFIG_PATH=./dev.yaml
 
 RUN chmod +x ./start.sh

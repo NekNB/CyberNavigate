@@ -12,6 +12,14 @@ type Config struct {
 	Env     string         `yaml:"env" env-default:"local"`
 	HTTP    HTTPConfig     `yaml:"http"`
 	Storage StoragesConfig `yaml:"storages"`
+	Certs   certsConfig    `yaml:"certs" env-required:"true"`
+}
+
+type certsConfig struct {
+	CaCertPath string `yaml:"ca_cert" env-required:"true"`
+
+	ServerCertPath string `yaml:"server_cert" env-required:"true"`
+	ServerKeyPath  string `yaml:"server_key" env-required:"true"`
 }
 
 type HTTPConfig struct {

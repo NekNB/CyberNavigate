@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/NekNB/CyberNavigate/backend/user-service/internal/config"
-	"github.com/NekNB/CyberNavigate/backend/user-service/internal/services/session"
+	"github.com/NekNB/CyberNavigate/backend/user-service/internal/service/session"
 	"github.com/gofiber/fiber/v3"
 )
 

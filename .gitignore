@@ -6,3 +6,4 @@ protos/go.sum
 
 **/.vscode/**
 *.pem
+*.srl

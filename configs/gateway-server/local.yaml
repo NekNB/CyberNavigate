@@ -7,10 +7,24 @@ server:
     - article:
         path: /api/v1/articles
         protocol: http
-        host: localhost
+        host: 127.0.0.1
         port: 8000
     - user:
         path: /api/v1/users
-        protocol: http
-        host: localhost
-        port: 8080
+        protocol: https
+        host: 127.0.0.1
+        port: 8000
+    - auth:
+        path: /api/v1/auth
+        protocol: https
+        host: 127.0.0.1
+        port: 8000
+
+certs:
+  ca_cert: ../../secrets/certs/gateway-server/ca-cert.pem
+
+  client_cert: ../../secrets/certs/gateway-server/client-cert.pem
+  client_key: ../../secrets/certs/gateway-server/client-key.pem
+
+  public_cert: ../../secrets/certs/gateway-server/public-cert.pem
+  public_key: ../../secrets/certs/gateway-server/public-key.pem

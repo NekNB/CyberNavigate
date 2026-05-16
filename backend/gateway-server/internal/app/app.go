@@ -29,7 +29,14 @@ type Server struct {
 func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 
 	app := fiber.New(fiber.Config{
-		AppName: "Gateway Server",
+		AppName:     "Gateway Server",
+		ProxyHeader: fiber.HeaderXForwardedHost,
+	})
+
+	app.Use(func(c fiber.Ctx) error {
+		log.Info(c.Params("*"))
+		log.Info(c.Request())
+		return c.Next()
 	})
 	app.Use(logger.New())
 	app.Use(recover.New())
@@ -47,7 +54,7 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 		AllowCredentials: true,
 	}))
 
-	proxy.Register(cfg, app.Name("GateWay"))
+	proxy.Register(cfg, log, app.Name("GateWay"))
 
 	//Добавляем Specs директорию
 	app.Get("/specs/*", static.New("", static.Config{
@@ -61,8 +68,12 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 		Browse: true,
 	}))
 
-	app.Get("/ping", func(c fiber.Ctx) error {
-		return c.SendString("pong")
+	app.Get("/", func(c fiber.Ctx) error {
+		return c.Status(fiber.StatusPermanentRedirect).Redirect().To("/swagger")
+	})
+
+	app.Get("/health", func(c fiber.Ctx) error {
+		return c.JSON(fiber.Map{"status": "healthy"})
 	})
 
 	return &Server{app: app, cfg: cfg, log: log}, nil

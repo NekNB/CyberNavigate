@@ -5,8 +5,8 @@ import (
 	"errors"
 
 	"github.com/NekNB/CyberNavigate/backend/user-service/internal/domain/models"
-	sessionService "github.com/NekNB/CyberNavigate/backend/user-service/internal/services/session"
-	userService "github.com/NekNB/CyberNavigate/backend/user-service/internal/services/user"
+	sessionService "github.com/NekNB/CyberNavigate/backend/user-service/internal/service/session"
+	userService "github.com/NekNB/CyberNavigate/backend/user-service/internal/service/user"
 	"github.com/NekNB/CyberNavigate/backend/user-service/internal/storage"
 
 	"github.com/lib/pq"

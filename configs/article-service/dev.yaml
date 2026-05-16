@@ -17,3 +17,9 @@ storages:
     port: 27017
     user: articleService
     collection: articles
+
+certs:
+  ca_cert: certs/ca-cert.pem
+
+  server_cert: ./certs/server-cert.pem
+  server_key: ./certs/server-key.pem

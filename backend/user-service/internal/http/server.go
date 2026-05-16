@@ -5,6 +5,7 @@ import (
 
 	"github.com/NekNB/CyberNavigate/backend/user-service/internal/config"
 	"github.com/NekNB/CyberNavigate/backend/user-service/internal/domain/models"
+	"github.com/NekNB/CyberNavigate/backend/user-service/internal/service"
 	"github.com/NekNB/CyberNavigate/backend/user-service/internal/storage"
 	"github.com/NekNB/CyberNavigate/swagger/gen/user"
 	"github.com/gofiber/fiber/v3"
@@ -128,9 +129,9 @@ func (a *APIServer) Login(c fiber.Ctx) error {
 	}
 	response, err := a.userService.Login(req.Username, req.Password)
 	if err != nil {
-		if errors.Is(err, storage.ErrUserNotFound) {
-			return c.Status(fiber.StatusNotFound).JSON(
-				&user.ErrorResponse{Message: err.Error()},
+		if errors.Is(err, service.AuthenticationError) {
+			return c.Status(fiber.StatusUnauthorized).JSON(
+				&user.UnauthorizedResponse{Message: err.Error()},
 			)
 		}
 		a.log.Error(err)
