@@ -19,6 +19,8 @@ COPY --from=builder /build/gateway-server .
 COPY /backend/gateway-server/scripts/start.sh .
 
 COPY /configs/gateway-server/dev.yaml ./
+
+COPY /secrets/keys/public.pem ./keys/public.pem
 COPY /secrets/certs/gateway-server /certs
 
 ENV CONFIG_PATH=./dev.yaml

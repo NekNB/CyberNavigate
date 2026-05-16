@@ -16,5 +16,5 @@ rules:
   no-identical-paths: error
   no-ambiguous-paths: error
   info-license: off
-  security-defined: off
+
   no-server-example.com: off

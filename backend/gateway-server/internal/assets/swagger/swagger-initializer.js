@@ -4,7 +4,6 @@ window.onload = function () {
   // the following lines will be replaced by docker/configurator, when it runs in a docker-container
   window.ui = SwaggerUIBundle({
     urls: [
-      // TODO: Добавить новые пути
       {
         name: "Article Service",
         url: "/specs/docs/article-service/article.swagger.yaml",

@@ -8,9 +8,10 @@ import (
 )
 
 type Config struct {
-	Env    string       `yaml:"env" env-default:"local"`
-	Server serverConfig `yaml:"server" env-required:"true"`
-	Certs  certsConfig  `yaml:"certs" env-required:"true"`
+	Env           string       `yaml:"env" env-default:"local"`
+	Server        serverConfig `yaml:"server" env-required:"true"`
+	Certs         certsConfig  `yaml:"certs" env-required:"true"`
+	PublicKeyPath string       `yaml:"public_key_path"`
 }
 
 type certsConfig struct {

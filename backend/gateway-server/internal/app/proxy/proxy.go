@@ -25,8 +25,8 @@ func Register(cfg *config.Config, log *logrus.Logger, router fiber.Router) {
 	services := config.Normalize(cfg)
 	for _, service := range services {
 		router.All(service.Cfg.Path+"/*", func(c fiber.Ctx) error {
-			log.Info(c.Params("*"))
-			log.Info(c.Request())
+			// log.Info(c.Params("*"))
+			// log.Info(c.Request())
 			target := fmt.Sprintf("%s://%s:%d",
 				service.Cfg.Protocol,
 				service.Cfg.Host,

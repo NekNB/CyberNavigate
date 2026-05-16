@@ -12,6 +12,7 @@ servers:
   - url: http://cyber-navigate_gateway-server/api/v1
     description: Internal Docker API Gateway Server
 
+# TODO: Добавить secure поля
 components:
   schemas:
     ArticleMetaData:
