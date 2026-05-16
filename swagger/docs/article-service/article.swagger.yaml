@@ -64,6 +64,9 @@ components:
 paths:
   /articles:
     post:
+      x-auth:
+        public: false
+        permission: admin
       tags:
         - Admin
       summary: Create article with articleName
@@ -91,6 +94,9 @@ paths:
           $ref: "#/components/responses/ArticleAlreadyExists"
 
     get:
+      x-auth:
+        public: true
+        permission: user
       tags:
         - User
       summary: Get All Articles Entity
@@ -107,6 +113,9 @@ paths:
 
   /articles/{articleId}:
     patch:
+      x-auth:
+        public: false
+        permission: admin
       tags:
         - Admin
       summary: Update article by Id
@@ -145,6 +154,9 @@ paths:
           $ref: "#/components/responses/ArticleNotFound"
 
     get:
+      x-auth:
+        public: true
+        permission: user
       tags:
         - User
       summary: Find article by Id
@@ -169,6 +181,9 @@ paths:
 
   /articles/{articleId}/text:
     post:
+      x-auth:
+        public: false
+        permission: admin
       tags:
         - Admin
       summary: Upload Article Text by articleId
@@ -197,6 +212,9 @@ paths:
           $ref: "#/components/responses/ArticleNotFound"
 
     put:
+      x-auth:
+        public: false
+        permission: admin
       tags:
         - Admin
       summary: Update Article Text by ArticleId
@@ -228,6 +246,9 @@ paths:
           $ref: "#/components/responses/ArticleTextNotCreatedYet"
 
     get:
+      x-auth:
+        public: true
+        permission: user
       tags:
         - User
       summary: Article Text By articleId

@@ -27,6 +27,9 @@ tags:
 paths:
   /auth/login:
     post:
+      x-auth:
+        public: true
+        permission: user
       tags:
         - Auth
       summary: Авторизация пользователя
@@ -65,6 +68,9 @@ paths:
 
   /auth/refresh:
     put:
+      x-auth:
+        public: false
+        permission: user
       tags:
         - Auth
       summary: Обновление access токена
@@ -95,6 +101,9 @@ paths:
 
   /auth/logout:
     delete:
+      x-auth:
+        public: false
+        permission: user
       tags:
         - Auth
       summary: Выход пользователя
@@ -114,6 +123,9 @@ paths:
 
   /users/me:
     get:
+      x-auth:
+        public: false
+        permission: user
       tags:
         - Users
       summary: Получить текущего пользователя
@@ -139,8 +151,12 @@ paths:
         "500":
           description: Ошибка обработки
           $ref: "#/components/responses/InternalServerErrorResponse"
+
   /users:
     get:
+      x-auth:
+        public: false
+        permission: admin
       tags:
         - Admin
       summary: Получить список пользователей
@@ -171,6 +187,9 @@ paths:
           $ref: "#/components/responses/InternalServerErrorResponse"
 
     post:
+      x-auth:
+        public: true
+        permission: user
       tags:
         - Users
       summary: Зарегистрировать пользователя
