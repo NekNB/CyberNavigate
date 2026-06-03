@@ -3,7 +3,7 @@ module github.com/NekNB/CyberNavigate/backend/gateway-server
 go 1.26.2
 
 require (
-	github.com/NekNB/CyberNavigate/swagger v0.0.0-20260516181522-086ee48d9d2b
+	github.com/NekNB/CyberNavigate/swagger v0.0.0-20260603171028-5fd1b5bf804c
 	github.com/gofiber/fiber/v3 v3.2.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/sirupsen/logrus v1.9.4

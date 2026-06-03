@@ -24,9 +24,10 @@ type certsConfig struct {
 	PublicKeyPath  string `yaml:"public_key" env-required:"true"`
 }
 type serverConfig struct {
-	Host     string                  `yaml:"host"`
-	Port     int                     `yaml:"port"`
-	Services []map[string]serviceCfg `yaml:"services"`
+	Host      string                  `yaml:"host"`
+	HTTPPort  int                     `yaml:"http_port"`
+	HTTPSPort int                     `yaml:"https_port"`
+	Services  []map[string]serviceCfg `yaml:"services"`
 }
 
 type serviceCfg struct {

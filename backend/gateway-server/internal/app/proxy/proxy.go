@@ -34,7 +34,7 @@ func Register(cfg *config.Config, log *logrus.Logger, router fiber.Router) {
 			)
 
 			path := c.Params("*")
-
+			c.Req().Protocol()
 			// CN/SAN backend cert
 			proxyClient.TLSConfig.ServerName = service.Name
 			if err := proxy.Do(c, target+service.Cfg.Path+"/"+path, proxyClient); err != nil {

@@ -1,10 +1,11 @@
 package app
 
 import (
+	"crypto/tls"
 	"fmt"
-	"net/http"
 
 	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/app/proxy"
+	tlsconfig "github.com/NekNB/CyberNavigate/backend/gateway-server/internal/app/tls"
 	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/assets"
 	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/lib/parser"
 	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/lib/token"
@@ -24,12 +25,23 @@ import (
 // Здесь реализуются методы LifeSpan сервера
 
 type Server struct {
-	cfg *config.Config
-	app *fiber.App
-	log *logrus.Logger
+	cfg    *config.Config
+	app    *fiber.App
+	log    *logrus.Logger
+	TLSCfg *tls.Config
 }
 
 func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
+
+	TLSCfg, err := tlsconfig.LoadTLSConfig(
+		cfg.Certs.PublicCertPath,
+		cfg.Certs.PublicKeyPath,
+		cfg.Certs.CaCertPath,
+	)
+	if err != nil {
+		panic(err)
+	}
+
 	publicKey, err := token.GetPublicKeyFromFile(cfg.PublicKeyPath)
 	if err != nil {
 		panic(err)
@@ -58,10 +70,6 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 	// 3. auth middleware
 	app.Use(middlewares.AuthorizationMiddleware(cfg, log, specs, publicKey))
 
-	// app.Use(func(c fiber.Ctx) error {
-	// 	log.Info(c.Request())
-	// 	return c.Next()
-	// })
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: []string{
 			"http://localhost:9000",
@@ -98,18 +106,33 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 		return c.JSON(fiber.Map{"status": "healthy"})
 	})
 
-	return &Server{app: app, cfg: cfg, log: log}, nil
+	return &Server{app: app, cfg: cfg, log: log, TLSCfg: TLSCfg}, nil
 }
 
-func (s *Server) Run() {
-	socket := fmt.Sprintf("%s:%d", s.cfg.Server.Host, s.cfg.Server.Port)
+func (s *Server) HTTPStart() {
+	socket := fmt.Sprintf("%s:%d", s.cfg.Server.Host, s.cfg.Server.HTTPPort)
 
-	s.log.Infof("gateway on %s", socket)
-	if err := s.app.Listen(socket); err != nil && err != http.ErrServerClosed {
+	if err := s.app.Listen(socket); err != nil {
 		s.log.Error(err)
 
 		panic(err)
 	}
+}
+
+func (s *Server) HTTPSStart() {
+	socket := fmt.Sprintf("%s:%d", s.cfg.Server.Host, s.cfg.Server.HTTPSPort)
+	ln, err := tls.Listen(
+		"tcp",
+		socket,
+		s.TLSCfg,
+	)
+	if err != nil {
+		s.log.Error(err)
+
+		panic(err)
+	}
+
+	panic(s.app.Listener(ln))
 }
 
 func (s *Server) Stop() error {
