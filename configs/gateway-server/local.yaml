@@ -2,7 +2,8 @@ env: "local"
 
 server:
   host: 127.0.0.1
-  port: 9000
+  http_port: 9080
+  https_port: 9443
 
   services:
     - article:
