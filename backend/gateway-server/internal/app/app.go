@@ -102,10 +102,10 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 }
 
 func (s *Server) Run() {
-	port := fmt.Sprintf(":%d", s.cfg.Server.Port)
+	socket := fmt.Sprintf("%s:%d", s.cfg.Server.Host, s.cfg.Server.Port)
 
-	s.log.Infof("gateway on %s", port)
-	if err := s.app.Listen(port); err != nil && err != http.ErrServerClosed {
+	s.log.Infof("gateway on %s", socket)
+	if err := s.app.Listen(socket); err != nil && err != http.ErrServerClosed {
 		s.log.Error(err)
 
 		panic(err)

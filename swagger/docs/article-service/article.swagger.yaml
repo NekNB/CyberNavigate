@@ -12,8 +12,12 @@ servers:
   - url: http://cyber-navigate_gateway-server/api/v1
     description: Internal Docker API Gateway Server
 
-# TODO: Добавить secure поля
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     ArticleMetaData:
       type: object
@@ -62,6 +66,9 @@ components:
                 type: string
             example:
               message: "Article With ArticleText Already Exists"
+security:
+  - BearerAuth: []
+
 paths:
   /articles:
     post:

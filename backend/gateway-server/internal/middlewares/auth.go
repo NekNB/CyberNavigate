@@ -20,7 +20,7 @@ func AuthorizationMiddleware(cfg *config.Config, log *logrus.Logger, specs *pars
 	return func(c fiber.Ctx) error {
 		policy, serviceName, err := specs.FindPolicy(c.Method(), c.Path())
 		if err != nil {
-			return c.Status(404).JSON(fiber.Map{"error": "Not found"})
+			return c.Next()
 		}
 
 		log.Printf("Service: %s, Public: %v, Permission: %s",
