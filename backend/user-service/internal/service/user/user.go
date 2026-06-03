@@ -6,13 +6,10 @@ import (
 	"github.com/NekNB/CyberNavigate/backend/user-service/internal/domain/models"
 	"github.com/NekNB/CyberNavigate/backend/user-service/internal/http"
 	"github.com/NekNB/CyberNavigate/backend/user-service/internal/lib/hash"
-	"github.com/NekNB/CyberNavigate/backend/user-service/internal/services/session"
+	"github.com/NekNB/CyberNavigate/backend/user-service/internal/service"
+	"github.com/NekNB/CyberNavigate/backend/user-service/internal/service/session"
 	"github.com/NekNB/CyberNavigate/backend/user-service/internal/storage"
 	"github.com/sirupsen/logrus"
-)
-
-var (
-	AuthenticationError = errors.New("Authorization Error: Incorrect Login or Password")
 )
 
 var _ http.UserServiceInterface = (*UserService)(nil)
@@ -52,7 +49,7 @@ func (u *UserService) Login(username, password string) (*models.TokensDTO, error
 	storedHash, salt, err := u.userDataProvider.PasswordSaltByUsername(username)
 	if err != nil {
 		if errors.Is(err, storage.ErrUserNotFound) {
-			return nil, AuthenticationError
+			return nil, service.AuthenticationError
 		}
 		u.log.Error(err)
 		return nil, err
@@ -60,7 +57,7 @@ func (u *UserService) Login(username, password string) (*models.TokensDTO, error
 
 	// Проверяем валидность пароля
 	if !hash.VerifyPassword(password, salt, storedHash) {
-		return nil, AuthenticationError
+		return nil, service.AuthenticationError
 	}
 
 	user, err := u.userDataProvider.UserByUsername(username)

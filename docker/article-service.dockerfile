@@ -19,6 +19,8 @@ COPY --from=builder /build/article-service .
 COPY /backend/article-service/scripts/start.sh .
 
 COPY /configs/article-service/dev.yaml ./
+COPY /secrets/certs/article-service ./certs
+
 ENV CONFIG_PATH=./dev.yaml
 
 RUN chmod +x ./start.sh

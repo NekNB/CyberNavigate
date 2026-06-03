@@ -1,11 +1,15 @@
 package app
 
 import (
+	"crypto/tls"
 	"fmt"
-	"net/http"
 
 	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/app/proxy"
+	tlsconfig "github.com/NekNB/CyberNavigate/backend/gateway-server/internal/app/tls"
 	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/assets"
+	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/lib/parser"
+	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/lib/token"
+	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/middlewares"
 
 	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/config"
 	"github.com/NekNB/CyberNavigate/swagger"
@@ -21,18 +25,51 @@ import (
 // Здесь реализуются методы LifeSpan сервера
 
 type Server struct {
-	cfg *config.Config
-	app *fiber.App
-	log *logrus.Logger
+	cfg    *config.Config
+	app    *fiber.App
+	log    *logrus.Logger
+	TLSCfg *tls.Config
 }
 
 func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 
+	TLSCfg, err := tlsconfig.LoadTLSConfig(
+		cfg.Certs.PublicCertPath,
+		cfg.Certs.PublicKeyPath,
+		cfg.Certs.CaCertPath,
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	publicKey, err := token.GetPublicKeyFromFile(cfg.PublicKeyPath)
+	if err != nil {
+		panic(err)
+	}
+	// Загружаем спецификации из внешнего пакета
+	// rootDir = "" если файлы в корне FS
+	specs, err := parser.LoadSpecsFromFS(
+		swagger.SpecsFS, // embed.FS из внешнего пакета
+		"/api/v1",       // префикс для путей
+		"docs",          // корневая директория в FS
+	)
+	if err != nil {
+		log.Fatalf("Failed to load specs: %v", err)
+	}
+
+	// 2. Вывести политики по сервисам
+	fmt.Println("\n=== POLICIES BY SERVICE ===")
+	specs.PrintPoliciesByService()
+
 	app := fiber.New(fiber.Config{
-		AppName: "Gateway Server",
+		AppName:     "Gateway Server",
+		ProxyHeader: fiber.HeaderXForwardedHost,
 	})
-	app.Use(logger.New())
 	app.Use(recover.New())
+	app.Use(logger.New())
+	// 3. auth middleware
+	app.Use(middlewares.AuthorizationMiddleware(cfg, log, specs, publicKey))
+
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: []string{
 			"http://localhost:9000",
@@ -47,7 +84,7 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 		AllowCredentials: true,
 	}))
 
-	proxy.Register(cfg, app.Name("GateWay"))
+	proxy.Register(cfg, log, app.Name("GateWay"))
 
 	//Добавляем Specs директорию
 	app.Get("/specs/*", static.New("", static.Config{
@@ -61,22 +98,41 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 		Browse: true,
 	}))
 
-	app.Get("/ping", func(c fiber.Ctx) error {
-		return c.SendString("pong")
+	app.Get("/", func(c fiber.Ctx) error {
+		return c.Status(fiber.StatusPermanentRedirect).Redirect().To("/swagger")
 	})
 
-	return &Server{app: app, cfg: cfg, log: log}, nil
+	app.Get("/health", func(c fiber.Ctx) error {
+		return c.JSON(fiber.Map{"status": "healthy"})
+	})
+
+	return &Server{app: app, cfg: cfg, log: log, TLSCfg: TLSCfg}, nil
 }
 
-func (s *Server) Run() {
-	port := fmt.Sprintf(":%d", s.cfg.Server.Port)
+func (s *Server) HTTPStart() {
+	socket := fmt.Sprintf("%s:%d", s.cfg.Server.Host, s.cfg.Server.HTTPPort)
 
-	s.log.Infof("gateway on %s", port)
-	if err := s.app.Listen(port); err != nil && err != http.ErrServerClosed {
+	if err := s.app.Listen(socket); err != nil {
 		s.log.Error(err)
 
 		panic(err)
 	}
+}
+
+func (s *Server) HTTPSStart() {
+	socket := fmt.Sprintf("%s:%d", s.cfg.Server.Host, s.cfg.Server.HTTPSPort)
+	ln, err := tls.Listen(
+		"tcp",
+		socket,
+		s.TLSCfg,
+	)
+	if err != nil {
+		s.log.Error(err)
+
+		panic(err)
+	}
+
+	panic(s.app.Listener(ln))
 }
 
 func (s *Server) Stop() error {

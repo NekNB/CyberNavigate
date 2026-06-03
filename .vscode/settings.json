@@ -14,5 +14,6 @@
 
   "files.associations": {
     "*.env": "env"
-  }
+  },
+  "editor.tabSize": 2
 }

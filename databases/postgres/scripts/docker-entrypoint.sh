@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -Eeo pipefail
-# TODO swap to -Eeuo pipefail above (after handling all potentially-unset variables)
+
 
 
 SECRET_PATH="/run/secrets/postgres_secret"

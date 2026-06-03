@@ -24,7 +24,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	go app.Run()
+	go app.HTTPSStart()
+	go app.HTTPStart()
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)

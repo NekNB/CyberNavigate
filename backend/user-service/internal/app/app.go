@@ -1,14 +1,16 @@
 package app
 
 import (
+	"crypto/tls"
 	"fmt"
 
+	tlsconfig "github.com/NekNB/CyberNavigate/backend/user-service/internal/app/tls"
 	"github.com/NekNB/CyberNavigate/backend/user-service/internal/assets"
 	"github.com/NekNB/CyberNavigate/backend/user-service/internal/config"
 	userAPI "github.com/NekNB/CyberNavigate/backend/user-service/internal/http"
 	"github.com/NekNB/CyberNavigate/backend/user-service/internal/middlewares"
-	"github.com/NekNB/CyberNavigate/backend/user-service/internal/services/session"
-	userService "github.com/NekNB/CyberNavigate/backend/user-service/internal/services/user"
+	"github.com/NekNB/CyberNavigate/backend/user-service/internal/service/session"
+	userService "github.com/NekNB/CyberNavigate/backend/user-service/internal/service/user"
 	"github.com/NekNB/CyberNavigate/backend/user-service/internal/storage/postgres"
 	"github.com/NekNB/CyberNavigate/swagger"
 	"github.com/NekNB/CyberNavigate/swagger/gen/user"
@@ -24,11 +26,21 @@ import (
 // Здесь реализуются методы LifeSpan сервера
 
 type Server struct {
-	cfg *config.Config
-	app *fiber.App
+	cfg    *config.Config
+	app    *fiber.App
+	TLSCfg *tls.Config
 }
 
 func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
+
+	TLSCfg, err := tlsconfig.LoadTLSConfig(
+		cfg.Certs.ServerCertPath,
+		cfg.Certs.ServerKeyPath,
+		cfg.Certs.CaCertPath,
+	)
+	if err != nil {
+		panic(err)
+	}
 
 	postgresStorage, err := postgres.New(log, fmt.Sprintf(
 		"postgres://%s:%s@%s:%d/%s?sslmode=disable",
@@ -55,13 +67,13 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 	app.Use(logger.New())
 	app.Use(recover.New())
 	app.Use(middlewares.AuthMiddleware(sessionService))
-	// app.Use(encryptcookie.New(encryptcookie.Config{
-	// 	Key: encryptcookie.GenerateKey(16),
-	// }))
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: []string{
 			"http://localhost:9000",
+			"http://localhost:8000",
 			"http://127.0.0.1:9000",
+			"http://127.0.0.1:8000",
+			"http://cyber-navigate_gateway-server:9000",
 		},
 		AllowMethods: []string{
 			"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS",
@@ -93,13 +105,20 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 		return c.Status(fiber.StatusPermanentRedirect).Redirect().To("/swagger")
 	})
 
-	return &Server{app: app, cfg: cfg}, nil
+	return &Server{app: app, cfg: cfg, TLSCfg: TLSCfg}, nil
 }
 
 func (s *Server) Start() {
-	s.app.Listen(
+	ln, err := tls.Listen(
+		"tcp",
 		fmt.Sprintf("0.0.0.0:%d", s.cfg.HTTP.Port),
+		s.TLSCfg,
 	)
+	if err != nil {
+		panic(err)
+	}
+
+	panic(s.app.Listener(ln))
 }
 
 func (s *Server) Stop() error {

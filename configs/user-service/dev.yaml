@@ -17,5 +17,11 @@ tokens:
   refresh:
     expiration: 2592000 # 30 дней
 
-private_key_path: ../keys/private.pem
-public_key_path: ../keys/public.pem
+private_key_path: ./keys/private.pem
+public_key_path: ./keys/public.pem
+
+certs:
+  ca_cert: ./certs/ca-cert.pem
+
+  server_cert: ./certs/server-cert.pem
+  server_key: ./certs/server-key.pem

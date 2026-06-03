@@ -21,6 +21,14 @@ type Config struct {
 	Tokens         TokenList      `yaml:"tokens"`
 	PrivateKeyPath string         `yaml:"private_key_path"`
 	PublicKeyPath  string         `yaml:"public_key_path"`
+	Certs          certsConfig    `yaml:"certs" env-required:"true"`
+}
+
+type certsConfig struct {
+	CaCertPath string `yaml:"ca_cert" env-required:"true"`
+
+	ServerCertPath string `yaml:"server_cert" env-required:"true"`
+	ServerKeyPath  string `yaml:"server_key" env-required:"true"`
 }
 
 type HTTPConfig struct {
@@ -92,4 +100,7 @@ func fetchConfigPath() string {
 // Получение паролей к базам данных из Env
 func fetchDatabasePasswords(cfg *Config) {
 	cfg.Storage.Postgres.Password = os.Getenv("POSTGRES_PASSWORD")
+	if cfg.Storage.Postgres.Password == "" {
+		panic("Postgres Password is \"\"")
+	}
 }
