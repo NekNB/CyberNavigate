@@ -1,18 +1,18 @@
 param(
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string]$FileName
 )
 
 # Функция замены строки в файле
 function  Set-FileContentReplacement {
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string]$FilePath,
         
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string]$OldString,
         
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string]$NewString
     )
     
@@ -89,6 +89,31 @@ switch ($FileName) {
             -OldString 'github.com/gofiber/fiber/v2' `
             -NewString 'github.com/gofiber/fiber/v3'
 
+        Pop-Location
+        break
+    }
+    "simulator.swagger.yaml" {
+        Write-Host "Обработка файла: simulator.swagger.yaml" -ForegroundColor Cyan
+        Push-Location ../swagger/
+        oapi-codegen -config ./configs/simulator/models.yaml ./docs/simulator-service/simulator.swagger.yaml
+        oapi-codegen -config ./configs/simulator/client.yaml ./docs/simulator-service/simulator.swagger.yaml
+        oapi-codegen -config ./configs/simulator/server.yaml ./docs/simulator-service/simulator.swagger.yaml
+        
+        Set-FileContentReplacement -FilePath ./gen/simulator/server.go `
+            -OldString '*fiber.Ctx' `
+            -NewString 'fiber.Ctx'
+        Set-FileContentReplacement -FilePath ./gen/simulator/models.go `
+            -OldString 'v.Type = "sms"' `
+            -NewString ' '
+        Set-FileContentReplacement -FilePath ./gen/simulator/models.go `
+            -OldString 'v.Type = "message"' `
+            -NewString ' '
+        Set-FileContentReplacement -FilePath ./gen/simulator/server.go `
+            -OldString 'github.com/gofiber/fiber/v2' `
+            -NewString 'github.com/gofiber/fiber/v3'
+        Set-FileContentReplacement -FilePath ./gen/simulator/server.go `
+            -OldString 'c.Context().SetUserValue((BearerAuthScopes), []string{})' `
+            -NewString 'c.Locals(BearerAuthScopes, []string{})'
         Pop-Location
         break
     }
