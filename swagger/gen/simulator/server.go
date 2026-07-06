@@ -5,47 +5,48 @@ package simulator
 
 import (
 	"fmt"
-	"net/url"
+	"net/http"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/oapi-codegen/runtime"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// Отправка ответа пользователя
 	// (POST /simulator/action/answer)
-	SendAnswer(c fiber.Ctx) error
+	SendAnswer(c fiber.Ctx, params SendAnswerParams) error
 	// Получить файл по Id
 	// (GET /simulator/action/file/{fileId})
-	GetFileByFileId(c fiber.Ctx, fileId string) error
-	// Выполнить поиск
-	// (GET /simulator/action/seacrh)
-	Search(c fiber.Ctx, params SearchParams) error
+	GetFileByFileId(c fiber.Ctx, fileId string, params GetFileByFileIdParams) error
 	// Запрашивает результаты игры
 	// (GET /simulator/final)
-	GetResults(c fiber.Ctx) error
+	GetResults(c fiber.Ctx, params GetResultsParams) error
 	// Получить список доступных сценариев
 	// (GET /simulator/scenarios)
 	GetAllScenarios(c fiber.Ctx) error
 	// Создание нового сценария
 	// (POST /simulator/scenarios)
-	CreateScenario(c fiber.Ctx) error
+	CreateScenario(c fiber.Ctx, params CreateScenarioParams) error
 	// Получить Сценарий по Id
 	// (GET /simulator/scenarios/{scenarioId})
 	GetScenarioById(c fiber.Ctx, scenarioId string) error
 	// Обновленние данных сценария
 	// (PATCH /simulator/scenarios/{scenarioId})
-	EditScenario(c fiber.Ctx, scenarioId string) error
+	EditScenario(c fiber.Ctx, scenarioId string, params EditScenarioParams) error
 	// Создает сессию симулятора
 	// (POST /simulator/start)
-	CreateSimulatorSession(c fiber.Ctx) error
+	CreateSimulatorSession(c fiber.Ctx, params CreateSimulatorSessionParams) error
 	// Получить Шаг
 	// (GET /simulator/step)
-	GetStepById(c fiber.Ctx) error
+	GetStep(c fiber.Ctx, params GetStepParams) error
 	// Создание нового шага
 	// (POST /simulator/step)
-	CreateStep(c fiber.Ctx) error
+	CreateStep(c fiber.Ctx, params CreateStepParams) error
+	// Обновление шага
+	// (PUT /simulator/step/{stepId})
+	UpdateStep(c fiber.Ctx, stepId string, params UpdateStepParams) error
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -60,10 +61,38 @@ type HandlerMiddlewareFunc func(c fiber.Ctx, next fiber.Handler) error
 // SendAnswer operation middleware
 func (siw *ServerInterfaceWrapper) SendAnswer(c fiber.Ctx) error {
 
+	var err error
+	_ = err
+
 	c.Locals(BearerAuthScopes, []string{})
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params SendAnswerParams
+
+	headers := c.GetReqHeaders()
+
+	// ------------- Required header parameter "X-User-Id" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-User-Id")]; found {
+		var XUserId string
+		n := len(valueList)
+		if n != 1 {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Too many values for ParamName X-User-Id, 1 is required, but %d found", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-User-Id", valueList[0], &XUserId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter X-User-Id: %w", err).Error())
+		}
+
+		params.XUserId = XUserId
+
+	} else {
+		err = fmt.Errorf("Header parameter X-User-Id is required, but not found: %w", err)
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
 	handler := func(c fiber.Ctx) error {
-		return siw.Handler.SendAnswer(c)
+		return siw.Handler.SendAnswer(c, params)
 	}
 
 	for i := len(siw.HandlerMiddlewares) - 1; i >= 0; i-- {
@@ -93,47 +122,33 @@ func (siw *ServerInterfaceWrapper) GetFileByFileId(c fiber.Ctx) error {
 
 	c.Locals(BearerAuthScopes, []string{})
 
-	handler := func(c fiber.Ctx) error {
-		return siw.Handler.GetFileByFileId(c, fileId)
-	}
-
-	for i := len(siw.HandlerMiddlewares) - 1; i >= 0; i-- {
-		m := siw.HandlerMiddlewares[i]
-		next := handler
-		handler = func(c fiber.Ctx) error {
-			return m(c, next)
-		}
-	}
-
-	return handler(c)
-}
-
-// Search operation middleware
-func (siw *ServerInterfaceWrapper) Search(c fiber.Ctx) error {
-
-	var err error
-	_ = err
-
-	c.Locals(BearerAuthScopes, []string{})
-
 	// Parameter object where we will unmarshal all parameters from the context
-	var params SearchParams
+	var params GetFileByFileIdParams
 
-	var query url.Values
-	query, err = url.ParseQuery(string(c.Request().URI().QueryString()))
-	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for query string: %w", err).Error())
-	}
+	headers := c.GetReqHeaders()
 
-	// ------------- Required query parameter "text" -------------
+	// ------------- Required header parameter "X-User-Id" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-User-Id")]; found {
+		var XUserId string
+		n := len(valueList)
+		if n != 1 {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Too many values for ParamName X-User-Id, 1 is required, but %d found", n))
+		}
 
-	err = runtime.BindQueryParameterWithOptions("form", true, true, "text", query, &params.Text, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
-	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter text: %w", err).Error())
+		err = runtime.BindStyledParameterWithOptions("simple", "X-User-Id", valueList[0], &XUserId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter X-User-Id: %w", err).Error())
+		}
+
+		params.XUserId = XUserId
+
+	} else {
+		err = fmt.Errorf("Header parameter X-User-Id is required, but not found: %w", err)
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
 	handler := func(c fiber.Ctx) error {
-		return siw.Handler.Search(c, params)
+		return siw.Handler.GetFileByFileId(c, fileId, params)
 	}
 
 	for i := len(siw.HandlerMiddlewares) - 1; i >= 0; i-- {
@@ -150,10 +165,38 @@ func (siw *ServerInterfaceWrapper) Search(c fiber.Ctx) error {
 // GetResults operation middleware
 func (siw *ServerInterfaceWrapper) GetResults(c fiber.Ctx) error {
 
+	var err error
+	_ = err
+
 	c.Locals(BearerAuthScopes, []string{})
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetResultsParams
+
+	headers := c.GetReqHeaders()
+
+	// ------------- Required header parameter "X-User-Id" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-User-Id")]; found {
+		var XUserId string
+		n := len(valueList)
+		if n != 1 {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Too many values for ParamName X-User-Id, 1 is required, but %d found", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-User-Id", valueList[0], &XUserId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter X-User-Id: %w", err).Error())
+		}
+
+		params.XUserId = XUserId
+
+	} else {
+		err = fmt.Errorf("Header parameter X-User-Id is required, but not found: %w", err)
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
 	handler := func(c fiber.Ctx) error {
-		return siw.Handler.GetResults(c)
+		return siw.Handler.GetResults(c, params)
 	}
 
 	for i := len(siw.HandlerMiddlewares) - 1; i >= 0; i-- {
@@ -169,8 +212,6 @@ func (siw *ServerInterfaceWrapper) GetResults(c fiber.Ctx) error {
 
 // GetAllScenarios operation middleware
 func (siw *ServerInterfaceWrapper) GetAllScenarios(c fiber.Ctx) error {
-
-	c.Locals(BearerAuthScopes, []string{})
 
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.GetAllScenarios(c)
@@ -190,10 +231,38 @@ func (siw *ServerInterfaceWrapper) GetAllScenarios(c fiber.Ctx) error {
 // CreateScenario operation middleware
 func (siw *ServerInterfaceWrapper) CreateScenario(c fiber.Ctx) error {
 
+	var err error
+	_ = err
+
 	c.Locals(BearerAuthScopes, []string{})
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateScenarioParams
+
+	headers := c.GetReqHeaders()
+
+	// ------------- Required header parameter "X-User-Id" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-User-Id")]; found {
+		var XUserId openapi_types.UUID
+		n := len(valueList)
+		if n != 1 {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Too many values for ParamName X-User-Id, 1 is required, but %d found", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-User-Id", valueList[0], &XUserId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: "uuid"})
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter X-User-Id: %w", err).Error())
+		}
+
+		params.XUserId = XUserId
+
+	} else {
+		err = fmt.Errorf("Header parameter X-User-Id is required, but not found: %w", err)
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
 	handler := func(c fiber.Ctx) error {
-		return siw.Handler.CreateScenario(c)
+		return siw.Handler.CreateScenario(c, params)
 	}
 
 	for i := len(siw.HandlerMiddlewares) - 1; i >= 0; i-- {
@@ -220,8 +289,6 @@ func (siw *ServerInterfaceWrapper) GetScenarioById(c fiber.Ctx) error {
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter scenarioId: %w", err).Error())
 	}
-
-	c.Locals(BearerAuthScopes, []string{})
 
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.GetScenarioById(c, scenarioId)
@@ -254,8 +321,33 @@ func (siw *ServerInterfaceWrapper) EditScenario(c fiber.Ctx) error {
 
 	c.Locals(BearerAuthScopes, []string{})
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params EditScenarioParams
+
+	headers := c.GetReqHeaders()
+
+	// ------------- Required header parameter "X-User-Id" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-User-Id")]; found {
+		var XUserId openapi_types.UUID
+		n := len(valueList)
+		if n != 1 {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Too many values for ParamName X-User-Id, 1 is required, but %d found", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-User-Id", valueList[0], &XUserId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: "uuid"})
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter X-User-Id: %w", err).Error())
+		}
+
+		params.XUserId = XUserId
+
+	} else {
+		err = fmt.Errorf("Header parameter X-User-Id is required, but not found: %w", err)
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
 	handler := func(c fiber.Ctx) error {
-		return siw.Handler.EditScenario(c, scenarioId)
+		return siw.Handler.EditScenario(c, scenarioId, params)
 	}
 
 	for i := len(siw.HandlerMiddlewares) - 1; i >= 0; i-- {
@@ -272,10 +364,38 @@ func (siw *ServerInterfaceWrapper) EditScenario(c fiber.Ctx) error {
 // CreateSimulatorSession operation middleware
 func (siw *ServerInterfaceWrapper) CreateSimulatorSession(c fiber.Ctx) error {
 
+	var err error
+	_ = err
+
 	c.Locals(BearerAuthScopes, []string{})
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateSimulatorSessionParams
+
+	headers := c.GetReqHeaders()
+
+	// ------------- Required header parameter "X-User-Id" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-User-Id")]; found {
+		var XUserId string
+		n := len(valueList)
+		if n != 1 {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Too many values for ParamName X-User-Id, 1 is required, but %d found", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-User-Id", valueList[0], &XUserId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter X-User-Id: %w", err).Error())
+		}
+
+		params.XUserId = XUserId
+
+	} else {
+		err = fmt.Errorf("Header parameter X-User-Id is required, but not found: %w", err)
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
 	handler := func(c fiber.Ctx) error {
-		return siw.Handler.CreateSimulatorSession(c)
+		return siw.Handler.CreateSimulatorSession(c, params)
 	}
 
 	for i := len(siw.HandlerMiddlewares) - 1; i >= 0; i-- {
@@ -289,13 +409,41 @@ func (siw *ServerInterfaceWrapper) CreateSimulatorSession(c fiber.Ctx) error {
 	return handler(c)
 }
 
-// GetStepById operation middleware
-func (siw *ServerInterfaceWrapper) GetStepById(c fiber.Ctx) error {
+// GetStep operation middleware
+func (siw *ServerInterfaceWrapper) GetStep(c fiber.Ctx) error {
+
+	var err error
+	_ = err
 
 	c.Locals(BearerAuthScopes, []string{})
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetStepParams
+
+	headers := c.GetReqHeaders()
+
+	// ------------- Required header parameter "X-User-Id" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-User-Id")]; found {
+		var XUserId openapi_types.UUID
+		n := len(valueList)
+		if n != 1 {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Too many values for ParamName X-User-Id, 1 is required, but %d found", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-User-Id", valueList[0], &XUserId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: "uuid"})
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter X-User-Id: %w", err).Error())
+		}
+
+		params.XUserId = XUserId
+
+	} else {
+		err = fmt.Errorf("Header parameter X-User-Id is required, but not found: %w", err)
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
 	handler := func(c fiber.Ctx) error {
-		return siw.Handler.GetStepById(c)
+		return siw.Handler.GetStep(c, params)
 	}
 
 	for i := len(siw.HandlerMiddlewares) - 1; i >= 0; i-- {
@@ -312,10 +460,94 @@ func (siw *ServerInterfaceWrapper) GetStepById(c fiber.Ctx) error {
 // CreateStep operation middleware
 func (siw *ServerInterfaceWrapper) CreateStep(c fiber.Ctx) error {
 
+	var err error
+	_ = err
+
 	c.Locals(BearerAuthScopes, []string{})
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateStepParams
+
+	headers := c.GetReqHeaders()
+
+	// ------------- Required header parameter "X-User-Id" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-User-Id")]; found {
+		var XUserId openapi_types.UUID
+		n := len(valueList)
+		if n != 1 {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Too many values for ParamName X-User-Id, 1 is required, but %d found", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-User-Id", valueList[0], &XUserId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: "uuid"})
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter X-User-Id: %w", err).Error())
+		}
+
+		params.XUserId = XUserId
+
+	} else {
+		err = fmt.Errorf("Header parameter X-User-Id is required, but not found: %w", err)
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
 	handler := func(c fiber.Ctx) error {
-		return siw.Handler.CreateStep(c)
+		return siw.Handler.CreateStep(c, params)
+	}
+
+	for i := len(siw.HandlerMiddlewares) - 1; i >= 0; i-- {
+		m := siw.HandlerMiddlewares[i]
+		next := handler
+		handler = func(c fiber.Ctx) error {
+			return m(c, next)
+		}
+	}
+
+	return handler(c)
+}
+
+// UpdateStep operation middleware
+func (siw *ServerInterfaceWrapper) UpdateStep(c fiber.Ctx) error {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "stepId" -------------
+	var stepId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "stepId", c.Params("stepId"), &stepId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter stepId: %w", err).Error())
+	}
+
+	c.Locals(BearerAuthScopes, []string{})
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateStepParams
+
+	headers := c.GetReqHeaders()
+
+	// ------------- Required header parameter "X-User-Id" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-User-Id")]; found {
+		var XUserId openapi_types.UUID
+		n := len(valueList)
+		if n != 1 {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("Too many values for ParamName X-User-Id, 1 is required, but %d found", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-User-Id", valueList[0], &XUserId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: "uuid"})
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter X-User-Id: %w", err).Error())
+		}
+
+		params.XUserId = XUserId
+
+	} else {
+		err = fmt.Errorf("Header parameter X-User-Id is required, but not found: %w", err)
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	handler := func(c fiber.Ctx) error {
+		return siw.Handler.UpdateStep(c, stepId, params)
 	}
 
 	for i := len(siw.HandlerMiddlewares) - 1; i >= 0; i-- {
@@ -356,8 +588,6 @@ func RegisterHandlersWithOptions(router fiber.Router, si ServerInterface, option
 
 	router.Get(options.BaseURL+"/simulator/action/file/:fileId", wrapper.GetFileByFileId)
 
-	router.Get(options.BaseURL+"/simulator/action/seacrh", wrapper.Search)
-
 	router.Get(options.BaseURL+"/simulator/final", wrapper.GetResults)
 
 	router.Get(options.BaseURL+"/simulator/scenarios", wrapper.GetAllScenarios)
@@ -370,8 +600,10 @@ func RegisterHandlersWithOptions(router fiber.Router, si ServerInterface, option
 
 	router.Post(options.BaseURL+"/simulator/start", wrapper.CreateSimulatorSession)
 
-	router.Get(options.BaseURL+"/simulator/step", wrapper.GetStepById)
+	router.Get(options.BaseURL+"/simulator/step", wrapper.GetStep)
 
 	router.Post(options.BaseURL+"/simulator/step", wrapper.CreateStep)
+
+	router.Put(options.BaseURL+"/simulator/step/:stepId", wrapper.UpdateStep)
 
 }

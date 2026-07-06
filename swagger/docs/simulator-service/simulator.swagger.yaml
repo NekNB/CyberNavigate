@@ -32,31 +32,12 @@ components:
       bearerFormat: JWT
 
   requestBodies:
-    StepRequset:
+    InputStepRequest:
       required: true
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              previousStep:
-                type: string
-                format: uuid
-                example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
-              previosAnswer:
-                type: string
-                format: uuid
-                example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
-              minTrust:
-                type: integer
-                example: 0
-              maxTrust:
-                type: integer
-                example: 3
-              actions:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ActionBase"
+            $ref: "#/components/schemas/StepMeta"
 
   responses:
     BadRequestResponse:
@@ -66,26 +47,8 @@ components:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
           example:
-            message: "Invalid email format"
-    FinalResponse:
-      description: Результат игры
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/Final"
-    MessageResponse:
-      description: Response with message
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-              - message
-            properties:
-              message:
-                type: string
-          example:
-            message: "Successfully"
+            message: "Invalid data"
+
     ForbiddenResponse:
       description: Forbidden - You don't have permission to access this resource
       content:
@@ -94,6 +57,7 @@ components:
             $ref: "#/components/schemas/ErrorResponse"
           example:
             message: "Insufficient permissions to perform this action"
+
     UnauthorizedResponse:
       description: Unauthorized - Authentication is required or token is invalid/expired
       content:
@@ -110,7 +74,7 @@ components:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
           example:
-            message: "Resource with id 123 not found"
+            message: "Resource with id not found"
 
     UnprocessableEntityResponse:
       description: Unprocessable Entity - Validation failed
@@ -119,16 +83,7 @@ components:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
           example:
-            message: "Validation failed: fields 'username' is required"
-
-    AllScenarioResponse:
-      description: Список всех доступных пользователю сценариев
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: "#/components/schemas/ScenarioWithId"
+            message: "Validation failed: some fields is required"
 
     ScenarioResponse:
       description: Сценарий
@@ -136,37 +91,26 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/ScenarioFull"
-    StepResponse:
-      description: Шаг Сценария
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/StepBase"
 
-    FileResponse:
-      description: Файл
+    StepMetaRespose:
+      description: Шаг с Метаданными
       content:
-        application/json:
+        appliaction/json:
           schema:
-            $ref: "#/components/schemas/FileObject"
+            allOf:
+              - $ref: "#/components/schemas/BaseId"
+              - $ref: "#/components/schemas/StepMeta"
+
   schemas:
-    Final:
+    BaseId:
       type: object
+      required: ["id"]
       properties:
-        gameDuration:
+        id:
           type: string
-          format: date-time
-          example: 2026-05-11T10:00:00Z
-        errors:
-          type: array
-          items:
-            type: string
-            example: Нельзя называть маме номер банковской карточки
-        trustGraph:
-          type: array
-          items:
-            type: integer
-            example: 2
+          format: uuid
+          example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+
     ErrorResponse:
       type: object
       required:
@@ -177,7 +121,7 @@ components:
 
     ScenarioBase:
       type: object
-      required: [id, difficulty, title, description]
+      required: [difficulty, title, description]
       properties:
         difficulty:
           type: string
@@ -192,68 +136,71 @@ components:
         description:
           type: string
           example: about our scenario
-    ScenarioWithId:
-      allOf:
-        - type: object
-          properties:
-            id:
-              type: string
-              format: uuid
-              example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
-        - $ref: "#/components/schemas/ScenarioBase"
+        articleIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+            example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
 
     ScenarioFull:
       allOf:
-        - $ref: "#/components/schemas/ScenarioWithId"
+        - $ref: "#/components/schemas/BaseId"
+        - $ref: "#/components/schemas/ScenarioBase"
+
+    StepBase:
+      required: ["actions"]
+      allOf:
+        - $ref: "#/components/schemas/BaseId"
         - type: object
           properties:
-            articlesIds:
+            actions:
               type: array
               items:
-                type: string
-                format: uuid
-                example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
-    StepBase:
+                $ref: "#/components/schemas/Action"
+
+    StepMeta:
       type: object
       properties:
-        id:
+        previousStep:
           type: string
           format: uuid
           example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+        previosAnswer:
+          type: string
+          format: uuid
+          example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+        minTrust:
+          type: integer
+          example: 0
+        maxTrust:
+          type: integer
+          example: 3
         actions:
           type: array
           items:
-            $ref: "#/components/schemas/ActionWithId"
+            $ref: "#/components/schemas/Action"
 
-    ActionBase:
+    Action:
       type: object
       properties:
         type:
           type: string
-          enum: [sms, message]
+          enum: [message, sms]
         object:
           oneOf:
-            - $ref: "#/components/schemas/SmsObject"
             - $ref: "#/components/schemas/MessageObject"
+            - $ref: "#/components/schemas/SmsObject"
           discriminator:
             propertyName: type
             mapping:
-              sms: "#/components/schemas/SmsObject"
               message: "#/components/schemas/MessageObject"
+              sms: "#/components/schemas/SmsObject"
             defaultMapping: "#/components/schemas/MessageObject"
         delay:
           type: integer
           example: 10
 
-    ActionWithId:
-      allOf:
-        - type: object
-          properties:
-            id:
-              type: string
-              format: uuid
-              example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
-        - $ref: "#/components/schemas/ActionBase"
     SmsObject:
       type: object
       properties:
@@ -266,6 +213,7 @@ components:
         text:
           type: string
           example: Привет Друг!
+
     FileObject:
       type: object
       properties:
@@ -282,6 +230,7 @@ components:
         size:
           type: integer
           example: 10
+
     MessageObject:
       type: object
       properties:
@@ -305,46 +254,51 @@ components:
         answers:
           type: array
           items:
-            $ref: "#/components/schemas/Answer"
-
-    Answer:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
-        text:
-          type: string
-          example: Привет Друг!
-        addTrust:
-          type: integer
-          example: -10
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+              text:
+                type: string
+                example: Привет Друг!
+              trust:
+                type: integer
+                example: -10
 
 paths:
   /simulator/scenarios:
     get:
       x-auth:
-        public: false
+        public: true
         permission: user
+      security: []
       tags:
         - User
       summary: Получить список доступных сценариев
       operationId: getAllScenarios
       responses:
         "200":
-          description: Информация о всех сценариях
-          $ref: "#/components/responses/AllScenarioResponse"
-        "401":
-          description: Неавторизован
-          $ref: "#/components/responses/UnauthorizedResponse"
-        "422":
-          description: Некорректный запрос
-          $ref: "#/components/responses/UnprocessableEntityResponse"
+          description: Список всех доступных пользователю сценариев
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ScenarioFull"
+
     post:
       x-auth:
         public: false
         permission: admin
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
       tags:
         - Admin
       summary: Создание нового сценария
@@ -362,28 +316,26 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ScenarioWithId"
+                $ref: "#/components/schemas/ScenarioFull"
         "401":
-          description: Неавторизован
           $ref: "#/components/responses/UnauthorizedResponse"
         "403":
-          description: В доступе отказано
           $ref: "#/components/responses/ForbiddenResponse"
         "422":
-          description: Некорректный запрос
           $ref: "#/components/responses/UnprocessableEntityResponse"
 
   /simulator/scenarios/{scenarioId}:
     get:
       x-auth:
-        public: false
+        public: true
         permission: user
       tags:
         - User
+      security: []
       parameters:
         - name: scenarioId
           in: path
-          description: ID of article
+          description: ID of scenario
           required: true
           schema:
             type: string
@@ -393,28 +345,29 @@ paths:
         "200":
           description: Информация о всех сценариях
           $ref: "#/components/responses/ScenarioResponse"
-        "401":
-          description: Неавторизован
-          $ref: "#/components/responses/UnauthorizedResponse"
         "404":
           description: Сценарий не найден
           $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          description: Некорректный запрос
-          $ref: "#/components/responses/UnprocessableEntityResponse"
 
     patch:
       x-auth:
         public: false
         permission: admin
+
       tags:
         - Admin
       summary: Обновленние данных сценария
       operationId: editScenario
       parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
         - name: scenarioId
           in: path
-          description: ID of article
+          description: ID of scenario
           required: true
           schema:
             type: string
@@ -423,23 +376,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                difficulty:
-                  type: string
-                  enum: [easy, middle, hard]
-                  example: hard
-                title:
-                  type: string
-                  example: first scenario
-                description:
-                  type: string
-                  example: about first scenario
-                articleIds:
-                  type: array
-                  items:
-                    type: string
-                    example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+              $ref: "#/components/schemas/ScenarioBase"
       responses:
         "200":
           description: Сценарий обновлен
@@ -448,13 +385,10 @@ paths:
           description: Сценарий не найден
           $ref: "#/components/responses/NotFoundResponse"
         "403":
-          description: В доступе отказано
           $ref: "#/components/responses/ForbiddenResponse"
         "401":
-          description: Неавторизован
           $ref: "#/components/responses/UnauthorizedResponse"
         "422":
-          description: Некорректный запрос
           $ref: "#/components/responses/UnprocessableEntityResponse"
 
   /simulator/step:
@@ -462,51 +396,92 @@ paths:
       x-auth:
         public: false
         permission: user
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
       tags:
         - User
       summary: Получить Шаг
-      operationId: getStepById
+      operationId: getStep
       responses:
         "200":
           description: Информация о шаге
-          $ref: "#/components/responses/StepResponse"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StepBase"
         "401":
-          description: Неавторизован
           $ref: "#/components/responses/UnauthorizedResponse"
-        "404":
-          description: Шаг не найден
-          $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          description: Некорректный запрос
-          $ref: "#/components/responses/UnprocessableEntityResponse"
+
     post:
       x-auth:
         public: false
         permission: admin
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
       tags:
         - Admin
       summary: Создание нового шага
       operationId: createStep
       requestBody:
-        $ref: "#/components/requestBodies/StepRequset"
-
+        $ref: "#/components/requestBodies/InputStepRequest"
       responses:
         "201":
-          description: Шаг создан
-          $ref: "#/components/responses/MessageResponse"
+          $ref: "#/components/responses/StepMetaRespose"
         "400":
-          description: Неверные данные
           $ref: "#/components/responses/BadRequestResponse"
         "401":
-          description: Неавторизован
           $ref: "#/components/responses/UnauthorizedResponse"
         "403":
-          description: В доступе отказано
           $ref: "#/components/responses/ForbiddenResponse"
         "422":
-          description: Некорректный запрос
           $ref: "#/components/responses/UnprocessableEntityResponse"
 
+  /simulator/step/{stepId}:
+    put:
+      x-auth:
+        public: false
+        permission: admin
+      parameters:
+        - name: stepId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      tags:
+        - Admin
+      summary: Обновление шага
+      operationId: updateStep
+      requestBody:
+        $ref: "#/components/requestBodies/InputStepRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/StepMetaRespose"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntityResponse"
   /simulator/action/file/{fileId}:
     get:
       x-auth:
@@ -520,55 +495,39 @@ paths:
           required: true
           schema:
             type: string
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: string
+
       summary: Получить файл по Id
       operationId: getFileByFileId
       responses:
         "200":
-          description: Информация о файлу
-          $ref: "#/components/responses/FileResponse"
+          description: Информация о файле
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileObject"
         "401":
-          description: Неавторизован
           $ref: "#/components/responses/UnauthorizedResponse"
         "404":
           description: файл не найден
           $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          description: Некорректный запрос
-          $ref: "#/components/responses/UnprocessableEntityResponse"
 
-  /simulator/action/seacrh:
-    get:
-      x-auth:
-        public: false
-        permission: user
-      tags:
-        - User
-      parameters:
-        - name: text
-          in: query
-          required: true
-          schema:
-            type: string
-      summary: Выполнить поиск
-      operationId: search
-      responses:
-        "200":
-          description: Информация о файлу
-          $ref: "#/components/responses/FileResponse"
-        "400":
-          description: Пустой запрос
-          $ref: "#/components/responses/UnauthorizedResponse"
-        "401":
-          description: Неавторизован
-          $ref: "#/components/responses/UnauthorizedResponse"
-        "422":
-          description: Некорректный запрос
-          $ref: "#/components/responses/UnprocessableEntityResponse"
   /simulator/action/answer:
     post:
       x-auth:
         public: false
         permission: user
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: string
+
       tags:
         - User
       summary: Отправка ответа пользователя
@@ -578,60 +537,89 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Answer"
+              type: object
+              properties:
+                answerId:
+                  type: string
+                  format: uuid
+                  example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
       responses:
-        "200":
+        "204":
           description: Ответ обработан
-          $ref: "#/components/responses/MessageResponse"
+        "400":
+          description: Неверный answerId
+          $ref: "#/components/responses/BadRequestResponse"
         "401":
-          description: Неавторизован
           $ref: "#/components/responses/UnauthorizedResponse"
         "422":
-          description: Некорректный запрос
           $ref: "#/components/responses/UnprocessableEntityResponse"
+
+  # ======================================
+  #       СЕССИЯ ИГРЫ
+  # ======================================
   /simulator/start:
     post:
       x-auth:
         public: false
         permission: user
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: string
       tags:
         - User
       summary: Создает сессию симулятора
       operationId: createSimulatorSession
       responses:
-        "201":
+        "204":
           description: Сессия создана
-          $ref: "#/components/responses/MessageResponse"
+        "400":
+          description: Сессия была создана ранее
+          $ref: "#/components/responses/BadRequestResponse"
         "401":
-          description: Неавторизован
           $ref: "#/components/responses/UnauthorizedResponse"
         "422":
-          description: Некорректный запрос
           $ref: "#/components/responses/UnprocessableEntityResponse"
   /simulator/final:
     get:
       x-auth:
         public: false
         permission: user
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: string
       tags:
         - User
       summary: Запрашивает результаты игры
       operationId: getResults
       responses:
         "200":
-          description: Получен результат
-          $ref: "#/components/responses/FinalResponse"
+          description: Результат игры
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  gameDuration:
+                    type: integer
+                    example: 15
+                  errors:
+                    type: array
+                    items:
+                      type: string
+                      example: Нельзя называть маме номер банковской карточки
+                  trustGraph:
+                    type: array
+                    items:
+                      type: integer
+                    example: [2, 3]
 
         "401":
-          description: Неавторизован
           $ref: "#/components/responses/UnauthorizedResponse"
         "422":
-          description: Некорректный запрос
           $ref: "#/components/responses/UnprocessableEntityResponse"
-
-          content:
-            propertyName:
-              encoding:
-                propertyName:
-                  allowReserved: false
-                  contentType:
