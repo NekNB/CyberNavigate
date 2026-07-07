@@ -177,6 +177,7 @@ type StepMeta struct {
 	MinTrust      *int                `json:"minTrust,omitempty"`
 	PreviosAnswer *openapi_types.UUID `json:"previosAnswer,omitempty"`
 	PreviousStep  *openapi_types.UUID `json:"previousStep,omitempty"`
+	ScenarioId    *openapi_types.UUID `json:"scenarioId,omitempty"`
 }
 
 // BadRequestResponse defines model for BadRequestResponse.

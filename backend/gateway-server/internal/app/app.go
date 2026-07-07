@@ -92,10 +92,13 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 		Browse: true,
 	}))
 
+	app.Get("/redoc/*", static.New("/redoc", static.Config{
+		FS: assets.RedocUI,
+	}))
+
 	// Добавляем swagger директорию
 	app.Get("/swagger/*", static.New("/swagger", static.Config{
-		FS:     assets.SwaggerUI,
-		Browse: true,
+		FS: assets.SwaggerUI,
 	}))
 
 	app.Get("/", func(c fiber.Ctx) error {

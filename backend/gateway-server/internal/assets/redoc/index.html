@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>API Documentation</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+
+<body>
+  <div style="padding: 10px; background: #f5f5f5; border-bottom: 1px solid #ccc; text-align: right;">
+    <label for="spec-select">Выберите спецификацию: </label>
+    <select id="spec-select" onchange="loadSpec(this.value)">
+      <option value="/specs/docs/simulator-service/simulator.swagger.yaml">Simulator Service</option>
+      <option value="/specs/docs/user-service/user.swagger.yaml">User Service</option>
+      <option value="/specs/docs/article-service/article.swagger.yaml">Article Service</option>
+    </select>
+  </div>
+
+  <div id="redoc-container"></div>
+
+  <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
+  <script>
+    let currentRedoc = null;
+
+    function loadSpec(url) {
+      const container = document.getElementById('redoc-container');
+
+      // Очищаем контейнер перед загрузкой новой спецификации
+      container.innerHTML = '';
+
+      // Инициализируем ReDoc с новым URL
+      Redoc.init(url, {
+        // здесь можно передать дополнительные опции
+        hideLoading: false
+      }, container);
+    }
+
+    // Загружаем спецификацию по умолчанию
+    loadSpec('/specs/docs/simulator-service/simulator.swagger.yaml');
+  </script>
+</body>
+
+</html>
