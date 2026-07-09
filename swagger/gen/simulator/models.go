@@ -4,10 +4,6 @@
 package simulator
 
 import (
-	"encoding/json"
-	"errors"
-
-	"github.com/oapi-codegen/runtime"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
@@ -27,14 +23,50 @@ const ServerUrlLocalAPIGatewayServer1 = "http://127.0.0.1:9000/api/v1"
 // ServerUrlLocalService defines the Server URL for Local Service
 const ServerUrlLocalService = "http://127.0.0.1:8000/api/v1"
 
-// Defines values for ActionType.
+// Defines values for ActionBaseType.
 const (
-	Message ActionType = "message"
-	Sms     ActionType = "sms"
+	ActionBaseTypeMessage ActionBaseType = "message"
+	ActionBaseTypeSms     ActionBaseType = "sms"
 )
 
-// Valid indicates whether the value is a known member of the ActionType enum.
-func (e ActionType) Valid() bool {
+// Valid indicates whether the value is a known member of the ActionBaseType enum.
+func (e ActionBaseType) Valid() bool {
+	switch e {
+	case ActionBaseTypeMessage:
+		return true
+	case ActionBaseTypeSms:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ActionBaseRequiredType.
+const (
+	ActionBaseRequiredTypeMessage ActionBaseRequiredType = "message"
+	ActionBaseRequiredTypeSms     ActionBaseRequiredType = "sms"
+)
+
+// Valid indicates whether the value is a known member of the ActionBaseRequiredType enum.
+func (e ActionBaseRequiredType) Valid() bool {
+	switch e {
+	case ActionBaseRequiredTypeMessage:
+		return true
+	case ActionBaseRequiredTypeSms:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ActionFullType.
+const (
+	Message ActionFullType = "message"
+	Sms     ActionFullType = "sms"
+)
+
+// Valid indicates whether the value is a known member of the ActionFullType enum.
+func (e ActionFullType) Valid() bool {
 	switch e {
 	case Message:
 		return true
@@ -66,41 +98,97 @@ func (e ScenarioBaseDifficulty) Valid() bool {
 	}
 }
 
-// Defines values for ScenarioFullDifficulty.
+// Defines values for ScenarioBaseRequiredDifficulty.
 const (
-	ScenarioFullDifficultyEasy   ScenarioFullDifficulty = "easy"
-	ScenarioFullDifficultyHard   ScenarioFullDifficulty = "hard"
-	ScenarioFullDifficultyMiddle ScenarioFullDifficulty = "middle"
+	ScenarioBaseRequiredDifficultyEasy   ScenarioBaseRequiredDifficulty = "easy"
+	ScenarioBaseRequiredDifficultyHard   ScenarioBaseRequiredDifficulty = "hard"
+	ScenarioBaseRequiredDifficultyMiddle ScenarioBaseRequiredDifficulty = "middle"
 )
 
-// Valid indicates whether the value is a known member of the ScenarioFullDifficulty enum.
-func (e ScenarioFullDifficulty) Valid() bool {
+// Valid indicates whether the value is a known member of the ScenarioBaseRequiredDifficulty enum.
+func (e ScenarioBaseRequiredDifficulty) Valid() bool {
 	switch e {
-	case ScenarioFullDifficultyEasy:
+	case ScenarioBaseRequiredDifficultyEasy:
 		return true
-	case ScenarioFullDifficultyHard:
+	case ScenarioBaseRequiredDifficultyHard:
 		return true
-	case ScenarioFullDifficultyMiddle:
+	case ScenarioBaseRequiredDifficultyMiddle:
 		return true
 	default:
 		return false
 	}
 }
 
-// Action defines model for Action.
-type Action struct {
-	Delay  *int           `json:"delay,omitempty"`
-	Object *Action_Object `json:"object,omitempty"`
-	Type   *ActionType    `json:"type,omitempty"`
+// Defines values for ScenarioFullDifficulty.
+const (
+	Easy   ScenarioFullDifficulty = "easy"
+	Hard   ScenarioFullDifficulty = "hard"
+	Middle ScenarioFullDifficulty = "middle"
+)
+
+// Valid indicates whether the value is a known member of the ScenarioFullDifficulty enum.
+func (e ScenarioFullDifficulty) Valid() bool {
+	switch e {
+	case Easy:
+		return true
+	case Hard:
+		return true
+	case Middle:
+		return true
+	default:
+		return false
+	}
 }
 
-// Action_Object defines model for Action.Object.
-type Action_Object struct {
-	union json.RawMessage
+// ActionBase defines model for ActionBase.
+type ActionBase struct {
+	Delay   *int                `json:"delay,omitempty"`
+	Message *openapi_types.UUID `json:"message,omitempty"`
+	Type    *ActionBaseType     `json:"type,omitempty"`
 }
 
-// ActionType defines model for Action.Type.
-type ActionType string
+// ActionBaseType defines model for ActionBase.Type.
+type ActionBaseType string
+
+// ActionBaseRequired defines model for ActionBaseRequired.
+type ActionBaseRequired struct {
+	Delay   int                    `json:"delay"`
+	Message openapi_types.UUID     `json:"message"`
+	Type    ActionBaseRequiredType `json:"type"`
+}
+
+// ActionBaseRequiredType defines model for ActionBaseRequired.Type.
+type ActionBaseRequiredType string
+
+// ActionFull defines model for ActionFull.
+type ActionFull struct {
+	Delay   int                `json:"delay"`
+	Id      openapi_types.UUID `json:"id"`
+	Message MessageFull        `json:"message"`
+	Type    ActionFullType     `json:"type"`
+}
+
+// ActionFullType defines model for ActionFull.Type.
+type ActionFullType string
+
+// AnswerBase defines model for AnswerBase.
+type AnswerBase struct {
+	AddTrust *int    `json:"addTrust,omitempty"`
+	Text     *string `json:"text,omitempty"`
+}
+
+// AnswerBaseRequired defines model for AnswerBaseRequired.
+type AnswerBaseRequired struct {
+	AddTrust int    `json:"addTrust"`
+	Text     string `json:"text"`
+}
+
+// AnswerFull defines model for AnswerFull.
+type AnswerFull struct {
+	AddTrust *int               `json:"addTrust,omitempty"`
+	Id       openapi_types.UUID `json:"id"`
+	Text     *string            `json:"text,omitempty"`
+}
 
 // BaseId defines model for BaseId.
 type BaseId struct {
@@ -112,38 +200,75 @@ type ErrorResponse struct {
 	Message string `json:"message"`
 }
 
-// FileObject defines model for FileObject.
-type FileObject struct {
-	Filename *string             `json:"filename,omitempty"`
-	Id       *openapi_types.UUID `json:"id,omitempty"`
-	IsSafe   *bool               `json:"isSafe,omitempty"`
-	Size     *int                `json:"size,omitempty"`
+// FileBase defines model for FileBase.
+type FileBase struct {
+	Filename *string `json:"filename,omitempty"`
+	IsSafe   *bool   `json:"isSafe,omitempty"`
+	Size     *int    `json:"size,omitempty"`
 }
 
-// MessageObject defines model for MessageObject.
-type MessageObject struct {
-	Answers *[]struct {
-		Id    *openapi_types.UUID `json:"id,omitempty"`
-		Text  *string             `json:"text,omitempty"`
-		Trust *int                `json:"trust,omitempty"`
-	} `json:"answers,omitempty"`
-	FileId     *openapi_types.UUID `json:"fileId,omitempty"`
-	Filename   *string             `json:"filename,omitempty"`
+// FileBaseRequired defines model for FileBaseRequired.
+type FileBaseRequired struct {
+	Filename string `json:"filename"`
+	IsSafe   bool   `json:"isSafe"`
+	Size     int    `json:"size"`
+}
+
+// FileFull defines model for FileFull.
+type FileFull struct {
+	Filename string             `json:"filename"`
+	Id       openapi_types.UUID `json:"id"`
+	IsSafe   bool               `json:"isSafe"`
+	Size     int                `json:"size"`
+}
+
+// MessageBase defines model for MessageBase.
+type MessageBase struct {
+	Answers    *[]openapi_types.UUID `json:"answers,omitempty"`
+	Files      *[]openapi_types.UUID `json:"files,omitempty"`
+	SenderName *string               `json:"senderName,omitempty"`
+	Text       *string               `json:"text,omitempty"`
+}
+
+// MessageBaseReuired defines model for MessageBaseReuired.
+type MessageBaseReuired struct {
+	Answers    *[]openapi_types.UUID `json:"answers,omitempty"`
+	Files      *[]openapi_types.UUID `json:"files,omitempty"`
+	SenderName string                `json:"senderName"`
+	Text       *string               `json:"text,omitempty"`
+}
+
+// MessageFull defines model for MessageFull.
+type MessageFull struct {
+	Answers    *[]AnswerFull       `json:"answers,omitempty"`
+	Files      *[]FileFull         `json:"files,omitempty"`
+	Id         openapi_types.UUID  `json:"id"`
 	SenderId   *openapi_types.UUID `json:"senderId,omitempty"`
-	SenderName *string             `json:"senderName,omitempty"`
+	SenderName string              `json:"senderName"`
 	Text       *string             `json:"text,omitempty"`
 }
 
 // ScenarioBase defines model for ScenarioBase.
 type ScenarioBase struct {
-	ArticleIds  *[]openapi_types.UUID  `json:"articleIds,omitempty"`
-	Description string                 `json:"description"`
-	Difficulty  ScenarioBaseDifficulty `json:"difficulty"`
-	Title       string                 `json:"title"`
+	ArticleIds  *[]openapi_types.UUID   `json:"articleIds,omitempty"`
+	Description *string                 `json:"description,omitempty"`
+	Difficulty  *ScenarioBaseDifficulty `json:"difficulty,omitempty"`
+	Title       *string                 `json:"title,omitempty"`
 }
 
 // ScenarioBaseDifficulty defines model for ScenarioBase.Difficulty.
 type ScenarioBaseDifficulty string
+
+// ScenarioBaseRequired defines model for ScenarioBaseRequired.
+type ScenarioBaseRequired struct {
+	ArticleIds  *[]openapi_types.UUID          `json:"articleIds,omitempty"`
+	Description string                         `json:"description"`
+	Difficulty  ScenarioBaseRequiredDifficulty `json:"difficulty"`
+	Title       string                         `json:"title"`
+}
+
+// ScenarioBaseRequiredDifficulty defines model for ScenarioBaseRequired.Difficulty.
+type ScenarioBaseRequiredDifficulty string
 
 // ScenarioFull defines model for ScenarioFull.
 type ScenarioFull struct {
@@ -157,22 +282,33 @@ type ScenarioFull struct {
 // ScenarioFullDifficulty defines model for ScenarioFull.Difficulty.
 type ScenarioFullDifficulty string
 
-// SmsObject defines model for SmsObject.
-type SmsObject struct {
-	Sender *string `json:"sender,omitempty"`
-	Text   *string `json:"text,omitempty"`
-	Type   *string `json:"type,omitempty"`
+// SimulationFinal defines model for SimulationFinal.
+type SimulationFinal struct {
+	Errors       *[]string `json:"errors,omitempty"`
+	GameDuration *int      `json:"gameDuration,omitempty"`
+	TrustGraph   *[]int    `json:"trustGraph,omitempty"`
 }
 
 // StepBase defines model for StepBase.
 type StepBase struct {
-	Actions *[]Action          `json:"actions,omitempty"`
+	Actions *[]ActionFull      `json:"actions,omitempty"`
 	Id      openapi_types.UUID `json:"id"`
 }
 
 // StepMeta defines model for StepMeta.
 type StepMeta struct {
-	Actions       *[]Action           `json:"actions,omitempty"`
+	Actions       *[]openapi_types.UUID `json:"actions,omitempty"`
+	MaxTrust      *int                  `json:"maxTrust,omitempty"`
+	MinTrust      *int                  `json:"minTrust,omitempty"`
+	PreviosAnswer *openapi_types.UUID   `json:"previosAnswer,omitempty"`
+	PreviousStep  *openapi_types.UUID   `json:"previousStep,omitempty"`
+	ScenarioId    *openapi_types.UUID   `json:"scenarioId,omitempty"`
+}
+
+// StepMetaFull defines model for StepMetaFull.
+type StepMetaFull struct {
+	Actions       *[]ActionFull       `json:"actions,omitempty"`
+	Id            openapi_types.UUID  `json:"id"`
 	MaxTrust      *int                `json:"maxTrust,omitempty"`
 	MinTrust      *int                `json:"minTrust,omitempty"`
 	PreviosAnswer *openapi_types.UUID `json:"previosAnswer,omitempty"`
@@ -180,8 +316,15 @@ type StepMeta struct {
 	ScenarioId    *openapi_types.UUID `json:"scenarioId,omitempty"`
 }
 
-// BadRequestResponse defines model for BadRequestResponse.
-type BadRequestResponse = ErrorResponse
+// StepMetaRequired defines model for StepMetaRequired.
+type StepMetaRequired struct {
+	Actions       []openapi_types.UUID `json:"actions"`
+	MaxTrust      *int                 `json:"maxTrust,omitempty"`
+	MinTrust      *int                 `json:"minTrust,omitempty"`
+	PreviosAnswer *openapi_types.UUID  `json:"previosAnswer,omitempty"`
+	PreviousStep  *openapi_types.UUID  `json:"previousStep,omitempty"`
+	ScenarioId    openapi_types.UUID   `json:"scenarioId"`
+}
 
 // ForbiddenResponse defines model for ForbiddenResponse.
 type ForbiddenResponse = ErrorResponse
@@ -189,28 +332,22 @@ type ForbiddenResponse = ErrorResponse
 // NotFoundResponse defines model for NotFoundResponse.
 type NotFoundResponse = ErrorResponse
 
-// ScenarioResponse defines model for ScenarioResponse.
-type ScenarioResponse = ScenarioFull
-
 // UnauthorizedResponse defines model for UnauthorizedResponse.
 type UnauthorizedResponse = ErrorResponse
 
 // UnprocessableEntityResponse defines model for UnprocessableEntityResponse.
 type UnprocessableEntityResponse = ErrorResponse
 
-// InputStepRequest defines model for InputStepRequest.
-type InputStepRequest = StepMeta
-
 // bearerAuthContextKey is the context key for BearerAuth security scheme
 type bearerAuthContextKey string
 
-// SendAnswerJSONBody defines parameters for SendAnswer.
-type SendAnswerJSONBody struct {
+// SendUserAnswerJSONBody defines parameters for SendUserAnswer.
+type SendUserAnswerJSONBody struct {
 	AnswerId *openapi_types.UUID `json:"answerId,omitempty"`
 }
 
-// SendAnswerParams defines parameters for SendAnswer.
-type SendAnswerParams struct {
+// SendUserAnswerParams defines parameters for SendUserAnswer.
+type SendUserAnswerParams struct {
 	XUserId string `json:"X-User-Id"`
 }
 
@@ -224,16 +361,6 @@ type GetResultsParams struct {
 	XUserId string `json:"X-User-Id"`
 }
 
-// CreateScenarioParams defines parameters for CreateScenario.
-type CreateScenarioParams struct {
-	XUserId openapi_types.UUID `json:"X-User-Id"`
-}
-
-// EditScenarioParams defines parameters for EditScenario.
-type EditScenarioParams struct {
-	XUserId openapi_types.UUID `json:"X-User-Id"`
-}
-
 // CreateSimulatorSessionParams defines parameters for CreateSimulatorSession.
 type CreateSimulatorSessionParams struct {
 	XUserId string `json:"X-User-Id"`
@@ -244,116 +371,41 @@ type GetStepParams struct {
 	XUserId openapi_types.UUID `json:"X-User-Id"`
 }
 
-// CreateStepParams defines parameters for CreateStep.
-type CreateStepParams struct {
-	XUserId openapi_types.UUID `json:"X-User-Id"`
-}
+// CreateActionJSONRequestBody defines body for CreateAction for application/json ContentType.
+type CreateActionJSONRequestBody = ActionBaseRequired
 
-// UpdateStepParams defines parameters for UpdateStep.
-type UpdateStepParams struct {
-	XUserId openapi_types.UUID `json:"X-User-Id"`
-}
+// SendUserAnswerJSONRequestBody defines body for SendUserAnswer for application/json ContentType.
+type SendUserAnswerJSONRequestBody SendUserAnswerJSONBody
 
-// SendAnswerJSONRequestBody defines body for SendAnswer for application/json ContentType.
-type SendAnswerJSONRequestBody SendAnswerJSONBody
+// EditActionJSONRequestBody defines body for EditAction for application/json ContentType.
+type EditActionJSONRequestBody = ActionBase
+
+// CreateAnswerJSONRequestBody defines body for CreateAnswer for application/json ContentType.
+type CreateAnswerJSONRequestBody = AnswerBaseRequired
+
+// EditAnswerJSONRequestBody defines body for EditAnswer for application/json ContentType.
+type EditAnswerJSONRequestBody = AnswerBase
+
+// CreateFileJSONRequestBody defines body for CreateFile for application/json ContentType.
+type CreateFileJSONRequestBody = FileBaseRequired
+
+// EditFileJSONRequestBody defines body for EditFile for application/json ContentType.
+type EditFileJSONRequestBody = FileBase
+
+// CreateMessageJSONRequestBody defines body for CreateMessage for application/json ContentType.
+type CreateMessageJSONRequestBody = MessageBaseReuired
+
+// EditMessageJSONRequestBody defines body for EditMessage for application/json ContentType.
+type EditMessageJSONRequestBody = MessageBase
 
 // CreateScenarioJSONRequestBody defines body for CreateScenario for application/json ContentType.
-type CreateScenarioJSONRequestBody = ScenarioBase
+type CreateScenarioJSONRequestBody = ScenarioBaseRequired
 
 // EditScenarioJSONRequestBody defines body for EditScenario for application/json ContentType.
 type EditScenarioJSONRequestBody = ScenarioBase
 
 // CreateStepJSONRequestBody defines body for CreateStep for application/json ContentType.
-type CreateStepJSONRequestBody = StepMeta
+type CreateStepJSONRequestBody = StepMetaRequired
 
-// UpdateStepJSONRequestBody defines body for UpdateStep for application/json ContentType.
-type UpdateStepJSONRequestBody = StepMeta
-
-// AsMessageObject returns the union data inside the Action_Object as a MessageObject
-func (t Action_Object) AsMessageObject() (MessageObject, error) {
-	var body MessageObject
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromMessageObject overwrites any union data inside the Action_Object as the provided MessageObject
-func (t *Action_Object) FromMessageObject(v MessageObject) error {
-	 
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeMessageObject performs a merge with any union data inside the Action_Object, using the provided MessageObject
-func (t *Action_Object) MergeMessageObject(v MessageObject) error {
-	 
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsSmsObject returns the union data inside the Action_Object as a SmsObject
-func (t Action_Object) AsSmsObject() (SmsObject, error) {
-	var body SmsObject
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromSmsObject overwrites any union data inside the Action_Object as the provided SmsObject
-func (t *Action_Object) FromSmsObject(v SmsObject) error {
-	 
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeSmsObject performs a merge with any union data inside the Action_Object, using the provided SmsObject
-func (t *Action_Object) MergeSmsObject(v SmsObject) error {
-	 
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t Action_Object) Discriminator() (string, error) {
-	var discriminator struct {
-		Discriminator string `json:"type"`
-	}
-	err := json.Unmarshal(t.union, &discriminator)
-	return discriminator.Discriminator, err
-}
-
-func (t Action_Object) ValueByDiscriminator() (interface{}, error) {
-	discriminator, err := t.Discriminator()
-	if err != nil {
-		return nil, err
-	}
-	switch discriminator {
-	case "message":
-		return t.AsMessageObject()
-	case "sms":
-		return t.AsSmsObject()
-	default:
-		return nil, errors.New("unknown discriminator value: " + discriminator)
-	}
-}
-
-func (t Action_Object) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *Action_Object) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
+// EditStepJSONRequestBody defines body for EditStep for application/json ContentType.
+type EditStepJSONRequestBody = StepMeta

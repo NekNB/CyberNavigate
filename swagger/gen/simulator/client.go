@@ -89,32 +89,72 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
-	// SendAnswerWithBody request with any body
-	SendAnswerWithBody(ctx context.Context, params *SendAnswerParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CreateActionWithBody request with any body
+	CreateActionWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	SendAnswer(ctx context.Context, params *SendAnswerParams, body SendAnswerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateAction(ctx context.Context, body CreateActionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SendUserAnswerWithBody request with any body
+	SendUserAnswerWithBody(ctx context.Context, params *SendUserAnswerParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	SendUserAnswer(ctx context.Context, params *SendUserAnswerParams, body SendUserAnswerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// EditActionWithBody request with any body
+	EditActionWithBody(ctx context.Context, actionId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	EditAction(ctx context.Context, actionId string, body EditActionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateAnswerWithBody request with any body
+	CreateAnswerWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateAnswer(ctx context.Context, body CreateAnswerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// EditAnswerWithBody request with any body
+	EditAnswerWithBody(ctx context.Context, answerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	EditAnswer(ctx context.Context, answerId string, body EditAnswerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateFileWithBody request with any body
+	CreateFileWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateFile(ctx context.Context, body CreateFileJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetFileByFileId request
 	GetFileByFileId(ctx context.Context, fileId string, params *GetFileByFileIdParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetResults request
-	GetResults(ctx context.Context, params *GetResultsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// EditFileWithBody request with any body
+	EditFileWithBody(ctx context.Context, fileId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	EditFile(ctx context.Context, fileId string, body EditFileJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateMessageWithBody request with any body
+	CreateMessageWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateMessage(ctx context.Context, body CreateMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// EditMessageWithBody request with any body
+	EditMessageWithBody(ctx context.Context, messageId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	EditMessage(ctx context.Context, messageId string, body EditMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetAllScenarios request
 	GetAllScenarios(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateScenarioWithBody request with any body
-	CreateScenarioWithBody(ctx context.Context, params *CreateScenarioParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateScenarioWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	CreateScenario(ctx context.Context, params *CreateScenarioParams, body CreateScenarioJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateScenario(ctx context.Context, body CreateScenarioJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetScenarioById request
 	GetScenarioById(ctx context.Context, scenarioId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// EditScenarioWithBody request with any body
-	EditScenarioWithBody(ctx context.Context, scenarioId string, params *EditScenarioParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	EditScenarioWithBody(ctx context.Context, scenarioId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	EditScenario(ctx context.Context, scenarioId string, params *EditScenarioParams, body EditScenarioJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	EditScenario(ctx context.Context, scenarioId string, body EditScenarioJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetResults request
+	GetResults(ctx context.Context, params *GetResultsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateSimulatorSession request
 	CreateSimulatorSession(ctx context.Context, params *CreateSimulatorSessionParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -123,18 +163,18 @@ type ClientInterface interface {
 	GetStep(ctx context.Context, params *GetStepParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateStepWithBody request with any body
-	CreateStepWithBody(ctx context.Context, params *CreateStepParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateStepWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	CreateStep(ctx context.Context, params *CreateStepParams, body CreateStepJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateStep(ctx context.Context, body CreateStepJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// UpdateStepWithBody request with any body
-	UpdateStepWithBody(ctx context.Context, stepId string, params *UpdateStepParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// EditStepWithBody request with any body
+	EditStepWithBody(ctx context.Context, stepId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateStep(ctx context.Context, stepId string, params *UpdateStepParams, body UpdateStepJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	EditStep(ctx context.Context, stepId string, body EditStepJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
-func (c *Client) SendAnswerWithBody(ctx context.Context, params *SendAnswerParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewSendAnswerRequestWithBody(c.Server, params, contentType, body)
+func (c *Client) CreateActionWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateActionRequestWithBody(c.Server, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -145,8 +185,128 @@ func (c *Client) SendAnswerWithBody(ctx context.Context, params *SendAnswerParam
 	return c.Client.Do(req)
 }
 
-func (c *Client) SendAnswer(ctx context.Context, params *SendAnswerParams, body SendAnswerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewSendAnswerRequest(c.Server, params, body)
+func (c *Client) CreateAction(ctx context.Context, body CreateActionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateActionRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) SendUserAnswerWithBody(ctx context.Context, params *SendUserAnswerParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSendUserAnswerRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) SendUserAnswer(ctx context.Context, params *SendUserAnswerParams, body SendUserAnswerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSendUserAnswerRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) EditActionWithBody(ctx context.Context, actionId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEditActionRequestWithBody(c.Server, actionId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) EditAction(ctx context.Context, actionId string, body EditActionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEditActionRequest(c.Server, actionId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAnswerWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAnswerRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAnswer(ctx context.Context, body CreateAnswerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAnswerRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) EditAnswerWithBody(ctx context.Context, answerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEditAnswerRequestWithBody(c.Server, answerId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) EditAnswer(ctx context.Context, answerId string, body EditAnswerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEditAnswerRequest(c.Server, answerId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateFileWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateFileRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateFile(ctx context.Context, body CreateFileJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateFileRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -169,8 +329,68 @@ func (c *Client) GetFileByFileId(ctx context.Context, fileId string, params *Get
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetResults(ctx context.Context, params *GetResultsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetResultsRequest(c.Server, params)
+func (c *Client) EditFileWithBody(ctx context.Context, fileId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEditFileRequestWithBody(c.Server, fileId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) EditFile(ctx context.Context, fileId string, body EditFileJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEditFileRequest(c.Server, fileId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateMessageWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateMessageRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateMessage(ctx context.Context, body CreateMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateMessageRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) EditMessageWithBody(ctx context.Context, messageId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEditMessageRequestWithBody(c.Server, messageId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) EditMessage(ctx context.Context, messageId string, body EditMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEditMessageRequest(c.Server, messageId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -193,8 +413,8 @@ func (c *Client) GetAllScenarios(ctx context.Context, reqEditors ...RequestEdito
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateScenarioWithBody(ctx context.Context, params *CreateScenarioParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateScenarioRequestWithBody(c.Server, params, contentType, body)
+func (c *Client) CreateScenarioWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateScenarioRequestWithBody(c.Server, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -205,8 +425,8 @@ func (c *Client) CreateScenarioWithBody(ctx context.Context, params *CreateScena
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateScenario(ctx context.Context, params *CreateScenarioParams, body CreateScenarioJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateScenarioRequest(c.Server, params, body)
+func (c *Client) CreateScenario(ctx context.Context, body CreateScenarioJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateScenarioRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -229,8 +449,8 @@ func (c *Client) GetScenarioById(ctx context.Context, scenarioId string, reqEdit
 	return c.Client.Do(req)
 }
 
-func (c *Client) EditScenarioWithBody(ctx context.Context, scenarioId string, params *EditScenarioParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewEditScenarioRequestWithBody(c.Server, scenarioId, params, contentType, body)
+func (c *Client) EditScenarioWithBody(ctx context.Context, scenarioId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEditScenarioRequestWithBody(c.Server, scenarioId, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -241,8 +461,20 @@ func (c *Client) EditScenarioWithBody(ctx context.Context, scenarioId string, pa
 	return c.Client.Do(req)
 }
 
-func (c *Client) EditScenario(ctx context.Context, scenarioId string, params *EditScenarioParams, body EditScenarioJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewEditScenarioRequest(c.Server, scenarioId, params, body)
+func (c *Client) EditScenario(ctx context.Context, scenarioId string, body EditScenarioJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEditScenarioRequest(c.Server, scenarioId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetResults(ctx context.Context, params *GetResultsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetResultsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -277,8 +509,8 @@ func (c *Client) GetStep(ctx context.Context, params *GetStepParams, reqEditors 
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateStepWithBody(ctx context.Context, params *CreateStepParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateStepRequestWithBody(c.Server, params, contentType, body)
+func (c *Client) CreateStepWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateStepRequestWithBody(c.Server, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -289,8 +521,8 @@ func (c *Client) CreateStepWithBody(ctx context.Context, params *CreateStepParam
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateStep(ctx context.Context, params *CreateStepParams, body CreateStepJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateStepRequest(c.Server, params, body)
+func (c *Client) CreateStep(ctx context.Context, body CreateStepJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateStepRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -301,8 +533,8 @@ func (c *Client) CreateStep(ctx context.Context, params *CreateStepParams, body 
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpdateStepWithBody(ctx context.Context, stepId string, params *UpdateStepParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateStepRequestWithBody(c.Server, stepId, params, contentType, body)
+func (c *Client) EditStepWithBody(ctx context.Context, stepId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEditStepRequestWithBody(c.Server, stepId, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -313,8 +545,8 @@ func (c *Client) UpdateStepWithBody(ctx context.Context, stepId string, params *
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpdateStep(ctx context.Context, stepId string, params *UpdateStepParams, body UpdateStepJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateStepRequest(c.Server, stepId, params, body)
+func (c *Client) EditStep(ctx context.Context, stepId string, body EditStepJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEditStepRequest(c.Server, stepId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -325,19 +557,59 @@ func (c *Client) UpdateStep(ctx context.Context, stepId string, params *UpdateSt
 	return c.Client.Do(req)
 }
 
-// NewSendAnswerRequest calls the generic SendAnswer builder with application/json body
-func NewSendAnswerRequest(server string, params *SendAnswerParams, body SendAnswerJSONRequestBody) (*http.Request, error) {
+// NewCreateActionRequest calls the generic CreateAction builder with application/json body
+func NewCreateActionRequest(server string, body CreateActionJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewSendAnswerRequestWithBody(server, params, "application/json", bodyReader)
+	return NewCreateActionRequestWithBody(server, "application/json", bodyReader)
 }
 
-// NewSendAnswerRequestWithBody generates requests for SendAnswer with any type of body
-func NewSendAnswerRequestWithBody(server string, params *SendAnswerParams, contentType string, body io.Reader) (*http.Request, error) {
+// NewCreateActionRequestWithBody generates requests for CreateAction with any type of body
+func NewCreateActionRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/simulator/action")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewSendUserAnswerRequest calls the generic SendUserAnswer builder with application/json body
+func NewSendUserAnswerRequest(server string, params *SendUserAnswerParams, body SendUserAnswerJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSendUserAnswerRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewSendUserAnswerRequestWithBody generates requests for SendUserAnswer with any type of body
+func NewSendUserAnswerRequestWithBody(server string, params *SendUserAnswerParams, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -378,6 +650,180 @@ func NewSendAnswerRequestWithBody(server string, params *SendAnswerParams, conte
 	return req, nil
 }
 
+// NewEditActionRequest calls the generic EditAction builder with application/json body
+func NewEditActionRequest(server string, actionId string, body EditActionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewEditActionRequestWithBody(server, actionId, "application/json", bodyReader)
+}
+
+// NewEditActionRequestWithBody generates requests for EditAction with any type of body
+func NewEditActionRequestWithBody(server string, actionId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "actionId", actionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/simulator/action/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPatch, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewCreateAnswerRequest calls the generic CreateAnswer builder with application/json body
+func NewCreateAnswerRequest(server string, body CreateAnswerJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateAnswerRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateAnswerRequestWithBody generates requests for CreateAnswer with any type of body
+func NewCreateAnswerRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/simulator/answers")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewEditAnswerRequest calls the generic EditAnswer builder with application/json body
+func NewEditAnswerRequest(server string, answerId string, body EditAnswerJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewEditAnswerRequestWithBody(server, answerId, "application/json", bodyReader)
+}
+
+// NewEditAnswerRequestWithBody generates requests for EditAnswer with any type of body
+func NewEditAnswerRequestWithBody(server string, answerId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "answerId", answerId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/simulator/answers/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPatch, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewCreateFileRequest calls the generic CreateFile builder with application/json body
+func NewCreateFileRequest(server string, body CreateFileJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateFileRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateFileRequestWithBody generates requests for CreateFile with any type of body
+func NewCreateFileRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/simulator/files")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewGetFileByFileIdRequest generates requests for GetFileByFileId
 func NewGetFileByFileIdRequest(server string, fileId string, params *GetFileByFileIdParams) (*http.Request, error) {
 	var err error
@@ -394,7 +840,7 @@ func NewGetFileByFileIdRequest(server string, fileId string, params *GetFileByFi
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/simulator/action/file/%s", pathParam0)
+	operationPath := fmt.Sprintf("/simulator/files/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -425,16 +871,34 @@ func NewGetFileByFileIdRequest(server string, fileId string, params *GetFileByFi
 	return req, nil
 }
 
-// NewGetResultsRequest generates requests for GetResults
-func NewGetResultsRequest(server string, params *GetResultsParams) (*http.Request, error) {
+// NewEditFileRequest calls the generic EditFile builder with application/json body
+func NewEditFileRequest(server string, fileId string, body EditFileJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewEditFileRequestWithBody(server, fileId, "application/json", bodyReader)
+}
+
+// NewEditFileRequestWithBody generates requests for EditFile with any type of body
+func NewEditFileRequestWithBody(server string, fileId string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "fileId", fileId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
 
 	serverURL, err := url.Parse(server)
 	if err != nil {
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/simulator/final")
+	operationPath := fmt.Sprintf("/simulator/files/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -444,23 +908,99 @@ func NewGetResultsRequest(server string, params *GetResultsParams) (*http.Reques
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	req, err := http.NewRequest(http.MethodPatch, queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
 
-	if params != nil {
+	req.Header.Add("Content-Type", contentType)
 
-		var headerParam0 string
+	return req, nil
+}
 
-		headerParam0, err = runtime.StyleParamWithOptions("simple", false, "X-User-Id", params.XUserId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
-		if err != nil {
-			return nil, err
-		}
-
-		req.Header.Set("X-User-Id", headerParam0)
-
+// NewCreateMessageRequest calls the generic CreateMessage builder with application/json body
+func NewCreateMessageRequest(server string, body CreateMessageJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
 	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateMessageRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateMessageRequestWithBody generates requests for CreateMessage with any type of body
+func NewCreateMessageRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/simulator/messages")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewEditMessageRequest calls the generic EditMessage builder with application/json body
+func NewEditMessageRequest(server string, messageId string, body EditMessageJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewEditMessageRequestWithBody(server, messageId, "application/json", bodyReader)
+}
+
+// NewEditMessageRequestWithBody generates requests for EditMessage with any type of body
+func NewEditMessageRequestWithBody(server string, messageId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "messageId", messageId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/simulator/messages/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPatch, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -493,18 +1033,18 @@ func NewGetAllScenariosRequest(server string) (*http.Request, error) {
 }
 
 // NewCreateScenarioRequest calls the generic CreateScenario builder with application/json body
-func NewCreateScenarioRequest(server string, params *CreateScenarioParams, body CreateScenarioJSONRequestBody) (*http.Request, error) {
+func NewCreateScenarioRequest(server string, body CreateScenarioJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewCreateScenarioRequestWithBody(server, params, "application/json", bodyReader)
+	return NewCreateScenarioRequestWithBody(server, "application/json", bodyReader)
 }
 
 // NewCreateScenarioRequestWithBody generates requests for CreateScenario with any type of body
-func NewCreateScenarioRequestWithBody(server string, params *CreateScenarioParams, contentType string, body io.Reader) (*http.Request, error) {
+func NewCreateScenarioRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -528,19 +1068,6 @@ func NewCreateScenarioRequestWithBody(server string, params *CreateScenarioParam
 	}
 
 	req.Header.Add("Content-Type", contentType)
-
-	if params != nil {
-
-		var headerParam0 string
-
-		headerParam0, err = runtime.StyleParamWithOptions("simple", false, "X-User-Id", params.XUserId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: "uuid"})
-		if err != nil {
-			return nil, err
-		}
-
-		req.Header.Set("X-User-Id", headerParam0)
-
-	}
 
 	return req, nil
 }
@@ -580,18 +1107,18 @@ func NewGetScenarioByIdRequest(server string, scenarioId string) (*http.Request,
 }
 
 // NewEditScenarioRequest calls the generic EditScenario builder with application/json body
-func NewEditScenarioRequest(server string, scenarioId string, params *EditScenarioParams, body EditScenarioJSONRequestBody) (*http.Request, error) {
+func NewEditScenarioRequest(server string, scenarioId string, body EditScenarioJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewEditScenarioRequestWithBody(server, scenarioId, params, "application/json", bodyReader)
+	return NewEditScenarioRequestWithBody(server, scenarioId, "application/json", bodyReader)
 }
 
 // NewEditScenarioRequestWithBody generates requests for EditScenario with any type of body
-func NewEditScenarioRequestWithBody(server string, scenarioId string, params *EditScenarioParams, contentType string, body io.Reader) (*http.Request, error) {
+func NewEditScenarioRequestWithBody(server string, scenarioId string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -623,11 +1150,38 @@ func NewEditScenarioRequestWithBody(server string, scenarioId string, params *Ed
 
 	req.Header.Add("Content-Type", contentType)
 
+	return req, nil
+}
+
+// NewGetResultsRequest generates requests for GetResults
+func NewGetResultsRequest(server string, params *GetResultsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/simulator/sessions")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
 	if params != nil {
 
 		var headerParam0 string
 
-		headerParam0, err = runtime.StyleParamWithOptions("simple", false, "X-User-Id", params.XUserId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: "uuid"})
+		headerParam0, err = runtime.StyleParamWithOptions("simple", false, "X-User-Id", params.XUserId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
 		if err != nil {
 			return nil, err
 		}
@@ -648,7 +1202,7 @@ func NewCreateSimulatorSessionRequest(server string, params *CreateSimulatorSess
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/simulator/start")
+	operationPath := fmt.Sprintf("/simulator/sessions")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -720,18 +1274,18 @@ func NewGetStepRequest(server string, params *GetStepParams) (*http.Request, err
 }
 
 // NewCreateStepRequest calls the generic CreateStep builder with application/json body
-func NewCreateStepRequest(server string, params *CreateStepParams, body CreateStepJSONRequestBody) (*http.Request, error) {
+func NewCreateStepRequest(server string, body CreateStepJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewCreateStepRequestWithBody(server, params, "application/json", bodyReader)
+	return NewCreateStepRequestWithBody(server, "application/json", bodyReader)
 }
 
 // NewCreateStepRequestWithBody generates requests for CreateStep with any type of body
-func NewCreateStepRequestWithBody(server string, params *CreateStepParams, contentType string, body io.Reader) (*http.Request, error) {
+func NewCreateStepRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -756,35 +1310,22 @@ func NewCreateStepRequestWithBody(server string, params *CreateStepParams, conte
 
 	req.Header.Add("Content-Type", contentType)
 
-	if params != nil {
-
-		var headerParam0 string
-
-		headerParam0, err = runtime.StyleParamWithOptions("simple", false, "X-User-Id", params.XUserId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: "uuid"})
-		if err != nil {
-			return nil, err
-		}
-
-		req.Header.Set("X-User-Id", headerParam0)
-
-	}
-
 	return req, nil
 }
 
-// NewUpdateStepRequest calls the generic UpdateStep builder with application/json body
-func NewUpdateStepRequest(server string, stepId string, params *UpdateStepParams, body UpdateStepJSONRequestBody) (*http.Request, error) {
+// NewEditStepRequest calls the generic EditStep builder with application/json body
+func NewEditStepRequest(server string, stepId string, body EditStepJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewUpdateStepRequestWithBody(server, stepId, params, "application/json", bodyReader)
+	return NewEditStepRequestWithBody(server, stepId, "application/json", bodyReader)
 }
 
-// NewUpdateStepRequestWithBody generates requests for UpdateStep with any type of body
-func NewUpdateStepRequestWithBody(server string, stepId string, params *UpdateStepParams, contentType string, body io.Reader) (*http.Request, error) {
+// NewEditStepRequestWithBody generates requests for EditStep with any type of body
+func NewEditStepRequestWithBody(server string, stepId string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -809,25 +1350,12 @@ func NewUpdateStepRequestWithBody(server string, stepId string, params *UpdateSt
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	req, err := http.NewRequest(http.MethodPatch, queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Add("Content-Type", contentType)
-
-	if params != nil {
-
-		var headerParam0 string
-
-		headerParam0, err = runtime.StyleParamWithOptions("simple", false, "X-User-Id", params.XUserId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: "uuid"})
-		if err != nil {
-			return nil, err
-		}
-
-		req.Header.Set("X-User-Id", headerParam0)
-
-	}
 
 	return req, nil
 }
@@ -875,32 +1403,72 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
-	// SendAnswerWithBodyWithResponse request with any body
-	SendAnswerWithBodyWithResponse(ctx context.Context, params *SendAnswerParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SendAnswerResponse, error)
+	// CreateActionWithBodyWithResponse request with any body
+	CreateActionWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateActionResponse, error)
 
-	SendAnswerWithResponse(ctx context.Context, params *SendAnswerParams, body SendAnswerJSONRequestBody, reqEditors ...RequestEditorFn) (*SendAnswerResponse, error)
+	CreateActionWithResponse(ctx context.Context, body CreateActionJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateActionResponse, error)
+
+	// SendUserAnswerWithBodyWithResponse request with any body
+	SendUserAnswerWithBodyWithResponse(ctx context.Context, params *SendUserAnswerParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SendUserAnswerResponse, error)
+
+	SendUserAnswerWithResponse(ctx context.Context, params *SendUserAnswerParams, body SendUserAnswerJSONRequestBody, reqEditors ...RequestEditorFn) (*SendUserAnswerResponse, error)
+
+	// EditActionWithBodyWithResponse request with any body
+	EditActionWithBodyWithResponse(ctx context.Context, actionId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EditActionResponse, error)
+
+	EditActionWithResponse(ctx context.Context, actionId string, body EditActionJSONRequestBody, reqEditors ...RequestEditorFn) (*EditActionResponse, error)
+
+	// CreateAnswerWithBodyWithResponse request with any body
+	CreateAnswerWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAnswerResponse, error)
+
+	CreateAnswerWithResponse(ctx context.Context, body CreateAnswerJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAnswerResponse, error)
+
+	// EditAnswerWithBodyWithResponse request with any body
+	EditAnswerWithBodyWithResponse(ctx context.Context, answerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EditAnswerResponse, error)
+
+	EditAnswerWithResponse(ctx context.Context, answerId string, body EditAnswerJSONRequestBody, reqEditors ...RequestEditorFn) (*EditAnswerResponse, error)
+
+	// CreateFileWithBodyWithResponse request with any body
+	CreateFileWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateFileResponse, error)
+
+	CreateFileWithResponse(ctx context.Context, body CreateFileJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateFileResponse, error)
 
 	// GetFileByFileIdWithResponse request
 	GetFileByFileIdWithResponse(ctx context.Context, fileId string, params *GetFileByFileIdParams, reqEditors ...RequestEditorFn) (*GetFileByFileIdResponse, error)
 
-	// GetResultsWithResponse request
-	GetResultsWithResponse(ctx context.Context, params *GetResultsParams, reqEditors ...RequestEditorFn) (*GetResultsResponse, error)
+	// EditFileWithBodyWithResponse request with any body
+	EditFileWithBodyWithResponse(ctx context.Context, fileId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EditFileResponse, error)
+
+	EditFileWithResponse(ctx context.Context, fileId string, body EditFileJSONRequestBody, reqEditors ...RequestEditorFn) (*EditFileResponse, error)
+
+	// CreateMessageWithBodyWithResponse request with any body
+	CreateMessageWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateMessageResponse, error)
+
+	CreateMessageWithResponse(ctx context.Context, body CreateMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateMessageResponse, error)
+
+	// EditMessageWithBodyWithResponse request with any body
+	EditMessageWithBodyWithResponse(ctx context.Context, messageId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EditMessageResponse, error)
+
+	EditMessageWithResponse(ctx context.Context, messageId string, body EditMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*EditMessageResponse, error)
 
 	// GetAllScenariosWithResponse request
 	GetAllScenariosWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetAllScenariosResponse, error)
 
 	// CreateScenarioWithBodyWithResponse request with any body
-	CreateScenarioWithBodyWithResponse(ctx context.Context, params *CreateScenarioParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateScenarioResponse, error)
+	CreateScenarioWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateScenarioResponse, error)
 
-	CreateScenarioWithResponse(ctx context.Context, params *CreateScenarioParams, body CreateScenarioJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateScenarioResponse, error)
+	CreateScenarioWithResponse(ctx context.Context, body CreateScenarioJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateScenarioResponse, error)
 
 	// GetScenarioByIdWithResponse request
 	GetScenarioByIdWithResponse(ctx context.Context, scenarioId string, reqEditors ...RequestEditorFn) (*GetScenarioByIdResponse, error)
 
 	// EditScenarioWithBodyWithResponse request with any body
-	EditScenarioWithBodyWithResponse(ctx context.Context, scenarioId string, params *EditScenarioParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EditScenarioResponse, error)
+	EditScenarioWithBodyWithResponse(ctx context.Context, scenarioId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EditScenarioResponse, error)
 
-	EditScenarioWithResponse(ctx context.Context, scenarioId string, params *EditScenarioParams, body EditScenarioJSONRequestBody, reqEditors ...RequestEditorFn) (*EditScenarioResponse, error)
+	EditScenarioWithResponse(ctx context.Context, scenarioId string, body EditScenarioJSONRequestBody, reqEditors ...RequestEditorFn) (*EditScenarioResponse, error)
+
+	// GetResultsWithResponse request
+	GetResultsWithResponse(ctx context.Context, params *GetResultsParams, reqEditors ...RequestEditorFn) (*GetResultsResponse, error)
 
 	// CreateSimulatorSessionWithResponse request
 	CreateSimulatorSessionWithResponse(ctx context.Context, params *CreateSimulatorSessionParams, reqEditors ...RequestEditorFn) (*CreateSimulatorSessionResponse, error)
@@ -909,26 +1477,28 @@ type ClientWithResponsesInterface interface {
 	GetStepWithResponse(ctx context.Context, params *GetStepParams, reqEditors ...RequestEditorFn) (*GetStepResponse, error)
 
 	// CreateStepWithBodyWithResponse request with any body
-	CreateStepWithBodyWithResponse(ctx context.Context, params *CreateStepParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateStepResponse, error)
+	CreateStepWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateStepResponse, error)
 
-	CreateStepWithResponse(ctx context.Context, params *CreateStepParams, body CreateStepJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateStepResponse, error)
+	CreateStepWithResponse(ctx context.Context, body CreateStepJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateStepResponse, error)
 
-	// UpdateStepWithBodyWithResponse request with any body
-	UpdateStepWithBodyWithResponse(ctx context.Context, stepId string, params *UpdateStepParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateStepResponse, error)
+	// EditStepWithBodyWithResponse request with any body
+	EditStepWithBodyWithResponse(ctx context.Context, stepId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EditStepResponse, error)
 
-	UpdateStepWithResponse(ctx context.Context, stepId string, params *UpdateStepParams, body UpdateStepJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateStepResponse, error)
+	EditStepWithResponse(ctx context.Context, stepId string, body EditStepJSONRequestBody, reqEditors ...RequestEditorFn) (*EditStepResponse, error)
 }
 
-type SendAnswerResponse struct {
+type CreateActionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON400      *BadRequestResponse
+	JSON201      *ActionFull
+	JSON400      *ErrorResponse
 	JSON401      *UnauthorizedResponse
+	JSON403      *ForbiddenResponse
 	JSON422      *UnprocessableEntityResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r SendAnswerResponse) Status() string {
+func (r CreateActionResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -936,7 +1506,7 @@ func (r SendAnswerResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r SendAnswerResponse) StatusCode() int {
+func (r CreateActionResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -944,7 +1514,172 @@ func (r SendAnswerResponse) StatusCode() int {
 }
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
-func (r SendAnswerResponse) ContentType() string {
+func (r CreateActionResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type SendUserAnswerResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *ErrorResponse
+	JSON401      *UnauthorizedResponse
+	JSON422      *UnprocessableEntityResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r SendUserAnswerResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SendUserAnswerResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SendUserAnswerResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type EditActionResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ActionFull
+	JSON400      *ErrorResponse
+	JSON401      *UnauthorizedResponse
+	JSON404      *NotFoundResponse
+	JSON422      *UnprocessableEntityResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r EditActionResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r EditActionResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r EditActionResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateAnswerResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *AnswerFull
+	JSON401      *UnauthorizedResponse
+	JSON403      *ForbiddenResponse
+	JSON422      *UnprocessableEntityResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateAnswerResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateAnswerResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateAnswerResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type EditAnswerResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON401      *UnauthorizedResponse
+	JSON403      *ForbiddenResponse
+	JSON404      *NotFoundResponse
+	JSON422      *UnprocessableEntityResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r EditAnswerResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r EditAnswerResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r EditAnswerResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateFileResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *FileFull
+	JSON401      *UnauthorizedResponse
+	JSON403      *ForbiddenResponse
+	JSON422      *UnprocessableEntityResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateFileResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateFileResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateFileResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -954,7 +1689,7 @@ func (r SendAnswerResponse) ContentType() string {
 type GetFileByFileIdResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *FileObject
+	JSON200      *FileFull
 	JSON401      *UnauthorizedResponse
 	JSON404      *NotFoundResponse
 }
@@ -983,20 +1718,17 @@ func (r GetFileByFileIdResponse) ContentType() string {
 	return ""
 }
 
-type GetResultsResponse struct {
+type EditFileResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *struct {
-		Errors       *[]string `json:"errors,omitempty"`
-		GameDuration *int      `json:"gameDuration,omitempty"`
-		TrustGraph   *[]int    `json:"trustGraph,omitempty"`
-	}
-	JSON401 *UnauthorizedResponse
-	JSON422 *UnprocessableEntityResponse
+	JSON200      *FileFull
+	JSON401      *UnauthorizedResponse
+	JSON404      *NotFoundResponse
+	JSON422      *UnprocessableEntityResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r GetResultsResponse) Status() string {
+func (r EditFileResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1004,7 +1736,7 @@ func (r GetResultsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetResultsResponse) StatusCode() int {
+func (r EditFileResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1012,7 +1744,75 @@ func (r GetResultsResponse) StatusCode() int {
 }
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
-func (r GetResultsResponse) ContentType() string {
+func (r EditFileResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateMessageResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *MessageFull
+	JSON400      *ErrorResponse
+	JSON401      *UnauthorizedResponse
+	JSON403      *ForbiddenResponse
+	JSON422      *UnprocessableEntityResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateMessageResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateMessageResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateMessageResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type EditMessageResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *ErrorResponse
+	JSON401      *UnauthorizedResponse
+	JSON403      *ForbiddenResponse
+	JSON404      *NotFoundResponse
+	JSON422      *UnprocessableEntityResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r EditMessageResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r EditMessageResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r EditMessageResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -1053,6 +1853,7 @@ type CreateScenarioResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON201      *ScenarioFull
+	JSON400      *ErrorResponse
 	JSON401      *UnauthorizedResponse
 	JSON403      *ForbiddenResponse
 	JSON422      *UnprocessableEntityResponse
@@ -1085,7 +1886,7 @@ func (r CreateScenarioResponse) ContentType() string {
 type GetScenarioByIdResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *ScenarioResponse
+	JSON200      *ScenarioFull
 	JSON404      *NotFoundResponse
 }
 
@@ -1116,7 +1917,7 @@ func (r GetScenarioByIdResponse) ContentType() string {
 type EditScenarioResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *ScenarioResponse
+	JSON400      *ErrorResponse
 	JSON401      *UnauthorizedResponse
 	JSON403      *ForbiddenResponse
 	JSON404      *NotFoundResponse
@@ -1147,11 +1948,44 @@ func (r EditScenarioResponse) ContentType() string {
 	return ""
 }
 
+type GetResultsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *SimulationFinal
+	JSON400      *ErrorResponse
+	JSON401      *UnauthorizedResponse
+	JSON422      *UnprocessableEntityResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetResultsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetResultsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetResultsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type CreateSimulatorSessionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON400      *BadRequestResponse
 	JSON401      *UnauthorizedResponse
+	JSON409      *ErrorResponse
 	JSON422      *UnprocessableEntityResponse
 }
 
@@ -1213,7 +2047,8 @@ func (r GetStepResponse) ContentType() string {
 type CreateStepResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON400      *BadRequestResponse
+	JSON201      *StepMetaFull
+	JSON400      *ErrorResponse
 	JSON401      *UnauthorizedResponse
 	JSON403      *ForbiddenResponse
 	JSON422      *UnprocessableEntityResponse
@@ -1243,10 +2078,11 @@ func (r CreateStepResponse) ContentType() string {
 	return ""
 }
 
-type UpdateStepResponse struct {
+type EditStepResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON400      *BadRequestResponse
+	JSON200      *StepMetaFull
+	JSON400      *ErrorResponse
 	JSON401      *UnauthorizedResponse
 	JSON403      *ForbiddenResponse
 	JSON404      *NotFoundResponse
@@ -1254,7 +2090,7 @@ type UpdateStepResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r UpdateStepResponse) Status() string {
+func (r EditStepResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1262,7 +2098,7 @@ func (r UpdateStepResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r UpdateStepResponse) StatusCode() int {
+func (r EditStepResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1270,28 +2106,113 @@ func (r UpdateStepResponse) StatusCode() int {
 }
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
-func (r UpdateStepResponse) ContentType() string {
+func (r EditStepResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
 	return ""
 }
 
-// SendAnswerWithBodyWithResponse request with arbitrary body returning *SendAnswerResponse
-func (c *ClientWithResponses) SendAnswerWithBodyWithResponse(ctx context.Context, params *SendAnswerParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SendAnswerResponse, error) {
-	rsp, err := c.SendAnswerWithBody(ctx, params, contentType, body, reqEditors...)
+// CreateActionWithBodyWithResponse request with arbitrary body returning *CreateActionResponse
+func (c *ClientWithResponses) CreateActionWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateActionResponse, error) {
+	rsp, err := c.CreateActionWithBody(ctx, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseSendAnswerResponse(rsp)
+	return ParseCreateActionResponse(rsp)
 }
 
-func (c *ClientWithResponses) SendAnswerWithResponse(ctx context.Context, params *SendAnswerParams, body SendAnswerJSONRequestBody, reqEditors ...RequestEditorFn) (*SendAnswerResponse, error) {
-	rsp, err := c.SendAnswer(ctx, params, body, reqEditors...)
+func (c *ClientWithResponses) CreateActionWithResponse(ctx context.Context, body CreateActionJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateActionResponse, error) {
+	rsp, err := c.CreateAction(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseSendAnswerResponse(rsp)
+	return ParseCreateActionResponse(rsp)
+}
+
+// SendUserAnswerWithBodyWithResponse request with arbitrary body returning *SendUserAnswerResponse
+func (c *ClientWithResponses) SendUserAnswerWithBodyWithResponse(ctx context.Context, params *SendUserAnswerParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SendUserAnswerResponse, error) {
+	rsp, err := c.SendUserAnswerWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSendUserAnswerResponse(rsp)
+}
+
+func (c *ClientWithResponses) SendUserAnswerWithResponse(ctx context.Context, params *SendUserAnswerParams, body SendUserAnswerJSONRequestBody, reqEditors ...RequestEditorFn) (*SendUserAnswerResponse, error) {
+	rsp, err := c.SendUserAnswer(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSendUserAnswerResponse(rsp)
+}
+
+// EditActionWithBodyWithResponse request with arbitrary body returning *EditActionResponse
+func (c *ClientWithResponses) EditActionWithBodyWithResponse(ctx context.Context, actionId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EditActionResponse, error) {
+	rsp, err := c.EditActionWithBody(ctx, actionId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseEditActionResponse(rsp)
+}
+
+func (c *ClientWithResponses) EditActionWithResponse(ctx context.Context, actionId string, body EditActionJSONRequestBody, reqEditors ...RequestEditorFn) (*EditActionResponse, error) {
+	rsp, err := c.EditAction(ctx, actionId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseEditActionResponse(rsp)
+}
+
+// CreateAnswerWithBodyWithResponse request with arbitrary body returning *CreateAnswerResponse
+func (c *ClientWithResponses) CreateAnswerWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAnswerResponse, error) {
+	rsp, err := c.CreateAnswerWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAnswerResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateAnswerWithResponse(ctx context.Context, body CreateAnswerJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAnswerResponse, error) {
+	rsp, err := c.CreateAnswer(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAnswerResponse(rsp)
+}
+
+// EditAnswerWithBodyWithResponse request with arbitrary body returning *EditAnswerResponse
+func (c *ClientWithResponses) EditAnswerWithBodyWithResponse(ctx context.Context, answerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EditAnswerResponse, error) {
+	rsp, err := c.EditAnswerWithBody(ctx, answerId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseEditAnswerResponse(rsp)
+}
+
+func (c *ClientWithResponses) EditAnswerWithResponse(ctx context.Context, answerId string, body EditAnswerJSONRequestBody, reqEditors ...RequestEditorFn) (*EditAnswerResponse, error) {
+	rsp, err := c.EditAnswer(ctx, answerId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseEditAnswerResponse(rsp)
+}
+
+// CreateFileWithBodyWithResponse request with arbitrary body returning *CreateFileResponse
+func (c *ClientWithResponses) CreateFileWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateFileResponse, error) {
+	rsp, err := c.CreateFileWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateFileResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateFileWithResponse(ctx context.Context, body CreateFileJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateFileResponse, error) {
+	rsp, err := c.CreateFile(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateFileResponse(rsp)
 }
 
 // GetFileByFileIdWithResponse request returning *GetFileByFileIdResponse
@@ -1303,13 +2224,55 @@ func (c *ClientWithResponses) GetFileByFileIdWithResponse(ctx context.Context, f
 	return ParseGetFileByFileIdResponse(rsp)
 }
 
-// GetResultsWithResponse request returning *GetResultsResponse
-func (c *ClientWithResponses) GetResultsWithResponse(ctx context.Context, params *GetResultsParams, reqEditors ...RequestEditorFn) (*GetResultsResponse, error) {
-	rsp, err := c.GetResults(ctx, params, reqEditors...)
+// EditFileWithBodyWithResponse request with arbitrary body returning *EditFileResponse
+func (c *ClientWithResponses) EditFileWithBodyWithResponse(ctx context.Context, fileId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EditFileResponse, error) {
+	rsp, err := c.EditFileWithBody(ctx, fileId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetResultsResponse(rsp)
+	return ParseEditFileResponse(rsp)
+}
+
+func (c *ClientWithResponses) EditFileWithResponse(ctx context.Context, fileId string, body EditFileJSONRequestBody, reqEditors ...RequestEditorFn) (*EditFileResponse, error) {
+	rsp, err := c.EditFile(ctx, fileId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseEditFileResponse(rsp)
+}
+
+// CreateMessageWithBodyWithResponse request with arbitrary body returning *CreateMessageResponse
+func (c *ClientWithResponses) CreateMessageWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateMessageResponse, error) {
+	rsp, err := c.CreateMessageWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateMessageResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateMessageWithResponse(ctx context.Context, body CreateMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateMessageResponse, error) {
+	rsp, err := c.CreateMessage(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateMessageResponse(rsp)
+}
+
+// EditMessageWithBodyWithResponse request with arbitrary body returning *EditMessageResponse
+func (c *ClientWithResponses) EditMessageWithBodyWithResponse(ctx context.Context, messageId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EditMessageResponse, error) {
+	rsp, err := c.EditMessageWithBody(ctx, messageId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseEditMessageResponse(rsp)
+}
+
+func (c *ClientWithResponses) EditMessageWithResponse(ctx context.Context, messageId string, body EditMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*EditMessageResponse, error) {
+	rsp, err := c.EditMessage(ctx, messageId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseEditMessageResponse(rsp)
 }
 
 // GetAllScenariosWithResponse request returning *GetAllScenariosResponse
@@ -1322,16 +2285,16 @@ func (c *ClientWithResponses) GetAllScenariosWithResponse(ctx context.Context, r
 }
 
 // CreateScenarioWithBodyWithResponse request with arbitrary body returning *CreateScenarioResponse
-func (c *ClientWithResponses) CreateScenarioWithBodyWithResponse(ctx context.Context, params *CreateScenarioParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateScenarioResponse, error) {
-	rsp, err := c.CreateScenarioWithBody(ctx, params, contentType, body, reqEditors...)
+func (c *ClientWithResponses) CreateScenarioWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateScenarioResponse, error) {
+	rsp, err := c.CreateScenarioWithBody(ctx, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseCreateScenarioResponse(rsp)
 }
 
-func (c *ClientWithResponses) CreateScenarioWithResponse(ctx context.Context, params *CreateScenarioParams, body CreateScenarioJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateScenarioResponse, error) {
-	rsp, err := c.CreateScenario(ctx, params, body, reqEditors...)
+func (c *ClientWithResponses) CreateScenarioWithResponse(ctx context.Context, body CreateScenarioJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateScenarioResponse, error) {
+	rsp, err := c.CreateScenario(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -1348,20 +2311,29 @@ func (c *ClientWithResponses) GetScenarioByIdWithResponse(ctx context.Context, s
 }
 
 // EditScenarioWithBodyWithResponse request with arbitrary body returning *EditScenarioResponse
-func (c *ClientWithResponses) EditScenarioWithBodyWithResponse(ctx context.Context, scenarioId string, params *EditScenarioParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EditScenarioResponse, error) {
-	rsp, err := c.EditScenarioWithBody(ctx, scenarioId, params, contentType, body, reqEditors...)
+func (c *ClientWithResponses) EditScenarioWithBodyWithResponse(ctx context.Context, scenarioId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EditScenarioResponse, error) {
+	rsp, err := c.EditScenarioWithBody(ctx, scenarioId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseEditScenarioResponse(rsp)
 }
 
-func (c *ClientWithResponses) EditScenarioWithResponse(ctx context.Context, scenarioId string, params *EditScenarioParams, body EditScenarioJSONRequestBody, reqEditors ...RequestEditorFn) (*EditScenarioResponse, error) {
-	rsp, err := c.EditScenario(ctx, scenarioId, params, body, reqEditors...)
+func (c *ClientWithResponses) EditScenarioWithResponse(ctx context.Context, scenarioId string, body EditScenarioJSONRequestBody, reqEditors ...RequestEditorFn) (*EditScenarioResponse, error) {
+	rsp, err := c.EditScenario(ctx, scenarioId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseEditScenarioResponse(rsp)
+}
+
+// GetResultsWithResponse request returning *GetResultsResponse
+func (c *ClientWithResponses) GetResultsWithResponse(ctx context.Context, params *GetResultsParams, reqEditors ...RequestEditorFn) (*GetResultsResponse, error) {
+	rsp, err := c.GetResults(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetResultsResponse(rsp)
 }
 
 // CreateSimulatorSessionWithResponse request returning *CreateSimulatorSessionResponse
@@ -1383,55 +2355,62 @@ func (c *ClientWithResponses) GetStepWithResponse(ctx context.Context, params *G
 }
 
 // CreateStepWithBodyWithResponse request with arbitrary body returning *CreateStepResponse
-func (c *ClientWithResponses) CreateStepWithBodyWithResponse(ctx context.Context, params *CreateStepParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateStepResponse, error) {
-	rsp, err := c.CreateStepWithBody(ctx, params, contentType, body, reqEditors...)
+func (c *ClientWithResponses) CreateStepWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateStepResponse, error) {
+	rsp, err := c.CreateStepWithBody(ctx, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseCreateStepResponse(rsp)
 }
 
-func (c *ClientWithResponses) CreateStepWithResponse(ctx context.Context, params *CreateStepParams, body CreateStepJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateStepResponse, error) {
-	rsp, err := c.CreateStep(ctx, params, body, reqEditors...)
+func (c *ClientWithResponses) CreateStepWithResponse(ctx context.Context, body CreateStepJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateStepResponse, error) {
+	rsp, err := c.CreateStep(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseCreateStepResponse(rsp)
 }
 
-// UpdateStepWithBodyWithResponse request with arbitrary body returning *UpdateStepResponse
-func (c *ClientWithResponses) UpdateStepWithBodyWithResponse(ctx context.Context, stepId string, params *UpdateStepParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateStepResponse, error) {
-	rsp, err := c.UpdateStepWithBody(ctx, stepId, params, contentType, body, reqEditors...)
+// EditStepWithBodyWithResponse request with arbitrary body returning *EditStepResponse
+func (c *ClientWithResponses) EditStepWithBodyWithResponse(ctx context.Context, stepId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EditStepResponse, error) {
+	rsp, err := c.EditStepWithBody(ctx, stepId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseUpdateStepResponse(rsp)
+	return ParseEditStepResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateStepWithResponse(ctx context.Context, stepId string, params *UpdateStepParams, body UpdateStepJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateStepResponse, error) {
-	rsp, err := c.UpdateStep(ctx, stepId, params, body, reqEditors...)
+func (c *ClientWithResponses) EditStepWithResponse(ctx context.Context, stepId string, body EditStepJSONRequestBody, reqEditors ...RequestEditorFn) (*EditStepResponse, error) {
+	rsp, err := c.EditStep(ctx, stepId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseUpdateStepResponse(rsp)
+	return ParseEditStepResponse(rsp)
 }
 
-// ParseSendAnswerResponse parses an HTTP response from a SendAnswerWithResponse call
-func ParseSendAnswerResponse(rsp *http.Response) (*SendAnswerResponse, error) {
+// ParseCreateActionResponse parses an HTTP response from a CreateActionWithResponse call
+func ParseCreateActionResponse(rsp *http.Response) (*CreateActionResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &SendAnswerResponse{
+	response := &CreateActionResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest ActionFull
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest BadRequestResponse
+		var dest ErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1443,6 +2422,248 @@ func ParseSendAnswerResponse(rsp *http.Response) (*SendAnswerResponse, error) {
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntityResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSendUserAnswerResponse parses an HTTP response from a SendUserAnswerWithResponse call
+func ParseSendUserAnswerResponse(rsp *http.Response) (*SendUserAnswerResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SendUserAnswerResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntityResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseEditActionResponse parses an HTTP response from a EditActionWithResponse call
+func ParseEditActionResponse(rsp *http.Response) (*EditActionResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &EditActionResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ActionFull
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntityResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateAnswerResponse parses an HTTP response from a CreateAnswerWithResponse call
+func ParseCreateAnswerResponse(rsp *http.Response) (*CreateAnswerResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateAnswerResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest AnswerFull
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntityResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseEditAnswerResponse parses an HTTP response from a EditAnswerWithResponse call
+func ParseEditAnswerResponse(rsp *http.Response) (*EditAnswerResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &EditAnswerResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntityResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateFileResponse parses an HTTP response from a CreateFileWithResponse call
+func ParseCreateFileResponse(rsp *http.Response) (*CreateFileResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateFileResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest FileFull
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
 		var dest UnprocessableEntityResponse
@@ -1471,7 +2692,7 @@ func ParseGetFileByFileIdResponse(rsp *http.Response) (*GetFileByFileIdResponse,
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest FileObject
+		var dest FileFull
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1496,26 +2717,22 @@ func ParseGetFileByFileIdResponse(rsp *http.Response) (*GetFileByFileIdResponse,
 	return response, nil
 }
 
-// ParseGetResultsResponse parses an HTTP response from a GetResultsWithResponse call
-func ParseGetResultsResponse(rsp *http.Response) (*GetResultsResponse, error) {
+// ParseEditFileResponse parses an HTTP response from a EditFileWithResponse call
+func ParseEditFileResponse(rsp *http.Response) (*EditFileResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetResultsResponse{
+	response := &EditFileResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest struct {
-			Errors       *[]string `json:"errors,omitempty"`
-			GameDuration *int      `json:"gameDuration,omitempty"`
-			TrustGraph   *[]int    `json:"trustGraph,omitempty"`
-		}
+		var dest FileFull
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1527,6 +2744,121 @@ func ParseGetResultsResponse(rsp *http.Response) (*GetResultsResponse, error) {
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntityResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateMessageResponse parses an HTTP response from a CreateMessageWithResponse call
+func ParseCreateMessageResponse(rsp *http.Response) (*CreateMessageResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateMessageResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest MessageFull
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntityResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseEditMessageResponse parses an HTTP response from a EditMessageWithResponse call
+func ParseEditMessageResponse(rsp *http.Response) (*EditMessageResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &EditMessageResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
 		var dest UnprocessableEntityResponse
@@ -1587,6 +2919,13 @@ func ParseCreateScenarioResponse(rsp *http.Response) (*CreateScenarioResponse, e
 		}
 		response.JSON201 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
 		var dest UnauthorizedResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -1628,7 +2967,7 @@ func ParseGetScenarioByIdResponse(rsp *http.Response) (*GetScenarioByIdResponse,
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ScenarioResponse
+		var dest ScenarioFull
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1660,12 +2999,12 @@ func ParseEditScenarioResponse(rsp *http.Response) (*EditScenarioResponse, error
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ScenarioResponse
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON200 = &dest
+		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
 		var dest UnauthorizedResponse
@@ -1700,6 +3039,53 @@ func ParseEditScenarioResponse(rsp *http.Response) (*EditScenarioResponse, error
 	return response, nil
 }
 
+// ParseGetResultsResponse parses an HTTP response from a GetResultsWithResponse call
+func ParseGetResultsResponse(rsp *http.Response) (*GetResultsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetResultsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SimulationFinal
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntityResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseCreateSimulatorSessionResponse parses an HTTP response from a CreateSimulatorSessionWithResponse call
 func ParseCreateSimulatorSessionResponse(rsp *http.Response) (*CreateSimulatorSessionResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -1714,19 +3100,19 @@ func ParseCreateSimulatorSessionResponse(rsp *http.Response) (*CreateSimulatorSe
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest BadRequestResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
 		var dest UnauthorizedResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
 		var dest UnprocessableEntityResponse
@@ -1787,8 +3173,15 @@ func ParseCreateStepResponse(rsp *http.Response) (*CreateStepResponse, error) {
 	}
 
 	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest StepMetaFull
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest BadRequestResponse
+		var dest ErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1820,22 +3213,29 @@ func ParseCreateStepResponse(rsp *http.Response) (*CreateStepResponse, error) {
 	return response, nil
 }
 
-// ParseUpdateStepResponse parses an HTTP response from a UpdateStepWithResponse call
-func ParseUpdateStepResponse(rsp *http.Response) (*UpdateStepResponse, error) {
+// ParseEditStepResponse parses an HTTP response from a EditStepWithResponse call
+func ParseEditStepResponse(rsp *http.Response) (*EditStepResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &UpdateStepResponse{
+	response := &EditStepResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest StepMetaFull
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest BadRequestResponse
+		var dest ErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

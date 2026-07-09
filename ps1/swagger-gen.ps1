@@ -102,12 +102,6 @@ switch ($FileName) {
         Set-FileContentReplacement -FilePath ./gen/simulator/server.go `
             -OldString '*fiber.Ctx' `
             -NewString 'fiber.Ctx'
-        Set-FileContentReplacement -FilePath ./gen/simulator/models.go `
-            -OldString 'v.Type = "sms"' `
-            -NewString ' '
-        Set-FileContentReplacement -FilePath ./gen/simulator/models.go `
-            -OldString 'v.Type = "message"' `
-            -NewString ' '
         Set-FileContentReplacement -FilePath ./gen/simulator/server.go `
             -OldString 'github.com/gofiber/fiber/v2' `
             -NewString 'github.com/gofiber/fiber/v3'
