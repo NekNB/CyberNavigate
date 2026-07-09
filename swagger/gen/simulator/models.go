@@ -180,9 +180,9 @@ type AnswerBase struct {
 
 // AnswerBaseRequired defines model for AnswerBaseRequired.
 type AnswerBaseRequired struct {
-	AddTrust int    `json:"addTrust"`
-	Error    string `json:"error"`
-	Text     string `json:"text"`
+	AddTrust int     `json:"addTrust"`
+	Error    *string `json:"error,omitempty"`
+	Text     string  `json:"text"`
 }
 
 // AnswerFull defines model for AnswerFull.
@@ -213,15 +213,15 @@ type FileBase struct {
 
 // FileBaseRequired defines model for FileBaseRequired.
 type FileBaseRequired struct {
-	Error    string `json:"error"`
-	Filename string `json:"filename"`
-	IsSafe   bool   `json:"isSafe"`
-	Size     int    `json:"size"`
+	Error    *string `json:"error,omitempty"`
+	Filename string  `json:"filename"`
+	IsSafe   bool    `json:"isSafe"`
+	Size     int     `json:"size"`
 }
 
 // FileFull defines model for FileFull.
 type FileFull struct {
-	Error    string             `json:"error"`
+	Error    *string            `json:"error,omitempty"`
 	Filename string             `json:"filename"`
 	Id       openapi_types.UUID `json:"id"`
 	IsSafe   bool               `json:"isSafe"`

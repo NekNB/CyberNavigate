@@ -281,7 +281,7 @@ components:
     FileBaseRequired:
       allOf:
         - $ref: "#/components/schemas/FileBase"
-        - required: ["filename", "isSafe", "size", "error"]
+        - required: ["filename", "isSafe", "size"]
     FileFull:
       allOf:
         - $ref: "#/components/schemas/BaseId"
@@ -304,7 +304,7 @@ components:
     AnswerBaseRequired:
       allOf:
         - $ref: "#/components/schemas/AnswerBase"
-        - required: ["text", "addTrust", "error"]
+        - required: ["text", "addTrust"]
     AnswerFull:
       allOf:
         - $ref: "#/components/schemas/BaseId"
