@@ -174,18 +174,21 @@ type ActionFullType string
 // AnswerBase defines model for AnswerBase.
 type AnswerBase struct {
 	AddTrust *int    `json:"addTrust,omitempty"`
+	Error    *string `json:"error,omitempty"`
 	Text     *string `json:"text,omitempty"`
 }
 
 // AnswerBaseRequired defines model for AnswerBaseRequired.
 type AnswerBaseRequired struct {
 	AddTrust int    `json:"addTrust"`
+	Error    string `json:"error"`
 	Text     string `json:"text"`
 }
 
 // AnswerFull defines model for AnswerFull.
 type AnswerFull struct {
 	AddTrust *int               `json:"addTrust,omitempty"`
+	Error    *string            `json:"error,omitempty"`
 	Id       openapi_types.UUID `json:"id"`
 	Text     *string            `json:"text,omitempty"`
 }
@@ -202,6 +205,7 @@ type ErrorResponse struct {
 
 // FileBase defines model for FileBase.
 type FileBase struct {
+	Error    *string `json:"error,omitempty"`
 	Filename *string `json:"filename,omitempty"`
 	IsSafe   *bool   `json:"isSafe,omitempty"`
 	Size     *int    `json:"size,omitempty"`
@@ -209,6 +213,7 @@ type FileBase struct {
 
 // FileBaseRequired defines model for FileBaseRequired.
 type FileBaseRequired struct {
+	Error    string `json:"error"`
 	Filename string `json:"filename"`
 	IsSafe   bool   `json:"isSafe"`
 	Size     int    `json:"size"`
@@ -216,6 +221,7 @@ type FileBaseRequired struct {
 
 // FileFull defines model for FileFull.
 type FileFull struct {
+	Error    string             `json:"error"`
 	Filename string             `json:"filename"`
 	Id       openapi_types.UUID `json:"id"`
 	IsSafe   bool               `json:"isSafe"`

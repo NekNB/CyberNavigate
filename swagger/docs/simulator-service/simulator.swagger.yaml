@@ -272,13 +272,16 @@ components:
         isSafe:
           type: boolean
           example: false
+        error:
+          type: string
+          example: "Нельзя скачивать подозрительные файлы"
         size:
           type: integer
           example: 10
     FileBaseRequired:
       allOf:
         - $ref: "#/components/schemas/FileBase"
-        - required: ["filename", "isSafe", "size"]
+        - required: ["filename", "isSafe", "size", "error"]
     FileFull:
       allOf:
         - $ref: "#/components/schemas/BaseId"
@@ -292,13 +295,16 @@ components:
         text:
           type: string
           example: Привет Друг!
+        error:
+          type: string
+          example: "Нельзя присылать маме подозрительные коды"
         addTrust:
           type: integer
           example: -10
     AnswerBaseRequired:
       allOf:
         - $ref: "#/components/schemas/AnswerBase"
-        - required: ["text", "addTrust"]
+        - required: ["text", "addTrust", "error"]
     AnswerFull:
       allOf:
         - $ref: "#/components/schemas/BaseId"
