@@ -219,6 +219,10 @@ components:
     MessageBase:
       type: object
       properties:
+        senderId:
+          type: string
+          format: uuid
+          example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
         senderName:
           type: string
           example: Коля
@@ -846,6 +850,7 @@ paths:
         permission: admin
       tags:
         - Messages
+      description: SenderId is not required. If one wasn't transferred, it will be generated and anew Sender will be created
       summary: Create Message
       operationId: createMessage
       requestBody:
@@ -870,6 +875,12 @@ paths:
           $ref: "#/components/responses/UnauthorizedResponse"
         "403":
           $ref: "#/components/responses/ForbiddenResponse"
+        "409":
+          description: SenderName and SenderId don't match
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "422":
           $ref: "#/components/responses/UnprocessableEntityResponse"
   /simulator/messages/{messageId}:
@@ -877,9 +888,9 @@ paths:
       x-auth:
         public: false
         permission: admin
-
       tags:
         - Messages
+      description: SenderId is not required. If one is passed, the Message will be assigned to the Sender with SenderId from Request Body
       summary: Edit Message
       operationId: editMessage
       parameters:

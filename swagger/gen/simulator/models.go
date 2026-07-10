@@ -232,6 +232,7 @@ type FileFull struct {
 type MessageBase struct {
 	Answers    *[]openapi_types.UUID `json:"answers,omitempty"`
 	Files      *[]openapi_types.UUID `json:"files,omitempty"`
+	SenderId   *openapi_types.UUID   `json:"senderId,omitempty"`
 	SenderName *string               `json:"senderName,omitempty"`
 	Text       *string               `json:"text,omitempty"`
 }
@@ -240,6 +241,7 @@ type MessageBase struct {
 type MessageBaseReuired struct {
 	Answers    *[]openapi_types.UUID `json:"answers,omitempty"`
 	Files      *[]openapi_types.UUID `json:"files,omitempty"`
+	SenderId   *openapi_types.UUID   `json:"senderId,omitempty"`
 	SenderName string                `json:"senderName"`
 	Text       *string               `json:"text,omitempty"`
 }
