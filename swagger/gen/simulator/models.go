@@ -237,8 +237,8 @@ type MessageBase struct {
 	Text       *string               `json:"text,omitempty"`
 }
 
-// MessageBaseReuired defines model for MessageBaseReuired.
-type MessageBaseReuired struct {
+// MessageBaseRequired defines model for MessageBaseRequired.
+type MessageBaseRequired struct {
 	Answers    *[]openapi_types.UUID `json:"answers,omitempty"`
 	Files      *[]openapi_types.UUID `json:"files,omitempty"`
 	SenderId   *openapi_types.UUID   `json:"senderId,omitempty"`
@@ -401,7 +401,7 @@ type CreateFileJSONRequestBody = FileBaseRequired
 type EditFileJSONRequestBody = FileBase
 
 // CreateMessageJSONRequestBody defines body for CreateMessage for application/json ContentType.
-type CreateMessageJSONRequestBody = MessageBaseReuired
+type CreateMessageJSONRequestBody = MessageBaseRequired
 
 // EditMessageJSONRequestBody defines body for EditMessage for application/json ContentType.
 type EditMessageJSONRequestBody = MessageBase

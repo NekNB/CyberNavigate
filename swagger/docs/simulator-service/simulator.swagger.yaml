@@ -241,14 +241,14 @@ components:
             type: string
             format: uuid
             example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
-    MessageBaseReuired:
+    MessageBaseRequired:
       allOf:
         - $ref: "#/components/schemas/MessageBase"
         - required: ["senderName"]
     MessageFull:
       allOf:
         - $ref: "#/components/schemas/BaseId"
-        - $ref: "#/components/schemas/MessageBaseReuired"
+        - $ref: "#/components/schemas/MessageBaseRequired"
         - type: object
           properties:
             senderId:
@@ -857,7 +857,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/MessageBaseReuired"
+              $ref: "#/components/schemas/MessageBaseRequired"
       responses:
         "201":
           description: Message created
