@@ -17,3 +17,4 @@ CyberNavigate - это круто
 
 для конвертации secrets.tmp.env >> secrets.env
 В папке secrets запустить ./convert-env.ps1
+

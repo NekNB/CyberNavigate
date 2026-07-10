@@ -1,184 +1,372 @@
 package http
 
 import (
-	"bufio"
-	"context"
+	"encoding/json"
 	"errors"
-	"fmt"
-	"strings"
-	"time"
 
-	"github.com/NekNB/CyberNavigate/backend/article-service/internal/storage"
-	"github.com/NekNB/CyberNavigate/swagger/gen/article"
-	"github.com/sirupsen/logrus"
-
+	"github.com/NekNB/CyberNavigate/backend/simulator-service/internal/models"
+	"github.com/NekNB/CyberNavigate/backend/simulator-service/internal/storage"
+	"github.com/NekNB/CyberNavigate/swagger/gen/simulator"
 	"github.com/gofiber/fiber/v3"
+	"github.com/sirupsen/logrus"
 )
 
 // Здесь реализуем все методы обработки APIServer
 
 // Проверяем, соответствует ли APIServer сгенерированному ServerInterface
-var _ article.ServerInterface = (*APIServer)(nil)
+var _ simulator.ServerInterface = (*APIServer)(nil)
 
 type APIServer struct {
-	log            *logrus.Logger
-	articleService ArticleServiceInterface
+	log              *logrus.Logger
+	simulatorService SimulatorServiceInterface
 }
 
-type ArticleServiceInterface interface {
-	CreateArticle(title *string) (*article.ArticleMetaData, error)
-	Articles() (*[]article.ArticleMetaData, error)
-	ArticleByUUID(articleId string) (*article.ArticleMetaData, error)
-	SaveArticleTextByUUID(ctx context.Context, articleId, text string) (*article.ArticleMetaData, error)
-	ArticleTextByUUID(ctx context.Context, articleId string) (string, error)
-	UpdateArticleTextByUUID(ctx context.Context, articleId, text string) (*article.ArticleMetaData, error)
-	UpdateArticleByUUID(articleId, text, title, videoURL, status string) (*article.ArticleMetaData, error)
+type SimulatorServiceInterface interface {
+	CreateSession(userId string) error
+	GetResults(userId string) (*simulator.SimulationFinal, error)
+
+	CreateScenario(data *simulator.ScenarioBaseRequired) (*simulator.ScenarioFull, error)
+	EditScenario(scenarioId string, editedData *simulator.ScenarioBase) (*simulator.ScenarioFull, error)
+	GetAllScenarios() (*[]simulator.ScenarioFull, error)
+	GetScenarioById(scenarioId string) (*simulator.ScenarioFull, error)
+
+	CreateStep(step *simulator.StepMetaRequired) (models.StepMetaResponse, error)
+	EditStep(stepId string, editedData *simulator.StepMeta) (*simulator.StepMetaFull, error)
+	GetStep(userId string) (*simulator.StepBase, error)
+
+	CreateAction(action *simulator.ActionBaseRequired) (*simulator.ActionFull, error)
+	EditAction(actionId string, editedData *simulator.ActionBase) (*simulator.ActionFull, error)
+
+	CreateAnswer(answer *simulator.AnswerBaseRequired) (*simulator.AnswerFull, error)
+	EditAnswer(answerId string, editedData *simulator.AnswerBase) (*simulator.AnswerFull, error)
+	SendUserAnswer(answerId string) error
+
+	CreateFile(file *simulator.FileBaseRequired) (*simulator.FileFull, error)
+	EditFile(fileId string, editedData *simulator.FileBase) (*simulator.FileFull, error)
+	GetFileByFileId(fileId, userId string) (*simulator.FileFull, error)
+
+	CreateMessage(Message *simulator.MessageBaseRequired) (*simulator.MessageFull, error)
+	EditMessage(messageId string, editedData *simulator.MessageBase) (*simulator.MessageFull, error)
 }
 
-func New(log *logrus.Logger, articleService ArticleServiceInterface) *APIServer {
+func New(log *logrus.Logger, simulatorService SimulatorServiceInterface) *APIServer {
 
-	return &APIServer{log: log, articleService: articleService}
+	return &APIServer{log: log, simulatorService: simulatorService}
 }
 
-func (a *APIServer) PostArticles(c fiber.Ctx) error {
-	aS := a.articleService
-	var request article.PostArticlesJSONRequestBody
-	if err := c.Bind().Body(&request); err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
+func (a *APIServer) CreateScenario(c fiber.Ctx) error {
+	// Парсим Body
+	req := &simulator.ScenarioBaseRequired{}
+	if json.Unmarshal(c.Body(), req) != nil {
+		return c.SendStatus(422)
 	}
 
-	metadata, err := aS.CreateArticle(request.ArticleTitle)
+	scenario, err := a.simulatorService.CreateScenario(req)
 	if err != nil {
-		if errors.Is(err, storage.ErrArticleExists) {
-			errMsg := fmt.Sprintf("Article With %s Already Exists", *request.ArticleTitle)
-			return c.Status(fiber.StatusBadRequest).
-				JSON(article.ArticleAlreadyExists{
-					Message: &errMsg,
-				})
+		if errors.Is(err, storage.ErrNotFound) {
+			c.Status(400).JSON(simulator.ErrorResponse{Message: err.Error()})
 		}
-		return c.SendStatus(fiber.StatusInternalServerError)
+		a.log.Error(err)
+		return c.SendStatus(500)
 	}
-	return c.Status(fiber.StatusOK).JSON(metadata)
+
+	return c.Status(201).JSON(scenario)
 }
 
-func (a *APIServer) GetArticles(c fiber.Ctx) error {
-	aS := a.articleService
+func (a *APIServer) GetScenarioById(c fiber.Ctx, scenarioId string) error {
 
-	metadata, err := aS.Articles()
+	file, err := a.simulatorService.GetScenarioById(scenarioId)
 	if err != nil {
-		return c.SendStatus(fiber.StatusInternalServerError)
+		if errors.Is(err, storage.ErrNotFound) {
+			return c.Status(404).JSON(simulator.ErrorResponse{Message: err.Error()})
+		}
+		a.log.Error(err)
+		return c.SendStatus(500)
 	}
-	return c.Status(fiber.StatusOK).JSON(metadata)
+
+	return c.Status(200).JSON(file)
 }
 
-func (a *APIServer) GetArticleById(c fiber.Ctx, articleId string) error {
-	aS := a.articleService
+func (a *APIServer) CreateSimulatorSession(c fiber.Ctx, params simulator.CreateSimulatorSessionParams) error {
 
-	metadata, err := aS.ArticleByUUID(articleId)
+	if err := a.simulatorService.CreateSession(params.XUserId); err != nil {
+		a.log.Error(err)
+		c.SendStatus(500)
+	}
+
+	return c.SendStatus(204)
+}
+
+func (a *APIServer) GetResults(c fiber.Ctx, params simulator.GetResultsParams) error {
+	final, err := a.simulatorService.GetResults(params.XUserId)
 	if err != nil {
-		if errors.Is(err, storage.ErrArticleNotFound) {
-			return c.SendStatus(fiber.StatusNotFound)
+		if errors.Is(err, storage.ErrNotFound) {
+			return c.Status(400).JSON(simulator.ErrorResponse{Message: err.Error()})
 		}
-		return c.SendStatus(fiber.StatusInternalServerError)
-	}
-	return c.Status(fiber.StatusOK).JSON(metadata)
-}
 
-func chunkByWords(s string, wordsPerChunk int) []string {
-	words := strings.Fields(s)
-	var chunks []string
-
-	for i := 0; i < len(words); i += wordsPerChunk {
-		end := i + wordsPerChunk
-		if end > len(words) {
-			end = len(words)
-		}
-		chunks = append(chunks, strings.Join(words[i:end], " "))
+		a.log.Error(err)
+		return c.SendStatus(500)
 	}
 
-	return chunks
+	return c.Status(200).JSON(final)
 }
 
-func (a *APIServer) GetArticleTextById(c fiber.Ctx, articleId string) error {
-	aS := a.articleService
+func (a *APIServer) CreateStep(c fiber.Ctx) error {
+	req := &simulator.StepMetaRequired{}
+	if json.Unmarshal(c.Body(), req) != nil {
+		return c.SendStatus(422)
+	}
 
-	text, err := aS.ArticleTextByUUID(c.Context(), articleId)
+	stepMeta, err := a.simulatorService.CreateStep(req)
 	if err != nil {
-		if errors.Is(err, storage.ErrArticleNotFound) {
-			return c.SendStatus(fiber.StatusNotFound)
-		} else if errors.Is(err, storage.ErrArticleTextNotCreatedYet) {
-			return c.SendStatus(fiber.StatusNotFound)
+		if errors.Is(err, storage.ErrNotFound) {
+			c.Status(400).JSON(simulator.ErrorResponse{Message: err.Error()})
 		}
-		return c.SendStatus(fiber.StatusInternalServerError)
+		a.log.Error(err)
+		return c.SendStatus(500)
 	}
 
-	c.Set("Content-Type", "application/x-ndjson")
-	c.Set("Transfer-Encoding", "chunked")
-
-	return c.SendStreamWriter(func(w *bufio.Writer) {
-		chunks := chunkByWords(text, 50)
-
-		for _, chunk := range chunks {
-			fmt.Fprintln(w, chunk) // важно: \n для NDJSON
-			w.Flush()              // отправляем сразу клиенту
-			time.Sleep(500 * time.Millisecond)
-		}
-	})
+	return c.Status(201).JSON(stepMeta)
 }
 
-func (a *APIServer) PatchArticleById(c fiber.Ctx, articleId string) error {
-	aS := a.articleService
-
-	var request article.PatchArticleByIdJSONRequestBody
-
-	if err := c.Bind().Body(&request); err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
+func (a *APIServer) EditStep(c fiber.Ctx, stepId string) error {
+	// Парсим Body
+	req := &simulator.StepMeta{}
+	if json.Unmarshal(c.Body(), req) != nil {
+		return c.SendStatus(422)
 	}
 
-	metadata, err := aS.UpdateArticleByUUID(
-		articleId,
-		"",
-		"",
-		*request.ArticleStatus,
-		*request.ArticleTitle,
-	)
+	step, err := a.simulatorService.EditStep(stepId, req)
 	if err != nil {
-		if errors.Is(err, storage.ErrArticleNotFound) {
-			return c.SendStatus(fiber.StatusNotFound)
+		if errors.Is(err, storage.ErrNotFound) {
+			c.Status(400).JSON(simulator.ErrorResponse{Message: err.Error()})
 		}
-		return c.SendStatus(fiber.StatusInternalServerError)
+		if errors.Is(err, storage.ErrNotFound) {
+			return c.Status(404).JSON(simulator.ErrorResponse{Message: err.Error()})
+		}
+		a.log.Error(err)
+		return c.SendStatus(500)
 	}
-	return c.Status(fiber.StatusOK).JSON(metadata)
+
+	return c.Status(200).JSON(step)
 }
 
-func (a *APIServer) PostArticleTextById(c fiber.Ctx, articleId string) error {
-	aS := a.articleService
-
-	text := string(c.Request().Body())
-
-	metadata, err := aS.SaveArticleTextByUUID(c.Context(), articleId, text)
+func (a *APIServer) GetStep(c fiber.Ctx, params simulator.GetStepParams) error {
+	step, err := a.simulatorService.GetStep(params.XUserId.String())
 	if err != nil {
 		a.log.Error(err)
-		return c.SendStatus(fiber.StatusInternalServerError)
+		return c.SendStatus(500)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(metadata)
+	return c.Status(200).JSON(step)
 }
 
-func (a *APIServer) PutArticleTextById(c fiber.Ctx, articleId string) error {
-	aS := a.articleService
-
-	text := string(c.Request().Body())
-
-	metadata, err := aS.UpdateArticleTextByUUID(c.Context(), articleId, text)
-	if err != nil {
-		if errors.Is(err, storage.ErrArticleNotFound) {
-			return c.SendStatus(fiber.StatusNotFound)
-		} else if errors.Is(err, storage.ErrArticleTextNotCreatedYet) {
-			return c.SendStatus(fiber.StatusNotFound)
-		}
-		return c.SendStatus(fiber.StatusInternalServerError)
+func (a *APIServer) EditScenario(c fiber.Ctx, scenarioId string) error {
+	// Парсим Body
+	req := &simulator.EditScenarioJSONRequestBody{}
+	if json.Unmarshal(c.Body(), req) != nil {
+		return c.SendStatus(422)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(metadata)
+	scenario, err := a.simulatorService.EditScenario(scenarioId, req)
+	if err != nil {
+		if errors.Is(err, storage.ErrNotFound) {
+			c.Status(400).JSON(simulator.ErrorResponse{Message: err.Error()})
+		}
+		if errors.Is(err, storage.ErrNotFound) {
+			return c.Status(404).JSON(simulator.ErrorResponse{Message: err.Error()})
+		}
+		a.log.Error(err)
+		return c.SendStatus(500)
+	}
+
+	return c.Status(201).JSON(scenario)
+}
+
+func (a *APIServer) GetAllScenarios(c fiber.Ctx) error {
+	scenarios, err := a.simulatorService.GetAllScenarios()
+	if err != nil {
+		a.log.Error(err)
+		return c.SendStatus(500)
+	}
+
+	return c.Status(200).JSON(scenarios)
+}
+
+func (a *APIServer) CreateAction(c fiber.Ctx) error {
+	req := &simulator.ActionBaseRequired{}
+	if json.Unmarshal(c.Body(), req) != nil {
+		return c.SendStatus(422)
+	}
+
+	action, err := a.simulatorService.CreateAction(req)
+	if err != nil {
+		if errors.Is(err, storage.ErrNotFound) {
+			c.Status(400).JSON(simulator.ErrorResponse{Message: err.Error()})
+		}
+		a.log.Error(err)
+		return c.SendStatus(500)
+	}
+
+	return c.Status(201).JSON(action)
+}
+func (a *APIServer) EditAction(c fiber.Ctx, actionId string) error {
+	// Парсим Body
+	req := &simulator.ActionBase{}
+	if json.Unmarshal(c.Body(), req) != nil {
+		return c.SendStatus(422)
+	}
+
+	action, err := a.simulatorService.EditAction(actionId, req)
+	if err != nil {
+		if errors.Is(err, storage.ErrNotFound) {
+			c.Status(400).JSON(simulator.ErrorResponse{Message: err.Error()})
+		}
+		if errors.Is(err, storage.ErrNotFound) {
+			return c.Status(404).JSON(simulator.ErrorResponse{Message: err.Error()})
+		}
+		a.log.Error(err)
+		return c.SendStatus(500)
+	}
+
+	return c.Status(200).JSON(action)
+}
+
+func (a *APIServer) CreateAnswer(c fiber.Ctx) error {
+	req := &simulator.AnswerBaseRequired{}
+	if json.Unmarshal(c.Body(), req) != nil {
+		return c.SendStatus(422)
+	}
+
+	answer, err := a.simulatorService.CreateAnswer(req)
+	if err != nil {
+		a.log.Error(err)
+		return c.SendStatus(500)
+	}
+
+	return c.Status(201).JSON(answer)
+}
+func (a *APIServer) EditAnswer(c fiber.Ctx, answerId string) error {
+	// Парсим Body
+	req := &simulator.AnswerBase{}
+	if json.Unmarshal(c.Body(), req) != nil {
+		return c.SendStatus(422)
+	}
+
+	Answer, err := a.simulatorService.EditAnswer(answerId, req)
+	if err != nil {
+		if errors.Is(err, storage.ErrNotFound) {
+			return c.Status(404).JSON(simulator.ErrorResponse{Message: err.Error()})
+		}
+		a.log.Error(err)
+		return c.SendStatus(500)
+	}
+
+	return c.Status(200).JSON(Answer)
+}
+func (a *APIServer) SendUserAnswer(c fiber.Ctx, params simulator.SendUserAnswerParams) error {
+
+	req := &simulator.SendUserAnswerJSONBody{}
+	if json.Unmarshal(c.Body(), req) != nil {
+		return c.SendStatus(422)
+	}
+
+	if err := a.simulatorService.SendUserAnswer(req.AnswerId.String()); err != nil {
+		if errors.Is(err, storage.ErrNotFound) {
+			c.Status(400).JSON(simulator.ErrorResponse{Message: err.Error()})
+		}
+		a.log.Error(err)
+		return c.SendStatus(500)
+	}
+	return c.SendStatus(204)
+}
+
+func (a *APIServer) CreateFile(c fiber.Ctx) error {
+	req := &simulator.FileBaseRequired{}
+	if json.Unmarshal(c.Body(), req) != nil {
+		return c.SendStatus(422)
+	}
+
+	file, err := a.simulatorService.CreateFile(req)
+	if err != nil {
+		a.log.Error(err)
+		return c.SendStatus(500)
+	}
+
+	return c.Status(201).JSON(file)
+}
+
+func (a *APIServer) EditFile(c fiber.Ctx, fileId string) error {
+	// Парсим Body
+	req := &simulator.FileBase{}
+	if json.Unmarshal(c.Body(), req) != nil {
+		return c.SendStatus(422)
+	}
+
+	file, err := a.simulatorService.EditFile(fileId, req)
+	if err != nil {
+		if errors.Is(err, storage.ErrNotFound) {
+			return c.Status(404).JSON(simulator.ErrorResponse{Message: err.Error()})
+		}
+		a.log.Error(err)
+		return c.SendStatus(500)
+	}
+
+	return c.Status(200).JSON(file)
+}
+
+func (a *APIServer) GetFileByFileId(c fiber.Ctx, fileId string, params simulator.GetFileByFileIdParams) error {
+
+	file, err := a.simulatorService.GetFileByFileId(fileId, params.XUserId)
+	if err != nil {
+		if errors.Is(err, storage.ErrNotFound) {
+			return c.Status(404).JSON(simulator.ErrorResponse{Message: err.Error()})
+		}
+		a.log.Error(err)
+		return c.SendStatus(500)
+	}
+
+	return c.Status(200).JSON(file)
+}
+
+func (a *APIServer) CreateMessage(c fiber.Ctx) error {
+	req := &simulator.MessageBaseRequired{}
+	if json.Unmarshal(c.Body(), req) != nil {
+		return c.SendStatus(422)
+	}
+
+	Message, err := a.simulatorService.CreateMessage(req)
+	if err != nil {
+		if errors.Is(err, storage.ErrNotFound) {
+			c.Status(400).JSON(simulator.ErrorResponse{Message: err.Error()})
+		}
+		if errors.Is(err, storage.ErrDataConfllict) {
+			c.Status(409).JSON(simulator.ErrorResponse{Message: err.Error()})
+		}
+		a.log.Error(err)
+		return c.SendStatus(500)
+	}
+
+	return c.Status(201).JSON(Message)
+}
+func (a *APIServer) EditMessage(c fiber.Ctx, messageId string) error {
+	// Парсим Body
+	req := &simulator.MessageBase{}
+	if json.Unmarshal(c.Body(), req) != nil {
+		return c.SendStatus(422)
+	}
+
+	message, err := a.simulatorService.EditMessage(messageId, req)
+	if err != nil {
+		if errors.Is(err, storage.ErrNotFound) {
+			c.Status(400).JSON(simulator.ErrorResponse{Message: err.Error()})
+		}
+		if errors.Is(err, storage.ErrNotFound) {
+			return c.Status(404).JSON(simulator.ErrorResponse{Message: err.Error()})
+		}
+		a.log.Error(err)
+		return c.SendStatus(500)
+	}
+
+	return c.Status(200).JSON(message)
 }

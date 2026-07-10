@@ -6,9 +6,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/NekNB/CyberNavigate/backend/article-service/internal/app"
-	"github.com/NekNB/CyberNavigate/backend/article-service/internal/config"
-	"github.com/NekNB/CyberNavigate/backend/article-service/internal/lib/logger"
+	"github.com/NekNB/CyberNavigate/backend/simulator-service/internal/app"
+	"github.com/NekNB/CyberNavigate/backend/simulator-service/internal/config"
+	"github.com/NekNB/CyberNavigate/backend/simulator-service/internal/lib/logger"
 )
 
 const (

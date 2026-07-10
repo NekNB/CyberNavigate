@@ -1,6 +1,6 @@
 # !/bin/sh
 
-SECRET_PATH="/run/secrets/article_service_secret"
+SECRET_PATH="/run/secrets/simulator_service_secret"
 
 load_secrets() {
 	if [ -f "$SECRET_PATH" ]; then
@@ -22,4 +22,4 @@ load_secrets() {
 
 
 load_secrets
-./article-service
+./simulator-service

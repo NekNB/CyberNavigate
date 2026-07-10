@@ -1986,7 +1986,6 @@ type CreateSimulatorSessionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON401      *UnauthorizedResponse
-	JSON409      *ErrorResponse
 	JSON422      *UnprocessableEntityResponse
 }
 
@@ -3114,13 +3113,6 @@ func ParseCreateSimulatorSessionResponse(rsp *http.Response) (*CreateSimulatorSe
 			return nil, err
 		}
 		response.JSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
-		var dest ErrorResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON409 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
 		var dest UnprocessableEntityResponse

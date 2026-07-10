@@ -4,15 +4,15 @@ import (
 	"crypto/tls"
 	"fmt"
 
-	tlsconfig "github.com/NekNB/CyberNavigate/backend/article-service/internal/app/tls"
-	"github.com/NekNB/CyberNavigate/backend/article-service/internal/assets"
-	"github.com/NekNB/CyberNavigate/backend/article-service/internal/config"
-	articleAPI "github.com/NekNB/CyberNavigate/backend/article-service/internal/http"
-	articleService "github.com/NekNB/CyberNavigate/backend/article-service/internal/services/article"
-	"github.com/NekNB/CyberNavigate/backend/article-service/internal/storage/mongo"
-	"github.com/NekNB/CyberNavigate/backend/article-service/internal/storage/postgres"
+	tlsconfig "github.com/NekNB/CyberNavigate/backend/simulator-service/internal/app/tls"
+	"github.com/NekNB/CyberNavigate/backend/simulator-service/internal/assets"
+	"github.com/NekNB/CyberNavigate/backend/simulator-service/internal/config"
+	simulatorAPI "github.com/NekNB/CyberNavigate/backend/simulator-service/internal/http"
+	simulatorService "github.com/NekNB/CyberNavigate/backend/simulator-service/internal/services/simulator"
+
+	"github.com/NekNB/CyberNavigate/backend/simulator-service/internal/storage/postgres"
 	"github.com/NekNB/CyberNavigate/swagger"
-	"github.com/NekNB/CyberNavigate/swagger/gen/article"
+	"github.com/NekNB/CyberNavigate/swagger/gen/simulator"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"
@@ -43,7 +43,7 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 	}
 
 	app := fiber.New(fiber.Config{
-		AppName: "ArStore ArticleServiceV1",
+		AppName: "ArStore simulatorServiceV1",
 	})
 	app.Use(logger.New())
 	app.Use(recover.New())
@@ -64,18 +64,6 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 		AllowCredentials: true,
 	}))
 
-	mongoStorage, err := mongo.CreateConnection(log, fmt.Sprintf(
-		"mongodb://%s:%s@%s:%d",
-		cfg.Storage.Mongo.User,
-		cfg.Storage.Mongo.Password,
-		cfg.Storage.Mongo.Host,
-		cfg.Storage.Mongo.Port,
-	), cfg.Storage.Mongo.Database, cfg.Storage.Mongo.Collection)
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
-
 	postgresStorage, err := postgres.New(log, fmt.Sprintf(
 		"postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		cfg.Storage.Postgres.User,
@@ -89,11 +77,11 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 		return nil, err
 	}
 
-	articleService := articleService.New(log, mongoStorage, postgresStorage)
+	simulatorService := simulatorService.New(log, postgresStorage)
 
-	articleAPI := articleAPI.New(log, articleService)
+	simulatorAPI := simulatorAPI.New(log, simulatorService)
 
-	article.RegisterHandlersWithOptions(app.Name("API"), articleAPI, article.FiberServerOptions{
+	simulator.RegisterHandlersWithOptions(app.Name("API"), simulatorAPI, simulator.FiberServerOptions{
 		BaseURL: "/api/v1",
 	})
 

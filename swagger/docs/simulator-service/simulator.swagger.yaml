@@ -800,12 +800,6 @@ paths:
           description: Session Created
         "401":
           $ref: "#/components/responses/UnauthorizedResponse"
-        "409":
-          description: Session Already Exists
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
         "422":
           $ref: "#/components/responses/UnprocessableEntityResponse"
     delete:

@@ -4,9 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
-	articleService "github.com/NekNB/CyberNavigate/backend/article-service/internal/services/article"
-	"github.com/NekNB/CyberNavigate/backend/article-service/internal/storage"
-	"github.com/NekNB/CyberNavigate/swagger/gen/article"
+	"github.com/NekNB/CyberNavigate/backend/simulator-service/internal/storage"
 	"github.com/lib/pq"
 	"github.com/lib/pq/pqerror"
 	"github.com/sirupsen/logrus"
@@ -16,7 +14,7 @@ type PostgresStorage struct {
 	db *sql.DB
 }
 
-var _ articleService.ArticleMetaProvider = (*PostgresStorage)(nil)
+var _ simulatorService.simulatorMetaProvider = (*PostgresStorage)(nil)
 
 func New(log *logrus.Logger, uri string) (*PostgresStorage, error) {
 	db, err := sql.Open("postgres", uri)
@@ -31,8 +29,8 @@ func New(log *logrus.Logger, uri string) (*PostgresStorage, error) {
 	return &PostgresStorage{db: db}, nil
 }
 
-// Выборка все article metadata
-func (p *PostgresStorage) Articles() (*[]article.ArticleMetaData, error) {
+// Выборка все simulator metadata
+func (p *PostgresStorage) simulators() (*[]simulator.simulatorMetaData, error) {
 	rows, err := p.db.Query(
 		`
 			SELECT uuid, title, status 
@@ -43,10 +41,10 @@ func (p *PostgresStorage) Articles() (*[]article.ArticleMetaData, error) {
 		return nil, err
 	}
 
-	var articleSlice []article.ArticleMetaData
+	var simulatorSlice []simulator.simulatorMetaData
 
 	for rows.Next() {
-		metadata := article.ArticleMetaData{}
+		metadata := simulator.simulatorMetaData{}
 		if err := rows.Scan(
 			&metadata.Id,
 			&metadata.Title,
@@ -55,14 +53,14 @@ func (p *PostgresStorage) Articles() (*[]article.ArticleMetaData, error) {
 			return nil, err
 		}
 
-		articleSlice = append(articleSlice, metadata)
+		simulatorSlice = append(simulatorSlice, metadata)
 	}
 
-	return &articleSlice, nil
+	return &simulatorSlice, nil
 }
 
-// Получение конкретного article metadata по uuid
-func (p *PostgresStorage) ArticleByUUID(articleUUID string) (*article.ArticleMetaData, error) {
+// Получение конкретного simulator metadata по uuid
+func (p *PostgresStorage) simulatorByUUID(simulatorUUID string) (*simulator.simulatorMetaData, error) {
 	stmt, err := p.db.Prepare(
 		`
 			SELECT uuid, title, status 
@@ -74,24 +72,24 @@ func (p *PostgresStorage) ArticleByUUID(articleUUID string) (*article.ArticleMet
 		return nil, err
 	}
 
-	var articleMetadata article.ArticleMetaData
+	var simulatorMetadata simulator.simulatorMetaData
 
-	if err = stmt.QueryRow(articleUUID).Scan(
-		&articleMetadata.Id,
-		&articleMetadata.Title,
-		&articleMetadata.Status,
+	if err = stmt.QueryRow(simulatorUUID).Scan(
+		&simulatorMetadata.Id,
+		&simulatorMetadata.Title,
+		&simulatorMetadata.Status,
 	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, storage.ErrArticleNotFound
+			return nil, storage.ErrsimulatorNotFound
 		}
 		return nil, err
 	}
 
-	return &articleMetadata, nil
+	return &simulatorMetadata, nil
 }
 
-// Получение конкретного article text по uuid
-func (p *PostgresStorage) ArticleTextIDByUUID(articleUUID string) (string, error) {
+// Получение конкретного simulator text по uuid
+func (p *PostgresStorage) simulatorTextIDByUUID(simulatorUUID string) (string, error) {
 
 	var textIdNull sql.NullString
 	if err := p.db.QueryRow(
@@ -100,28 +98,28 @@ func (p *PostgresStorage) ArticleTextIDByUUID(articleUUID string) (string, error
 			FROM metadata
 			WHERE uuid = $1;
 		`,
-		articleUUID,
+		simulatorUUID,
 	).Scan(&textIdNull); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return "", storage.ErrArticleNotFound
+			return "", storage.ErrsimulatorNotFound
 		}
 		return "", err
 	}
 	if textIdNull.Valid {
 		return textIdNull.String, nil
 	}
-	return "", storage.ErrArticleTextNotCreatedYet
+	return "", storage.ErrsimulatorTextNotCreatedYet
 }
 
-// Создание сущности Article
-func (p *PostgresStorage) CreateArticle(articleTitle *string) (*article.ArticleMetaData, error) {
-	var metadata article.ArticleMetaData
+// Создание сущности simulator
+func (p *PostgresStorage) Createsimulator(simulatorTitle *string) (*simulator.simulatorMetaData, error) {
+	var metadata simulator.simulatorMetaData
 
 	if err := p.db.QueryRow(`
 		INSERT INTO metadata (title)
 		VALUES ($1)
 		RETURNING uuid, title, status;
-	`, articleTitle).
+	`, simulatorTitle).
 		Scan(
 			&metadata.Id,
 			&metadata.Title,
@@ -129,7 +127,7 @@ func (p *PostgresStorage) CreateArticle(articleTitle *string) (*article.ArticleM
 		); err != nil {
 		var pgerr *pq.Error
 		if errors.As(err, &pgerr) && pgerr.Code == pqerror.UniqueViolation {
-			return nil, storage.ErrArticleExists
+			return nil, storage.ErrsimulatorExists
 		}
 		return nil, err
 	}
@@ -137,16 +135,16 @@ func (p *PostgresStorage) CreateArticle(articleTitle *string) (*article.ArticleM
 	return &metadata, nil
 }
 
-// Обновление сущности Article по UUID
-func (p *PostgresStorage) UpdateArticleByUUID(uuid, title, textID, status, videoUrl string) (*article.ArticleMetaData, error) {
-	var metadata article.ArticleMetaData
+// Обновление сущности simulator по UUID
+func (p *PostgresStorage) UpdatesimulatorByUUID(uuid, title, textID, status, videoUrl string) (*simulator.simulatorMetaData, error) {
+	var metadata simulator.simulatorMetaData
 
 	if err := p.db.QueryRow(`
 		UPDATE metadata
 		SET
 			title = COALESCE(NULLIF($2, ''), title),
 			text_id = COALESCE(NULLIF($3, ''), text_id),
-			status = COALESCE(NULLIF($4, '')::article_status, status),
+			status = COALESCE(NULLIF($4, '')::simulator_status, status),
 			video_url = COALESCE(NULLIF($5, ''), video_url)
 		WHERE uuid = $1
 		RETURNING uuid, title, status;
@@ -158,7 +156,7 @@ func (p *PostgresStorage) UpdateArticleByUUID(uuid, title, textID, status, video
 		); err != nil {
 		var pgerr *pq.Error
 		if errors.As(err, &pgerr) && pgerr.Code == pqerror.UniqueViolation {
-			return nil, storage.ErrArticleNotFound
+			return nil, storage.ErrsimulatorNotFound
 		}
 		return nil, err
 	}
