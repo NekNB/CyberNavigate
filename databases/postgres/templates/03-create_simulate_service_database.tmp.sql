@@ -106,36 +106,32 @@ CREATE TABLE article_ids_to_scenario_id (
     article_id UUID PRIMARY KEY,
     senario_id UUID NOT NULL REFERENCES scenarios(uuid)
 );
-CREATE TABLE actions (
-    uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    step_id UUID NOT NULL REFERENCES steps(uuid),
-    type VARCHAR(10) NOT NULL REFERENCES action_type(name),
-    message_id UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4(),
-    delay INTEGER NOT NULL DEFAULT 0
-);
+
 CREATE TABLE files (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    filename VARCHAR(30) NOT NULL UNIQUE,
-    message_id UUID NOT NULL REFERENCES messages(uuid), 
+    filename VARCHAR(30) NOT NULL UNIQUE, 
     is_safe BOOLEAN NOT NULL,
-    size INTEGER NOT NULL
+    size INTEGER NOT NULL,
     error VARCHAR(256)
 );
 
-
-
 CREATE TABLE messages (
-    uuid UUID PRIMARY KEY REFERENCES actions(object_id),
+    uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     sender_id UUID NOT NULL,
     sender_name VARCHAR(50) NOT NULL, 
     text VARCHAR(1024),
+    file_id UUID NOT NULL REFERENCES files(uuid)
 );
 
-CREATE TABLE errors_to_user (
+CREATE TABLE actions (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    session_id UUID REFERENCES session(uuid)
-    error VARCHAR(256) NOT NULL,
-)
+    step_id UUID REFERENCES steps(uuid),
+    type VARCHAR(10) NOT NULL REFERENCES action_type(name),
+    message_id UUID NOT NULL REFERENCES messages(uuid),
+    delay INTEGER NOT NULL DEFAULT 0
+);
+
+
 
 
 
@@ -144,13 +140,20 @@ CREATE TABLE errors_to_user (
 CREATE TABLE sessions (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     user_id UUID UNIQUE NOT NULL,
-    current_trust INTEGER CHECK (current_trust BETWEEN -100 AND 100),
+    current_trust INTEGER CHECK (current_trust BETWEEN -100 AND 100) DEFAULT 0,
+    current_step UUID NOT NULL REFERENCES steps(uuid),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     finished_at TIMESTAMP WITH TIME ZONE
 );
 
+CREATE TABLE errors_to_user (
+    uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    session_id UUID REFERENCES sessions(uuid),
+    error VARCHAR(256) NOT NULL
+);
 CREATE TABLE trust (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    trust INTEGER CHECK (trust BETWEEN -100 AND 100),
     session_id UUID NOT NULL REFERENCES sessions(uuid),
     noted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
