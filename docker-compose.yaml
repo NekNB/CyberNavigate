@@ -82,7 +82,7 @@ services:
 volumes:
   mongo_data:
   postgres_data:
-    driver: local
+
 
 
 secrets:
