@@ -141,7 +141,21 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/ActionFull"
-
+    StepMetaMin:
+      type: object
+      properties:
+        minTrust:
+          type: integer
+          example: 0
+        maxTrust:
+          type: integer
+          example: 3
+        actions:
+          type: array
+          items:
+            type: string
+            format: uuid
+            example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
     StepMeta:
       type: object
       properties:
@@ -312,7 +326,7 @@ components:
     AnswerFull:
       allOf:
         - $ref: "#/components/schemas/BaseId"
-        - $ref: "#/components/schemas/AnswerBase"
+        - $ref: "#/components/schemas/AnswerBaseRequired"
     SimulationFinal:
       type: object
       properties:
@@ -541,7 +555,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/StepMeta"
+              $ref: "#/components/schemas/StepMetaMin"
       responses:
         "200":
           description: Step Edited
@@ -891,6 +905,7 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         "422":
           $ref: "#/components/responses/UnprocessableEntityResponse"
+
   /simulator/messages/{messageId}:
     patch:
       x-auth:

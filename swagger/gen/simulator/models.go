@@ -187,10 +187,10 @@ type AnswerBaseRequired struct {
 
 // AnswerFull defines model for AnswerFull.
 type AnswerFull struct {
-	AddTrust *int               `json:"addTrust,omitempty"`
+	AddTrust int                `json:"addTrust"`
 	Error    *string            `json:"error,omitempty"`
 	Id       openapi_types.UUID `json:"id"`
-	Text     *string            `json:"text,omitempty"`
+	Text     string             `json:"text"`
 }
 
 // BaseId defines model for BaseId.
@@ -324,6 +324,13 @@ type StepMetaFull struct {
 	ScenarioId     openapi_types.UUID  `json:"scenarioId"`
 }
 
+// StepMetaMin defines model for StepMetaMin.
+type StepMetaMin struct {
+	Actions  *[]openapi_types.UUID `json:"actions,omitempty"`
+	MaxTrust *int                  `json:"maxTrust,omitempty"`
+	MinTrust *int                  `json:"minTrust,omitempty"`
+}
+
 // StepMetaRequired defines model for StepMetaRequired.
 type StepMetaRequired struct {
 	Actions        []openapi_types.UUID `json:"actions"`
@@ -424,4 +431,4 @@ type CreateSimulatorSessionJSONRequestBody CreateSimulatorSessionJSONBody
 type CreateStepJSONRequestBody = StepMetaRequired
 
 // EditStepJSONRequestBody defines body for EditStep for application/json ContentType.
-type EditStepJSONRequestBody = StepMeta
+type EditStepJSONRequestBody = StepMetaMin

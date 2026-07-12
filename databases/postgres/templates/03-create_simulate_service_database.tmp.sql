@@ -70,9 +70,25 @@ CREATE TABLE action_type (
 );
 
 
+CREATE TABLE messages (
+    uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    sender_id UUID NOT NULL DEFAULT uuid_generate_v4(),
+    sender_name VARCHAR(50) NOT NULL, 
+    text VARCHAR(1024)
+);
+
+CREATE TABLE files (
+    uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    filename VARCHAR(30) NOT NULL UNIQUE, 
+    is_safe BOOLEAN NOT NULL,
+    message_id UUID NOT NULL REFERENCES messages(uuid),
+    size INTEGER NOT NULL,
+    error VARCHAR(256)
+);
 CREATE TABLE answers (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     text VARCHAR(50) NOT NULL,
+    message_id UUID NOT NULL REFERENCES messages(uuid),
     add_trust INTEGER NOT NULL DEFAULT 0,
     error VARCHAR(256)
 );
@@ -107,21 +123,6 @@ CREATE TABLE article_ids_to_scenario_id (
     senario_id UUID NOT NULL REFERENCES scenarios(uuid)
 );
 
-CREATE TABLE files (
-    uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    filename VARCHAR(30) NOT NULL UNIQUE, 
-    is_safe BOOLEAN NOT NULL,
-    size INTEGER NOT NULL,
-    error VARCHAR(256)
-);
-
-CREATE TABLE messages (
-    uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    sender_id UUID NOT NULL,
-    sender_name VARCHAR(50) NOT NULL, 
-    text VARCHAR(1024),
-    file_id UUID NOT NULL REFERENCES files(uuid)
-);
 
 CREATE TABLE actions (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
