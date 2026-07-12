@@ -795,6 +795,20 @@ paths:
         - Sessions
       summary: Создает сессию симулятора
       operationId: createSimulatorSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - scenarioId
+              properties:
+                scenarioId:
+                  type: string
+                  format: uuid
+                  example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+
       responses:
         "204":
           description: Session Created

@@ -369,6 +369,11 @@ type GetResultsParams struct {
 	XUserId string `json:"X-User-Id"`
 }
 
+// CreateSimulatorSessionJSONBody defines parameters for CreateSimulatorSession.
+type CreateSimulatorSessionJSONBody struct {
+	ScenarioId openapi_types.UUID `json:"scenarioId"`
+}
+
 // CreateSimulatorSessionParams defines parameters for CreateSimulatorSession.
 type CreateSimulatorSessionParams struct {
 	XUserId string `json:"X-User-Id"`
@@ -411,6 +416,9 @@ type CreateScenarioJSONRequestBody = ScenarioBaseRequired
 
 // EditScenarioJSONRequestBody defines body for EditScenario for application/json ContentType.
 type EditScenarioJSONRequestBody = ScenarioBase
+
+// CreateSimulatorSessionJSONRequestBody defines body for CreateSimulatorSession for application/json ContentType.
+type CreateSimulatorSessionJSONRequestBody CreateSimulatorSessionJSONBody
 
 // CreateStepJSONRequestBody defines body for CreateStep for application/json ContentType.
 type CreateStepJSONRequestBody = StepMetaRequired

@@ -156,8 +156,10 @@ type ClientInterface interface {
 	// GetResults request
 	GetResults(ctx context.Context, params *GetResultsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// CreateSimulatorSession request
-	CreateSimulatorSession(ctx context.Context, params *CreateSimulatorSessionParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CreateSimulatorSessionWithBody request with any body
+	CreateSimulatorSessionWithBody(ctx context.Context, params *CreateSimulatorSessionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateSimulatorSession(ctx context.Context, params *CreateSimulatorSessionParams, body CreateSimulatorSessionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetStep request
 	GetStep(ctx context.Context, params *GetStepParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -485,8 +487,20 @@ func (c *Client) GetResults(ctx context.Context, params *GetResultsParams, reqEd
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateSimulatorSession(ctx context.Context, params *CreateSimulatorSessionParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateSimulatorSessionRequest(c.Server, params)
+func (c *Client) CreateSimulatorSessionWithBody(ctx context.Context, params *CreateSimulatorSessionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateSimulatorSessionRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateSimulatorSession(ctx context.Context, params *CreateSimulatorSessionParams, body CreateSimulatorSessionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateSimulatorSessionRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1193,8 +1207,19 @@ func NewGetResultsRequest(server string, params *GetResultsParams) (*http.Reques
 	return req, nil
 }
 
-// NewCreateSimulatorSessionRequest generates requests for CreateSimulatorSession
-func NewCreateSimulatorSessionRequest(server string, params *CreateSimulatorSessionParams) (*http.Request, error) {
+// NewCreateSimulatorSessionRequest calls the generic CreateSimulatorSession builder with application/json body
+func NewCreateSimulatorSessionRequest(server string, params *CreateSimulatorSessionParams, body CreateSimulatorSessionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateSimulatorSessionRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateSimulatorSessionRequestWithBody generates requests for CreateSimulatorSession with any type of body
+func NewCreateSimulatorSessionRequestWithBody(server string, params *CreateSimulatorSessionParams, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1212,10 +1237,12 @@ func NewCreateSimulatorSessionRequest(server string, params *CreateSimulatorSess
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	if params != nil {
 
@@ -1470,8 +1497,10 @@ type ClientWithResponsesInterface interface {
 	// GetResultsWithResponse request
 	GetResultsWithResponse(ctx context.Context, params *GetResultsParams, reqEditors ...RequestEditorFn) (*GetResultsResponse, error)
 
-	// CreateSimulatorSessionWithResponse request
-	CreateSimulatorSessionWithResponse(ctx context.Context, params *CreateSimulatorSessionParams, reqEditors ...RequestEditorFn) (*CreateSimulatorSessionResponse, error)
+	// CreateSimulatorSessionWithBodyWithResponse request with any body
+	CreateSimulatorSessionWithBodyWithResponse(ctx context.Context, params *CreateSimulatorSessionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSimulatorSessionResponse, error)
+
+	CreateSimulatorSessionWithResponse(ctx context.Context, params *CreateSimulatorSessionParams, body CreateSimulatorSessionJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSimulatorSessionResponse, error)
 
 	// GetStepWithResponse request
 	GetStepWithResponse(ctx context.Context, params *GetStepParams, reqEditors ...RequestEditorFn) (*GetStepResponse, error)
@@ -2336,9 +2365,17 @@ func (c *ClientWithResponses) GetResultsWithResponse(ctx context.Context, params
 	return ParseGetResultsResponse(rsp)
 }
 
-// CreateSimulatorSessionWithResponse request returning *CreateSimulatorSessionResponse
-func (c *ClientWithResponses) CreateSimulatorSessionWithResponse(ctx context.Context, params *CreateSimulatorSessionParams, reqEditors ...RequestEditorFn) (*CreateSimulatorSessionResponse, error) {
-	rsp, err := c.CreateSimulatorSession(ctx, params, reqEditors...)
+// CreateSimulatorSessionWithBodyWithResponse request with arbitrary body returning *CreateSimulatorSessionResponse
+func (c *ClientWithResponses) CreateSimulatorSessionWithBodyWithResponse(ctx context.Context, params *CreateSimulatorSessionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSimulatorSessionResponse, error) {
+	rsp, err := c.CreateSimulatorSessionWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateSimulatorSessionResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateSimulatorSessionWithResponse(ctx context.Context, params *CreateSimulatorSessionParams, body CreateSimulatorSessionJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSimulatorSessionResponse, error) {
+	rsp, err := c.CreateSimulatorSession(ctx, params, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
