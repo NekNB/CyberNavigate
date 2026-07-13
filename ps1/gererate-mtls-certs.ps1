@@ -113,14 +113,14 @@ if (-not (Test-Path $CAKeyPath) -or -not (Test-Path $CACertPath)) {
 
 Write-Host "WARNING: ca-key.pem must be stored securely OFFLINE! Never commit to git." -ForegroundColor Yellow
 
-$services = @("article-service", "user-service")
+$services = @("article-service", "user-service", "simulator-service")
 
 foreach ($service in $services) {
     New-ServiceCertificate -ServiceName $service -CertsRootPath $CertsPath -CAKeyPath $CAKeyPath -CACertPath $CACertPath -DaysValid $DaysValid
 }
 
 # Generate certificates for Gateway (client certificates for mTLS)
-$GatewayPath = Join-Path $CertsPath "gateway"
+$GatewayPath = Join-Path $CertsPath "gateway-server"
 if (-not (Test-Path $GatewayPath)) {
     New-Item -ItemType Directory -Path $GatewayPath -Force | Out-Null
 }

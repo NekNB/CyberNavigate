@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"time"
 
@@ -29,16 +30,14 @@ type HTTPConfig struct {
 
 type StoragesConfig struct {
 	Postgres DatabaseConfig `yaml:"postgres"`
-	Mongo    DatabaseConfig `yaml:"mongo"`
 }
 
 type DatabaseConfig struct {
-	Database   string `yaml:"database"`
-	Host       string `yaml:"host"`
-	Port       int    `yaml:"port"`
-	User       string `yaml:"user"`
-	Password   string
-	Collection string `yaml:"collection"`
+	Database string `yaml:"database"`
+	Host     string `yaml:"host"`
+	Port     int    `yaml:"port"`
+	User     string `yaml:"user"`
+	Password string
 }
 
 // "Must" means the function will panic rather than return an error
@@ -84,5 +83,5 @@ func fetchConfigPath() string {
 // Получение паролей к базам данных из Env
 func fetchDatabasePasswords(cfg *Config) {
 	cfg.Storage.Postgres.Password = os.Getenv("POSTGRES_PASSWORD")
-	cfg.Storage.Mongo.Password = os.Getenv("MONGO_PASSWORD")
+	fmt.Println(os.Getenv("POSTGRES_PASSWORD"))
 }

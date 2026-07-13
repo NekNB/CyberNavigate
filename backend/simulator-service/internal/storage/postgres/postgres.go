@@ -3,7 +3,11 @@ package postgres
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 
+	cErr "github.com/NekNB/CyberNavigate/backend/simulator-service/internal/lib/errors"
+	"github.com/NekNB/CyberNavigate/backend/simulator-service/internal/models"
+	simulatorService "github.com/NekNB/CyberNavigate/backend/simulator-service/internal/services/simulator"
 	"github.com/NekNB/CyberNavigate/backend/simulator-service/internal/storage"
 	"github.com/lib/pq"
 	"github.com/lib/pq/pqerror"
@@ -11,12 +15,14 @@ import (
 )
 
 type PostgresStorage struct {
-	db *sql.DB
+	db  *sql.DB
+	log *logrus.Logger
 }
 
-var _ simulatorService.simulatorMetaProvider = (*PostgresStorage)(nil)
+var _ simulatorService.SimulatorDataProvider = (*PostgresStorage)(nil)
 
 func New(log *logrus.Logger, uri string) (*PostgresStorage, error) {
+
 	db, err := sql.Open("postgres", uri)
 	if err != nil {
 		log.Errorf("%s", err.Error())
@@ -29,137 +35,800 @@ func New(log *logrus.Logger, uri string) (*PostgresStorage, error) {
 	return &PostgresStorage{db: db}, nil
 }
 
-// Выборка все simulator metadata
-func (p *PostgresStorage) simulators() (*[]simulator.simulatorMetaData, error) {
-	rows, err := p.db.Query(
-		`
-			SELECT uuid, title, status 
-			FROM metadata;
-		`,
-	)
-	if err != nil {
+func (p *PostgresStorage) CreateSession(userId, stepId string) error {
+	if _, err := p.db.Exec(`
+	INSERT INTO sessions (user_id, current_step)
+	VALUES($1, $2);
+	`, userId, stepId); err != nil {
+		p.log.Error(err)
+		return err
+	}
+	return nil
+}
+func (p *PostgresStorage) GetSession(userId string) (*models.SessionData, error) {
+	var sessionData models.SessionData
+
+	if err := p.db.QueryRow(`
+	SELECT uuid, created_at, current_step, current_trust, finished_at
+	FROM sessions
+	WHERE user_id = $1;
+	`, userId).Scan(
+		&sessionData.UUID,
+		&sessionData.CreatedAt,
+		&sessionData.CurrentStepId,
+		&sessionData.CurrentTrust,
+		&sessionData.FinishedAt,
+	); err != nil {
+		p.log.Error(err)
 		return nil, err
 	}
 
-	var simulatorSlice []simulator.simulatorMetaData
+	return &sessionData, nil
+}
+func (p *PostgresStorage) SetCurrentStep(sessionId, stepId string) error {
+	if _, err := p.db.Exec(`
+		UPDATE session
+		SET
+			current_step = $1
+		WHERE uuid = $2
+	`, stepId, sessionId); err != nil {
+		p.log.Error(err)
+		return err
+	}
+	return nil
+}
 
-	for rows.Next() {
-		metadata := simulator.simulatorMetaData{}
-		if err := rows.Scan(
-			&metadata.Id,
-			&metadata.Title,
-			&metadata.Status,
+func (p *PostgresStorage) SetSessionError(sessionId, userError string) error {
+	if _, err := p.db.Exec(`
+	INSERT INTO errors_to_user (error, session_id) 
+	VALUES ($1, $2);
+	`, userError, sessionId); err != nil {
+		p.log.Error(err)
+		return err
+	}
+	return nil
+}
+func (p *PostgresStorage) MarkSessionAsFinished(sessionId string) error {
+	if _, err := p.db.Exec(`
+		UPDATE session
+		SET
+			finished_at = CURRENT_TIMESTAMP
+		WHERE uuid = $2
+	`, sessionId); err != nil {
+		p.log.Error(err)
+		return err
+	}
+	return nil
+}
+
+func (p *PostgresStorage) CreateScenario(title, description, difficulty string) (string, error) {
+	var scenarioId string
+
+	if err := p.db.QueryRow(`
+		INSERT INTO scenarios (title, desctription, difficulty)
+		VALUES ($1, $2, $3)
+		RETURNING uuid;
+	`, title, description, difficulty).
+		Scan(
+			&scenarioId,
 		); err != nil {
+		var pgerr *pq.Error
+		if errors.As(err, &pgerr) && pgerr.Code == pqerror.UniqueViolation {
+			return "", cErr.NewTypedError(storage.ErrAlreadyExists, fmt.Sprintf("Scenario with title: %s already exists", title))
+		}
+		p.log.Error(err)
+		return "", err
+	}
+
+	return scenarioId, nil
+}
+func (p *PostgresStorage) UpdateScenario(scenarioId, title, description, difficulty string) error {
+	if _, err := p.db.Exec(`
+		UPDATE scenarios
+		SET
+			title = $1,
+			description = $2,
+			difficulty = $3,
+		WHERE uuid = $4
+	`, title, description, difficulty, scenarioId); err != nil {
+		var pgerr *pq.Error
+		if errors.As(err, &pgerr) && pgerr.Code == pqerror.UniqueViolation {
+			return cErr.NewTypedError(storage.ErrAlreadyExists, fmt.Sprintf("Scenario with title: %s already exists", title))
+		}
+		p.log.Error(err)
+		return err
+	}
+	return nil
+}
+func (p *PostgresStorage) GetAllScenarios() (*[]models.ScenarioData, error) {
+	rows, err := p.db.Query(`
+		SELECT 
+			s.uuid,
+			s.title,
+			s.description,
+			s.difficulty,
+			s.first_step,
+			s.created_at,
+			s.updated_at,
+		COALESCE(
+				json_agg(a.article_id) FILTER (WHERE a.article_id IS NOT NULL),
+				'[]'
+		) AS article_ids
+		FROM scenarios s
+		LEFT JOIN article_ids_to_scenario_id a ON s.uuid = a.scenario_id 
+		GROUP BY s.uuid
+		ORDER BY s.created_at DESC;
+	`)
+	if err != nil {
+		p.log.Error(err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var scenarios []models.ScenarioData
+	for rows.Next() {
+		scenarioData := models.ScenarioData{}
+		if err := rows.Scan(
+			&scenarioData.UUID,
+			&scenarioData.Title,
+			&scenarioData.Description,
+			&scenarioData.Difficulty,
+			&scenarioData.FirstStep,
+			&scenarioData.CreatedAt,
+			&scenarioData.UpdatedAt,
+			&scenarioData.ArticleIds,
+		); err != nil {
+			p.log.Error(err)
 			return nil, err
 		}
 
-		simulatorSlice = append(simulatorSlice, metadata)
+		scenarios = append(scenarios, scenarioData)
 	}
 
-	return &simulatorSlice, nil
+	return &scenarios, nil
 }
 
-// Получение конкретного simulator metadata по uuid
-func (p *PostgresStorage) simulatorByUUID(simulatorUUID string) (*simulator.simulatorMetaData, error) {
-	stmt, err := p.db.Prepare(
-		`
-			SELECT uuid, title, status 
-			FROM metadata
-			WHERE uuid = $1;
-		`,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	var simulatorMetadata simulator.simulatorMetaData
-
-	if err = stmt.QueryRow(simulatorUUID).Scan(
-		&simulatorMetadata.Id,
-		&simulatorMetadata.Title,
-		&simulatorMetadata.Status,
+func (p *PostgresStorage) GetScenario(scenarioId string) (*models.ScenarioData, error) {
+	var scenarioData models.ScenarioData
+	if err := p.db.QueryRow(`
+		SELECT 
+			s.uuid,
+			s.title,
+			s.description,
+			s.difficulty,
+			s.first_step,
+			s.created_at,
+			s.updated_at,
+		COALESCE(
+				json_agg(a.article_id) FILTER (WHERE a.article_id IS NOT NULL),
+				'[]'
+		) AS article_ids
+		FROM scenarios s
+		LEFT JOIN article_ids_to_scenario_id a ON s.uuid = a.scenario_id 
+		WHERE s.uuid = $1
+		GROUP BY s.uuid;
+	`, scenarioId).Scan(
+		&scenarioData.UUID,
+		&scenarioData.Title,
+		&scenarioData.Description,
+		&scenarioData.Difficulty,
+		&scenarioData.FirstStep,
+		&scenarioData.CreatedAt,
+		&scenarioData.UpdatedAt,
+		&scenarioData.ArticleIds,
 	); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, storage.ErrsimulatorNotFound
-		}
+		p.log.Error(err)
 		return nil, err
 	}
 
-	return &simulatorMetadata, nil
+	return &scenarioData, nil
 }
 
-// Получение конкретного simulator text по uuid
-func (p *PostgresStorage) simulatorTextIDByUUID(simulatorUUID string) (string, error) {
-
-	var textIdNull sql.NullString
-	if err := p.db.QueryRow(
-		`
-			SELECT text_id
-			FROM metadata
-			WHERE uuid = $1;
-		`,
-		simulatorUUID,
-	).Scan(&textIdNull); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return "", storage.ErrsimulatorNotFound
+func (p *PostgresStorage) MatchArticleToScenario(articleIds *[]string, scenarioId string) error {
+	if _, err := p.db.Exec(`
+		INSERT INTO article_ids_to_scenario_id (scenario_id, article_id)
+		SELECT 
+				$2::uuid,
+				unnest($1::uuid[]);
+	`, articleIds, scenarioId); err != nil {
+		p.log.Error(err)
+		return err
+	}
+	return nil
+}
+func (p *PostgresStorage) DeleteAllMatchArtilceToScenario(scenarioId string) error {
+	if _, err := p.db.Exec(`
+		DELETE FROM article_ids_to_scenario_id 
+		WHERE scenario_id = $1;
+	`, scenarioId); err != nil {
+		p.log.Error(err)
+		return err
+	}
+	return nil
+}
+func (p *PostgresStorage) SetFirstStep(scenarioId, stepId string) error {
+	if _, err := p.db.Exec(`
+		UPDATE scenarios
+		SET
+			first_step = $2
+		WHERE uuid = $1;
+	`, stepId, scenarioId); err != nil {
+		var pgerr *pq.Error
+		if errors.As(err, &pgerr) && pgerr.Code == pqerror.ForeignKeyViolation {
+			return cErr.NewTypedError(storage.ErrNotFound, fmt.Sprintf("Step With Id: %s not found", stepId))
 		}
+		p.log.Error(err)
+		return err
+	}
+	return nil
+}
+
+func (p *PostgresStorage) GetErrors(sessionId string) (*[]string, error) {
+	rows, err := p.db.Query(`
+		SELECT 
+			error
+		FROM errors_to_session 
+		WHERE session_id = $1
+	`, sessionId)
+	if err != nil {
+		p.log.Error(err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var errors []string
+	for rows.Next() {
+		var userError string
+		if err := rows.Scan(
+			&userError,
+		); err != nil {
+			p.log.Error(err)
+			return nil, err
+		}
+
+		errors = append(errors, userError)
+	}
+	return &errors, nil
+}
+func (p *PostgresStorage) GetTrusts(sessionId string) (*[]int, error) {
+	rows, err := p.db.Query(`
+		SELECT 
+			trust
+		FROM trusts
+		WHERE session_id = $1
+	`, sessionId)
+	if err != nil {
+		p.log.Error(err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var trusts []int
+	for rows.Next() {
+		var trust int
+		if err := rows.Scan(
+			&trust,
+		); err != nil {
+			p.log.Error(err)
+			return nil, err
+		}
+
+		trusts = append(trusts, trust)
+	}
+	return &trusts, nil
+}
+
+func (p *PostgresStorage) CreateStep(previousAnswer, previosStep string, maxTrust, minTrust *int) (string, error) {
+	var stepId string
+
+	if err := p.db.QueryRow(`
+		INSERT INTO steps (previous_answer, previous_step, max_trust, min_trust)
+		VALUES ($1, $2, COALESCE($3::int, NULL), COALESCE($4::int, NULL))
+		RETURNING uuid;
+	`, previousAnswer, previosStep, maxTrust, minTrust).
+		Scan(
+			&stepId,
+		); err != nil {
+		var pgerr *pq.Error
+		if errors.As(err, &pgerr) && pgerr.Code == pqerror.CheckViolation {
+			return "", cErr.NewTypedError(storage.ErrDataConfllict, "")
+		}
+		p.log.Error(err)
 		return "", err
 	}
-	if textIdNull.Valid {
-		return textIdNull.String, nil
-	}
-	return "", storage.ErrsimulatorTextNotCreatedYet
-}
 
-// Создание сущности simulator
-func (p *PostgresStorage) Createsimulator(simulatorTitle *string) (*simulator.simulatorMetaData, error) {
-	var metadata simulator.simulatorMetaData
+	return stepId, nil
+}
+func (p *PostgresStorage) EditStep(stepID string, maxTrust, minTrust *int) error {
+	if _, err := p.db.Exec(`
+		UPDATE steps 
+		SET 
+			max_trust = COALESCE($1::int, NULL),
+			min_trust = COALESCE($2::int, NULL)
+		WHERE uuid = $3::uuid;
+	`, maxTrust, minTrust, stepID); err != nil {
+		var pgerr *pq.Error
+		if errors.As(err, &pgerr) && pgerr.Code == pqerror.CheckViolation {
+			return cErr.NewTypedError(storage.ErrDataConfllict, "")
+		}
+		p.log.Error(err)
+		return err
+	}
+
+	return nil
+}
+func (p *PostgresStorage) GetStep(stepId string) (*models.StepData, error) {
+	var step models.StepData
+	var actionIds []string
 
 	if err := p.db.QueryRow(`
-		INSERT INTO metadata (title)
-		VALUES ($1)
-		RETURNING uuid, title, status;
-	`, simulatorTitle).
-		Scan(
-			&metadata.Id,
-			&metadata.Title,
-			&metadata.Status,
-		); err != nil {
-		var pgerr *pq.Error
-		if errors.As(err, &pgerr) && pgerr.Code == pqerror.UniqueViolation {
-			return nil, storage.ErrsimulatorExists
+		SELECT 
+			s.uuid,
+			s.previous_step,
+			s.previous_answer,
+			s.min_trust,
+			s.max_trust,
+			s.scenario_id,
+			s.created_at,
+			s.updated_at,
+			COALESCE(
+				json_agg(a.uuid) FILTER (WHERE a.uuid IS NOT NULL),
+				'[]'
+			) AS action_ids
+		FROM steps s
+		LEFT JOIN actions a ON s.uuid = a.step_id
+		WHERE s.uuid = $1::uuid
+	`, stepId).Scan(
+		&step.UUID,
+		&step.PreviousStep,
+		&step.PreviousAnswer,
+		&step.MinTrust,
+		&step.MaxTrust,
+		&step.ScenarioId,
+		&step.CreatedAt,
+		&step.UpdatedAt,
+		&actionIds,
+	); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, cErr.NewTypedError(storage.ErrNotFound, fmt.Sprintf("Step with uuid: %s not found", stepId))
 		}
+		p.log.Error(err)
 		return nil, err
 	}
 
-	return &metadata, nil
+	step.ActionIds = &actionIds
+	return &step, nil
 }
 
-// Обновление сущности simulator по UUID
-func (p *PostgresStorage) UpdatesimulatorByUUID(uuid, title, textID, status, videoUrl string) (*simulator.simulatorMetaData, error) {
-	var metadata simulator.simulatorMetaData
+func (p *PostgresStorage) MatchActionToStep(actionIds *[]string, stepId string) error {
+	if _, err := p.db.Exec(`
+		UPDATE actions 
+		SET 
+			step_id = $2::uuid
+		WHERE uuid = ANY($1::uuid[]);
+	`, actionIds, stepId); err != nil {
+		p.log.Error(err)
+		return err
+	}
+	return nil
+}
+func (p *PostgresStorage) DeleteAllMatchActionToStep(stepId string) error {
+	if _, err := p.db.Exec(`
+		UPDATE actions 
+		SET 
+			step_id = NULL,
+		WHERE step_id = ANY($1::uuid[]);
+	`, stepId); err != nil {
+		p.log.Error(err)
+		return err
+	}
+	return nil
+}
+func (p *PostgresStorage) GetNextStepByStepId(currentStepId string) (*[]string, error) {
+	rows, err := p.db.Query(`
+		SELECT uuid
+		FROM steps 
+		WHERE previous_step = $1
+	`, currentStepId)
+	if err != nil {
+		p.log.Error(err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var nextSteps []string
+	for rows.Next() {
+		var nextStepId string
+		if err := rows.Scan(
+			&nextStepId,
+		); err != nil {
+			p.log.Error(err)
+			return nil, err
+		}
+
+		nextSteps = append(nextSteps, nextStepId)
+	}
+	return &nextSteps, nil
+}
+func (p *PostgresStorage) GetNextStepByAnswerId(answerId string) (*[]string, error) {
+	rows, err := p.db.Query(`
+		SELECT uuid
+		FROM steps 
+		WHERE previous_answer = $1
+	`, answerId)
+	if err != nil {
+		p.log.Error(err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var nextSteps []string
+	for rows.Next() {
+		var nextStepId string
+		if err := rows.Scan(
+			&nextStepId,
+		); err != nil {
+			p.log.Error(err)
+			return nil, err
+		}
+
+		nextSteps = append(nextSteps, nextStepId)
+	}
+	return &nextSteps, nil
+}
+
+func (p *PostgresStorage) CreateAction(actionType, messageId string, delay int) (string, error) {
+	var actionId string
 
 	if err := p.db.QueryRow(`
-		UPDATE metadata
-		SET
-			title = COALESCE(NULLIF($2, ''), title),
-			text_id = COALESCE(NULLIF($3, ''), text_id),
-			status = COALESCE(NULLIF($4, '')::simulator_status, status),
-			video_url = COALESCE(NULLIF($5, ''), video_url)
+		INSERT INTO actions (type, message_id, delay)
+		VALUES ($1, $2, $3)
+		RETURNING uuid
+	`, actionType, messageId, delay).Scan(&actionId); err != nil {
+		var pgerr *pq.Error
+		if errors.As(err, &pgerr) && pgerr.Code == pqerror.ForeignKeyViolation {
+			return "", cErr.NewTypedError(storage.ErrDataConfllict, "")
+		}
+		p.log.Error(err)
+		return "", err
+	}
+
+	return actionId, nil
+}
+func (p *PostgresStorage) EditAction(actionId, actionType, messageId string, delay *int) error {
+	if err := p.db.QueryRow(`
+		UPDATE actions 
+		SET 
+				action_type = $1,
+				message_id = $2,
+				delay = COALESCE($3, delay),
+				updated_at = CURRENT_TIMESTAMP
+		WHERE id = $4
+		RETURNING id
+    `, actionType, messageId, delay, actionId).Scan(); err != nil {
+		p.log.Error(err)
+		return err
+	}
+
+	return nil
+}
+func (p *PostgresStorage) GetActionById(actionId string) (*models.ActionData, error) {
+	var action models.ActionData
+	if err := p.db.QueryRow(`
+		SELECT 
+				uuid,
+				step_id,
+				action_type,
+				message_id,
+				delay
+		FROM actions
 		WHERE uuid = $1
-		RETURNING uuid, title, status;
-	`, uuid, title, textID, status, videoUrl).
-		Scan(
-			&metadata.Id,
-			&metadata.Title,
-			&metadata.Status,
-		); err != nil {
-		var pgerr *pq.Error
-		if errors.As(err, &pgerr) && pgerr.Code == pqerror.UniqueViolation {
-			return nil, storage.ErrsimulatorNotFound
-		}
+    `, actionId).Scan(
+		&action.UUID,
+		&action.StepId,
+		&action.Type,
+		&action.MessageId,
+		&action.Delay,
+	); err != nil {
+		p.log.Error(err)
 		return nil, err
 	}
 
-	return &metadata, nil
+	return &action, nil
+}
+
+func (p *PostgresStorage) CreateMessage(senderId, senderName, text string) (string, error) {
+	var messageId string
+
+	err := p.db.QueryRow(`
+		INSERT INTO messages (sender_id, sender_name, text)
+		VALUES ($1, $2, $3)
+		RETURNING uuid;
+	`, senderId, senderName, text).Scan(&messageId)
+
+	if err != nil {
+		p.log.Error(err)
+		return "", err
+	}
+
+	return messageId, nil
+}
+func (p *PostgresStorage) EditMessage(messageId, senderId, senderName, text string) error {
+	if _, err := p.db.Exec(`
+		UPDATE messages
+		SET 
+			sender_id = COALESCE(NULLIF($1, ''), sender_id),
+			sender_name = COALESCE(NULLIF($2, ''), sender_name),
+			text = COALESCE(NULLIF($3, ''), text)
+		WHERE uuid = $4::uuid
+		RETURNING uuid;
+	`, senderId, senderName, text, messageId); err != nil {
+		p.log.Error(err)
+		return err
+	}
+
+	return nil
+}
+func (p *PostgresStorage) MatchAnswerToMessage(answerIds *[]string, messageId string) error {
+	if _, err := p.db.Exec(`
+		UPDATE answers 
+		SET 
+			message_id = $2::uuid
+		WHERE uuid = ANY($1::uuid[]);
+	`, answerIds, messageId); err != nil {
+		p.log.Error(err)
+		return err
+	}
+	return nil
+}
+func (p *PostgresStorage) DeleteAllMatchAnswerToMessage(messageId string) error {
+	if _, err := p.db.Exec(`
+		UPDATE answers 
+		SET 
+			message_id = NULL,
+		WHERE message_id = ANY($1::uuid[]);
+	`, messageId); err != nil {
+		p.log.Error(err)
+		return err
+	}
+	return nil
+}
+func (p *PostgresStorage) DeleteAllMatchFileToMessage(messageId string) error {
+	if _, err := p.db.Exec(`
+		UPDATE files 
+		SET 
+			message_id = NULL,
+		WHERE message_id = ANY($1::uuid[]);
+	`, messageId); err != nil {
+		p.log.Error(err)
+		return err
+	}
+	return nil
+}
+func (p *PostgresStorage) MatchFileToMessage(filesIds *[]string, messageId string) error {
+	if _, err := p.db.Exec(`
+		UPDATE files 
+		SET 
+			message_id = $2::uuid
+		WHERE uuid = ANY($1::uuid[]);
+	`, filesIds, messageId); err != nil {
+		p.log.Error(err)
+		return err
+	}
+	return nil
+}
+func (p *PostgresStorage) GetMessageById(messageId string) (*models.MessageData, error) {
+	var message models.MessageData
+	var text sql.NullString
+
+	if err := p.db.QueryRow(`
+		SELECT 
+			uuid,
+			sender_id,
+			sender_name,
+			text
+		FROM messages
+		WHERE uuid = $1::uuid;
+	`, messageId).Scan(
+		&message.UUID,
+		&message.SenderId,
+		&message.SenderName,
+		&text,
+	); err != nil {
+		p.log.Error(err)
+		return nil, err
+	}
+
+	if text.Valid {
+		message.Text = &text.String
+	} else {
+		message.Text = nil
+	}
+
+	return &message, nil
+}
+
+func (p *PostgresStorage) CreateAnswer(addTrust int, errorText, text string) (string, error) {
+	var answerId string
+
+	if err := p.db.QueryRow(`
+		INSERT INTO answers (add_trust, error, text)
+		VALUES ($1, $2, $3)
+		RETURNING uuid;
+	`, addTrust, errorText, text).Scan(&answerId); err != nil {
+		p.log.Error(err)
+		return "", err
+	}
+
+	return answerId, nil
+}
+func (p *PostgresStorage) EditAnswer(answerId string, errorText, text *string, addTrust *int) error {
+	if _, err := p.db.Exec(`
+		UPDATE answers 
+		SET 
+				error_text = COALESCE($1, error_text),
+				text = COALESCE($2, text),
+				add_trust = COALESCE($3, add_trust),
+				updated_at = CURRENT_TIMESTAMP
+		WHERE id = $4;
+    `, errorText, text, addTrust, answerId); err != nil {
+		p.log.Error(err)
+		return err
+	}
+
+	return nil
+}
+func (p *PostgresStorage) GetAnswerById(answerId string) (*models.AnswerData, error) {
+	var answer models.AnswerData
+	if err := p.db.QueryRow(`
+		SELECT 
+				uuuid,
+				text,
+				add_trust,
+				error
+		FROM answers
+		WHERE uuid = $1;
+    `, answerId).Scan(
+		&answer.UUID,
+		&answer.Text,
+		&answer.AddTrust,
+		&answer.Error,
+	); err != nil {
+		p.log.Error(err)
+		return nil, err
+	}
+
+	return &answer, nil
+}
+func (p *PostgresStorage) GetAnswersByMessageId(messageId string) (*[]models.AnswerData, error) {
+	rows, err := p.db.Query(`
+		SELECT 
+				uuid,
+				text,
+				add_trust,
+				error
+		FROM answers
+		WHERE message_id = $1;
+  `, messageId)
+	if err != nil {
+		p.log.Error(err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var answers []models.AnswerData
+	for rows.Next() {
+		var answer models.AnswerData
+		if err := rows.Scan(
+			&answer.UUID,
+			&answer.Text,
+			&answer.AddTrust,
+			&answer.Error,
+		); err != nil {
+			p.log.Error(err)
+			return nil, err
+		}
+		answers = append(answers, answer)
+	}
+
+	if err := rows.Err(); err != nil {
+		p.log.Error(err)
+		return nil, err
+	}
+
+	return &answers, nil
+}
+
+func (p *PostgresStorage) CreateFile(filename string, isSafe bool, size int, fileError *string) (string, error) {
+	var id string
+	if err := p.db.QueryRow(`
+		INSERT INTO files (
+			filename,
+			is_safe,
+			size,
+			error
+		) VALUES ($1, $2, $3, $4)
+		RETURNING uuid
+    `, filename, isSafe, size, fileError).Scan(&id); err != nil {
+		p.log.Error(err)
+		return "", err
+	}
+
+	return id, nil
+}
+func (p *PostgresStorage) EditFile(fileId string, filename, fileError *string, isSafe *bool, size *int) error {
+	if _, err := p.db.Exec(`
+        UPDATE files 
+        SET 
+            filename = COALESCE($1, filename),
+            error = COALESCE($2, error),
+            is_safe = COALESCE($3, is_safe),
+            size = COALESCE($4, size),
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = $5
+    `, filename, fileError, isSafe, size, fileId); err != nil {
+		p.log.Error(err)
+		return err
+	}
+
+	return nil
+}
+func (p *PostgresStorage) GetFilesByMessageId(messageId string) (*[]models.FileData, error) {
+	rows, err := p.db.Query(`
+		SELECT 
+				uuid,
+				filename,
+				is_safe,
+				size,
+				error
+		FROM files
+		WHERE message_id = $1;
+    `, messageId)
+	if err != nil {
+		p.log.Error(err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var files []models.FileData
+	for rows.Next() {
+		var file models.FileData
+		if err := rows.Scan(
+			&file.UUID,
+			&file.Filename,
+			&file.IsSafe,
+			&file.Size,
+			&file.Error,
+		); err != nil {
+			p.log.Error(err)
+			return nil, err
+		}
+		files = append(files, file)
+	}
+
+	return &files, nil
+}
+func (p *PostgresStorage) GetFileById(fileId string) (*models.FileData, error) {
+	var file models.FileData
+	if err := p.db.QueryRow(`
+		SELECT 
+			uuid,
+			filename,
+			is_safe,
+			size,
+			error
+		FROM files
+		WHERE uuid = $1;
+    `, fileId).Scan(
+		&file.UUID,
+		&file.Filename,
+		&file.IsSafe,
+		&file.Size,
+		&file.Error,
+	); err != nil {
+		p.log.Error(err)
+		return nil, err
+	}
+
+	return &file, nil
 }

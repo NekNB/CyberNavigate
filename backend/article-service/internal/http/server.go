@@ -134,7 +134,7 @@ func (a *APIServer) PatchArticleById(c fiber.Ctx, articleId string) error {
 	if err := c.Bind().Body(&request); err != nil {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
-
+	// TODO: проверить работу
 	metadata, err := aS.UpdateArticleByUUID(
 		articleId,
 		"",

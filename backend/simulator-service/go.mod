@@ -3,8 +3,9 @@ module github.com/NekNB/CyberNavigate/backend/simulator-service
 go 1.26.2
 
 require (
-	github.com/NekNB/CyberNavigate/swagger v0.0.0-20260710210956-b31556e7c4bc
+	github.com/NekNB/CyberNavigate/swagger v0.0.0-20260712195745-d0d2432e0695
 	github.com/gofiber/fiber/v3 v3.2.0
+	github.com/google/uuid v1.6.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/lib/pq v1.12.3
 	github.com/oapi-codegen/runtime v1.4.0
@@ -18,7 +19,6 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/gofiber/schema v1.7.1 // indirect
 	github.com/gofiber/utils/v2 v2.0.4 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/klauspost/compress v1.18.6 // indirect
 	github.com/kr/pretty v0.3.1 // indirect

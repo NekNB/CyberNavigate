@@ -9,13 +9,13 @@
 -- 1. CREATE USERS/ROLES
 -- =============================================
 
-CREATE ROLE simulate_service_role WITH
+CREATE ROLE simulator_service_role WITH
     LOGIN
     NOSUPERUSER
     NOCREATEDB
     NOCREATEROLE
     INHERIT
-    PASSWORD '{{ .Env.SIMULATE_SERVICE_PASSWORD }}'
+    PASSWORD '{{ .Env.SIMULATOR_SERVICE_PASSWORD }}'
     CONNECTION LIMIT 50;
 
 -- =============================================
@@ -23,7 +23,7 @@ CREATE ROLE simulate_service_role WITH
 -- =============================================
 
 -- Main application database
-CREATE DATABASE simulate_service_db
+CREATE DATABASE simulator_service_db
     WITH
     OWNER = {{ .Env.POSTGRES_USER }}
     ENCODING 'UTF8'
@@ -38,22 +38,22 @@ CREATE DATABASE simulate_service_db
 -- 3. CONNECT TO MAIN DATABASE AND SETUP SCHEMA
 -- =============================================
 
-\c simulate_service_db
+\c simulator_service_db
 
 -- Create extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- Set default privileges
-GRANT CONNECT ON DATABASE user_service_db TO simulate_service_role;
-GRANT USAGE ON SCHEMA public TO simulate_service_role;
+GRANT CONNECT ON DATABASE simulator_service_db TO simulator_service_role;
+GRANT USAGE ON SCHEMA public TO simulator_service_role;
 
 GRANT SELECT, INSERT, UPDATE, DELETE
 ON ALL TABLES IN SCHEMA public
-TO simulate_service_role;
+TO simulator_service_role;
 
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO simulate_service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO simulator_service_role;
 
 
 
@@ -99,6 +99,7 @@ CREATE TABLE steps (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     previous_step UUID REFERENCES steps(uuid),
     previous_answer UUID REFERENCES answers(uuid),
+   
     min_trust INT,
     max_trust INT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -106,7 +107,9 @@ CREATE TABLE steps (
 
     CONSTRAINT chk_not_both_not_null CHECK (previous_step IS NULL OR previous_answer IS NULL),
 
-    CONSTRAINT chk_max_greater_min CHECK (max_trust > min_trust)
+    CONSTRAINT chk_max_greater_min CHECK (max_trust > min_trust),
+    CONSTRAINT chk_max_normal CHECK (max_trust BETWEEN -100 AND 100),
+    CONSTRAINT chk_min_normal CHECK (min_trust BETWEEN -100 AND 100)
 );
 
 CREATE TABLE scenarios (
@@ -118,9 +121,11 @@ CREATE TABLE scenarios (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+ALTER TABLE steps ADD COLUMN scenario_id UUID REFERENCES scenarios(uuid);
+
 CREATE TABLE article_ids_to_scenario_id (
     article_id UUID PRIMARY KEY,
-    senario_id UUID NOT NULL REFERENCES scenarios(uuid)
+    scenario_id UUID NOT NULL REFERENCES scenarios(uuid)
 );
 
 
@@ -147,12 +152,12 @@ CREATE TABLE sessions (
     finished_at TIMESTAMP WITH TIME ZONE
 );
 
-CREATE TABLE errors_to_user (
+CREATE TABLE errors_to_session (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     session_id UUID REFERENCES sessions(uuid),
     error VARCHAR(256) NOT NULL
 );
-CREATE TABLE trust (
+CREATE TABLE trusts (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     trust INTEGER CHECK (trust BETWEEN -100 AND 100),
     session_id UUID NOT NULL REFERENCES sessions(uuid),

@@ -11,7 +11,7 @@ load_secrets() {
 			set +a
 			
 			# Проверка, загрузились ли переменные	
-			if [ -z "$POSTGRES_PASSWORD" ] || [ -z "$MONGO_PASSWORD" ]; then
+			if [ -z "$POSTGRES_PASSWORD" ]; then
 					echo "Error: Failed to load secrets from $SECRET_PATH or variables are empty."
 					exit 1
 			fi

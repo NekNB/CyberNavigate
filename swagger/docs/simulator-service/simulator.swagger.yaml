@@ -7,9 +7,9 @@ info:
     API сервиса пользователей с авторизацией по username/password.
     Аутентификация реализована через access и refresh JWT токены.
 servers:
-  - url: http://localhost:9000/api/v1
+  - url: http://127.0.0.1:9080/api/v1
     description: Local API Gateway Server
-  - url: http://127.0.0.1:9000/api/v1
+  - url: https://127.0.0.1:9443/api/v1
     description: Local API Gateway Server
   - url: http://127.0.0.1:8000/api/v1
     description: Local Service

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/NekNB/CyberNavigate/backend/simulator-service/internal/models"
 	"github.com/NekNB/CyberNavigate/backend/simulator-service/internal/storage"
 	"github.com/NekNB/CyberNavigate/swagger/gen/simulator"
 	"github.com/gofiber/fiber/v3"
@@ -22,7 +21,7 @@ type APIServer struct {
 }
 
 type SimulatorServiceInterface interface {
-	CreateSession(userId string) error
+	CreateSession(userId, scenarioId string) error
 	GetResults(userId string) (*simulator.SimulationFinal, error)
 
 	CreateScenario(data *simulator.ScenarioBaseRequired) (*simulator.ScenarioFull, error)
@@ -30,8 +29,8 @@ type SimulatorServiceInterface interface {
 	GetAllScenarios() (*[]simulator.ScenarioFull, error)
 	GetScenarioById(scenarioId string) (*simulator.ScenarioFull, error)
 
-	CreateStep(step *simulator.StepMetaRequired) (models.StepMetaResponse, error)
-	EditStep(stepId string, editedData *simulator.StepMeta) (*simulator.StepMetaFull, error)
+	CreateStep(step *simulator.StepMetaRequired) (*simulator.StepMetaFull, error)
+	EditStep(stepId string, editedData *simulator.StepMetaMin) (*simulator.StepMetaFull, error)
 	GetStep(userId string) (*simulator.StepBase, error)
 
 	CreateAction(action *simulator.ActionBaseRequired) (*simulator.ActionFull, error)
@@ -39,7 +38,7 @@ type SimulatorServiceInterface interface {
 
 	CreateAnswer(answer *simulator.AnswerBaseRequired) (*simulator.AnswerFull, error)
 	EditAnswer(answerId string, editedData *simulator.AnswerBase) (*simulator.AnswerFull, error)
-	SendUserAnswer(answerId string) error
+	SendUserAnswer(userId, answerId string) error
 
 	CreateFile(file *simulator.FileBaseRequired) (*simulator.FileFull, error)
 	EditFile(fileId string, editedData *simulator.FileBase) (*simulator.FileFull, error)
@@ -88,8 +87,12 @@ func (a *APIServer) GetScenarioById(c fiber.Ctx, scenarioId string) error {
 }
 
 func (a *APIServer) CreateSimulatorSession(c fiber.Ctx, params simulator.CreateSimulatorSessionParams) error {
+	req := &simulator.CreateSimulatorSessionJSONBody{}
+	if json.Unmarshal(c.Body(), req) != nil {
+		return c.SendStatus(422)
+	}
 
-	if err := a.simulatorService.CreateSession(params.XUserId); err != nil {
+	if err := a.simulatorService.CreateSession(params.XUserId, req.ScenarioId.String()); err != nil {
 		a.log.Error(err)
 		c.SendStatus(500)
 	}
@@ -117,6 +120,25 @@ func (a *APIServer) CreateStep(c fiber.Ctx) error {
 		return c.SendStatus(422)
 	}
 
+	if req.MinTrust != nil || req.MaxTrust != nil {
+		if req.MinTrust != nil && req.MaxTrust != nil {
+			if *req.MinTrust < -100 || *req.MinTrust > 100 {
+				return c.Status(400).JSON(simulator.ErrorResponse{Message: "MinTrust must be in range -100...100"})
+			}
+			if *req.MaxTrust < -100 || *req.MaxTrust > 100 {
+				return c.Status(400).JSON(simulator.ErrorResponse{Message: "MaxTrust must be in range -100...100"})
+			}
+			if *req.MaxTrust <= *req.MinTrust {
+				return c.Status(400).JSON(simulator.ErrorResponse{Message: "MaxTrust must be greater than MinTrust"})
+			}
+		} else {
+			return c.Status(400).JSON(simulator.ErrorResponse{Message: "MinTrust and MaxTrust must be both passed"})
+		}
+	}
+	if req.PreviousAnswer != nil && req.PreviousStep != nil {
+		return c.Status(400).JSON(simulator.ErrorResponse{Message: "PreviosAnswer and PreviousStep mustn't be both passed"})
+	}
+
 	stepMeta, err := a.simulatorService.CreateStep(req)
 	if err != nil {
 		if errors.Is(err, storage.ErrNotFound) {
@@ -131,9 +153,22 @@ func (a *APIServer) CreateStep(c fiber.Ctx) error {
 
 func (a *APIServer) EditStep(c fiber.Ctx, stepId string) error {
 	// Парсим Body
-	req := &simulator.StepMeta{}
+	req := &simulator.StepMetaMin{}
 	if json.Unmarshal(c.Body(), req) != nil {
 		return c.SendStatus(422)
+	}
+
+	if req.MinTrust != nil && req.MaxTrust != nil {
+		if *req.MaxTrust <= *req.MinTrust {
+			return c.Status(400).JSON(simulator.ErrorResponse{Message: "MaxTrust must be greater than MinTrust"})
+		}
+	}
+
+	if req.MinTrust != nil && (*req.MinTrust < -100 || *req.MinTrust > 100) {
+		return c.Status(400).JSON(simulator.ErrorResponse{Message: "MinTrust must be in range -100...100"})
+	}
+	if req.MaxTrust != nil && (*req.MaxTrust < -100 || *req.MaxTrust > 100) {
+		return c.Status(400).JSON(simulator.ErrorResponse{Message: "MaxTrust must be in range -100...100"})
 	}
 
 	step, err := a.simulatorService.EditStep(stepId, req)
@@ -271,7 +306,7 @@ func (a *APIServer) SendUserAnswer(c fiber.Ctx, params simulator.SendUserAnswerP
 		return c.SendStatus(422)
 	}
 
-	if err := a.simulatorService.SendUserAnswer(req.AnswerId.String()); err != nil {
+	if err := a.simulatorService.SendUserAnswer(params.XUserId, req.AnswerId.String()); err != nil {
 		if errors.Is(err, storage.ErrNotFound) {
 			c.Status(400).JSON(simulator.ErrorResponse{Message: err.Error()})
 		}
