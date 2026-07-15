@@ -81,14 +81,14 @@ CREATE TABLE files (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     filename VARCHAR(30) NOT NULL UNIQUE, 
     is_safe BOOLEAN NOT NULL,
-    message_id UUID NOT NULL REFERENCES messages(uuid),
+    message_id UUID  REFERENCES messages(uuid),
     size INTEGER NOT NULL,
     error VARCHAR(256)
 );
 CREATE TABLE answers (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     text VARCHAR(50) NOT NULL,
-    message_id UUID NOT NULL REFERENCES messages(uuid),
+    message_id UUID REFERENCES messages(uuid),
     add_trust INTEGER NOT NULL DEFAULT 0,
     error VARCHAR(256)
 );
@@ -121,7 +121,7 @@ CREATE TABLE scenarios (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-ALTER TABLE steps ADD COLUMN scenario_id UUID REFERENCES scenarios(uuid);
+ALTER TABLE steps ADD COLUMN scenario_id UUID NOT NULL REFERENCES scenarios(uuid);
 
 CREATE TABLE article_ids_to_scenario_id (
     article_id UUID PRIMARY KEY,

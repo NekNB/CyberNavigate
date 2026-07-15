@@ -28,6 +28,7 @@ import (
 type Server struct {
 	cfg    *config.Config
 	app    *fiber.App
+	log    *logrus.Logger
 	TLSCfg *tls.Config
 }
 
@@ -46,7 +47,10 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 		AppName: "ArStore simulatorServiceV1",
 	})
 	app.Use(logger.New())
-	app.Use(recover.New())
+	if cfg.Env != "local" {
+
+		app.Use(recover.New())
+	}
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: []string{
 			"http://localhost:9000",
@@ -91,16 +95,23 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 		Browse: true,
 	}))
 
+	app.Get("/redoc/*", static.New("/redoc", static.Config{
+		FS: assets.RedocUI,
+	}))
 	// Добавляем swagger директорию
 	app.Get("/swagger/*", static.New("/swagger", static.Config{
 		FS:     assets.SwaggerUI,
 		Browse: true,
 	}))
 
-	return &Server{app: app, cfg: cfg, TLSCfg: TLSCfg}, nil
+	app.Get("/", func(c fiber.Ctx) error {
+		return c.Status(fiber.StatusPermanentRedirect).Redirect().To("/swagger")
+	})
+
+	return &Server{app: app, cfg: cfg, TLSCfg: TLSCfg, log: log}, nil
 }
 
-func (s *Server) Start() {
+func (s *Server) HTTPSStart() {
 	ln, err := tls.Listen(
 		"tcp",
 		fmt.Sprintf("0.0.0.0:%d", s.cfg.HTTP.Port),
@@ -111,6 +122,17 @@ func (s *Server) Start() {
 	}
 
 	panic(s.app.Listener(ln))
+}
+
+func (s *Server) HTTPStart() {
+	s.log.Debug("Start")
+	if err := s.app.Listen(fmt.Sprintf("127.0.0.1:%d", s.cfg.HTTP.Port), fiber.ListenConfig{
+		ShutdownTimeout: s.cfg.HTTP.Timeout,
+	}); err != nil {
+		s.log.Error(err)
+
+		panic(err)
+	}
 }
 
 func (s *Server) Stop() error {

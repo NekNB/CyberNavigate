@@ -56,15 +56,17 @@ func New(log *logrus.Logger, simulatorService SimulatorServiceInterface) *APISer
 func (a *APIServer) CreateScenario(c fiber.Ctx) error {
 	// Парсим Body
 	req := &simulator.ScenarioBaseRequired{}
-	if json.Unmarshal(c.Body(), req) != nil {
-		return c.SendStatus(422)
+	if err := json.Unmarshal(c.Body(), req); err != nil {
+		return c.Status(422).JSON(simulator.ErrorResponse{Message: err.Error()})
 	}
-
 	scenario, err := a.simulatorService.CreateScenario(req)
 	if err != nil {
 		if errors.Is(err, storage.ErrNotFound) {
-			c.Status(400).JSON(simulator.ErrorResponse{Message: err.Error()})
+			return c.Status(400).JSON(simulator.ErrorResponse{Message: err.Error()})
+		} else if errors.Is(err, storage.ErrAlreadyExists) {
+			return c.Status(400).JSON(simulator.ErrorResponse{Message: err.Error()})
 		}
+		a.log.Debug(errors.Is(err, storage.ErrAlreadyExists))
 		a.log.Error(err)
 		return c.SendStatus(500)
 	}
@@ -175,8 +177,7 @@ func (a *APIServer) EditStep(c fiber.Ctx, stepId string) error {
 	if err != nil {
 		if errors.Is(err, storage.ErrNotFound) {
 			c.Status(400).JSON(simulator.ErrorResponse{Message: err.Error()})
-		}
-		if errors.Is(err, storage.ErrNotFound) {
+		} else if errors.Is(err, storage.ErrResourseNotFound) {
 			return c.Status(404).JSON(simulator.ErrorResponse{Message: err.Error()})
 		}
 		a.log.Error(err)
@@ -206,11 +207,13 @@ func (a *APIServer) EditScenario(c fiber.Ctx, scenarioId string) error {
 	scenario, err := a.simulatorService.EditScenario(scenarioId, req)
 	if err != nil {
 		if errors.Is(err, storage.ErrNotFound) {
-			c.Status(400).JSON(simulator.ErrorResponse{Message: err.Error()})
-		}
-		if errors.Is(err, storage.ErrNotFound) {
+			return c.Status(400).JSON(simulator.ErrorResponse{Message: err.Error()})
+		} else if errors.Is(err, storage.ErrAlreadyExists) {
+			return c.Status(400).JSON(simulator.ErrorResponse{Message: err.Error()})
+		} else if errors.Is(err, storage.ErrResourseNotFound) {
 			return c.Status(404).JSON(simulator.ErrorResponse{Message: err.Error()})
 		}
+
 		a.log.Error(err)
 		return c.SendStatus(500)
 	}
@@ -224,7 +227,6 @@ func (a *APIServer) GetAllScenarios(c fiber.Ctx) error {
 		a.log.Error(err)
 		return c.SendStatus(500)
 	}
-
 	return c.Status(200).JSON(scenarios)
 }
 
@@ -256,8 +258,7 @@ func (a *APIServer) EditAction(c fiber.Ctx, actionId string) error {
 	if err != nil {
 		if errors.Is(err, storage.ErrNotFound) {
 			c.Status(400).JSON(simulator.ErrorResponse{Message: err.Error()})
-		}
-		if errors.Is(err, storage.ErrNotFound) {
+		} else if errors.Is(err, storage.ErrResourseNotFound) {
 			return c.Status(404).JSON(simulator.ErrorResponse{Message: err.Error()})
 		}
 		a.log.Error(err)
@@ -290,7 +291,7 @@ func (a *APIServer) EditAnswer(c fiber.Ctx, answerId string) error {
 
 	Answer, err := a.simulatorService.EditAnswer(answerId, req)
 	if err != nil {
-		if errors.Is(err, storage.ErrNotFound) {
+		if errors.Is(err, storage.ErrResourseNotFound) {
 			return c.Status(404).JSON(simulator.ErrorResponse{Message: err.Error()})
 		}
 		a.log.Error(err)
@@ -340,7 +341,7 @@ func (a *APIServer) EditFile(c fiber.Ctx, fileId string) error {
 
 	file, err := a.simulatorService.EditFile(fileId, req)
 	if err != nil {
-		if errors.Is(err, storage.ErrNotFound) {
+		if errors.Is(err, storage.ErrResourseNotFound) {
 			return c.Status(404).JSON(simulator.ErrorResponse{Message: err.Error()})
 		}
 		a.log.Error(err)
@@ -394,9 +395,8 @@ func (a *APIServer) EditMessage(c fiber.Ctx, messageId string) error {
 	message, err := a.simulatorService.EditMessage(messageId, req)
 	if err != nil {
 		if errors.Is(err, storage.ErrNotFound) {
-			c.Status(400).JSON(simulator.ErrorResponse{Message: err.Error()})
-		}
-		if errors.Is(err, storage.ErrNotFound) {
+			return c.Status(400).JSON(simulator.ErrorResponse{Message: err.Error()})
+		} else if errors.Is(err, storage.ErrResourseNotFound) {
 			return c.Status(404).JSON(simulator.ErrorResponse{Message: err.Error()})
 		}
 		a.log.Error(err)

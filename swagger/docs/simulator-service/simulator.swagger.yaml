@@ -488,6 +488,19 @@ paths:
           schema:
             type: string
             format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - currentStepId
+              properties:
+                currentStepId:
+                  type: string
+                  format: uuid
+                  example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
       tags:
         - Step
       summary: Get Step
@@ -499,6 +512,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/StepBase"
+        "204":
+          description: "Scenario Complete! Get Results"
         "401":
           $ref: "#/components/responses/UnauthorizedResponse"
 

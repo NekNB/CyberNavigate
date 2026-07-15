@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -32,7 +33,7 @@ func New(log *logrus.Logger, uri string) (*PostgresStorage, error) {
 	if err = db.Ping(); err != nil {
 		log.Fatalf("%s", err.Error())
 	}
-	return &PostgresStorage{db: db}, nil
+	return &PostgresStorage{db: db, log: log}, nil
 }
 
 func (p *PostgresStorage) CreateSession(userId, stepId string) error {
@@ -40,6 +41,7 @@ func (p *PostgresStorage) CreateSession(userId, stepId string) error {
 	INSERT INTO sessions (user_id, current_step)
 	VALUES($1, $2);
 	`, userId, stepId); err != nil {
+
 		p.log.Error(err)
 		return err
 	}
@@ -47,7 +49,7 @@ func (p *PostgresStorage) CreateSession(userId, stepId string) error {
 }
 func (p *PostgresStorage) GetSession(userId string) (*models.SessionData, error) {
 	var sessionData models.SessionData
-
+	var finishedAt sql.NullTime
 	if err := p.db.QueryRow(`
 	SELECT uuid, created_at, current_step, current_trust, finished_at
 	FROM sessions
@@ -57,12 +59,18 @@ func (p *PostgresStorage) GetSession(userId string) (*models.SessionData, error)
 		&sessionData.CreatedAt,
 		&sessionData.CurrentStepId,
 		&sessionData.CurrentTrust,
-		&sessionData.FinishedAt,
+		&finishedAt,
 	); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, cErr.NewTypedError(storage.ErrResourseNotFound, "")
+		}
 		p.log.Error(err)
 		return nil, err
 	}
 
+	if finishedAt.Valid {
+		sessionData.FinishedAt = &finishedAt.Time
+	}
 	return &sessionData, nil
 }
 func (p *PostgresStorage) SetCurrentStep(sessionId, stepId string) error {
@@ -105,7 +113,7 @@ func (p *PostgresStorage) CreateScenario(title, description, difficulty string) 
 	var scenarioId string
 
 	if err := p.db.QueryRow(`
-		INSERT INTO scenarios (title, desctription, difficulty)
+		INSERT INTO scenarios (title, description, difficulty)
 		VALUES ($1, $2, $3)
 		RETURNING uuid;
 	`, title, description, difficulty).
@@ -115,6 +123,8 @@ func (p *PostgresStorage) CreateScenario(title, description, difficulty string) 
 		var pgerr *pq.Error
 		if errors.As(err, &pgerr) && pgerr.Code == pqerror.UniqueViolation {
 			return "", cErr.NewTypedError(storage.ErrAlreadyExists, fmt.Sprintf("Scenario with title: %s already exists", title))
+		} else if errors.Is(err, sql.ErrNoRows) {
+			return "", cErr.NewTypedError(storage.ErrResourseNotFound, "")
 		}
 		p.log.Error(err)
 		return "", err
@@ -122,18 +132,20 @@ func (p *PostgresStorage) CreateScenario(title, description, difficulty string) 
 
 	return scenarioId, nil
 }
-func (p *PostgresStorage) UpdateScenario(scenarioId, title, description, difficulty string) error {
+func (p *PostgresStorage) EditScenario(scenarioId string, title, description, difficulty *string) error {
 	if _, err := p.db.Exec(`
 		UPDATE scenarios
 		SET
-			title = $1,
-			description = $2,
-			difficulty = $3,
-		WHERE uuid = $4
+			title = COALESCE($1, title),
+			description = COALESCE($2, description),
+			difficulty = COALESCE($3, difficulty)
+		WHERE uuid = $4;
 	`, title, description, difficulty, scenarioId); err != nil {
 		var pgerr *pq.Error
 		if errors.As(err, &pgerr) && pgerr.Code == pqerror.UniqueViolation {
-			return cErr.NewTypedError(storage.ErrAlreadyExists, fmt.Sprintf("Scenario with title: %s already exists", title))
+			return cErr.NewTypedError(storage.ErrAlreadyExists, fmt.Sprintf("Scenario with title: %s already exists", *title))
+		} else if errors.Is(err, sql.ErrNoRows) {
+			return cErr.NewTypedError(storage.ErrResourseNotFound, "")
 		}
 		p.log.Error(err)
 		return err
@@ -168,20 +180,30 @@ func (p *PostgresStorage) GetAllScenarios() (*[]models.ScenarioData, error) {
 	var scenarios []models.ScenarioData
 	for rows.Next() {
 		scenarioData := models.ScenarioData{}
+		var artilceIdsJSON []uint8
+		var firstStep sql.NullString
 		if err := rows.Scan(
 			&scenarioData.UUID,
 			&scenarioData.Title,
 			&scenarioData.Description,
 			&scenarioData.Difficulty,
-			&scenarioData.FirstStep,
+			&firstStep,
 			&scenarioData.CreatedAt,
 			&scenarioData.UpdatedAt,
-			&scenarioData.ArticleIds,
+			&artilceIdsJSON,
 		); err != nil {
 			p.log.Error(err)
 			return nil, err
 		}
 
+		if err := json.Unmarshal(artilceIdsJSON, &scenarioData.ArticleIds); err != nil {
+			p.log.Error(err)
+			return nil, err
+		}
+
+		if firstStep.Valid {
+			scenarioData.FirstStep = firstStep.String
+		}
 		scenarios = append(scenarios, scenarioData)
 	}
 
@@ -189,7 +211,9 @@ func (p *PostgresStorage) GetAllScenarios() (*[]models.ScenarioData, error) {
 }
 
 func (p *PostgresStorage) GetScenario(scenarioId string) (*models.ScenarioData, error) {
+	var firstStep sql.NullString
 	var scenarioData models.ScenarioData
+	var artilceIdsJSON []uint8
 	if err := p.db.QueryRow(`
 		SELECT 
 			s.uuid,
@@ -212,15 +236,26 @@ func (p *PostgresStorage) GetScenario(scenarioId string) (*models.ScenarioData, 
 		&scenarioData.Title,
 		&scenarioData.Description,
 		&scenarioData.Difficulty,
-		&scenarioData.FirstStep,
+		&firstStep,
 		&scenarioData.CreatedAt,
 		&scenarioData.UpdatedAt,
-		&scenarioData.ArticleIds,
+		&artilceIdsJSON,
 	); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, cErr.NewTypedError(storage.ErrResourseNotFound, "")
+		}
 		p.log.Error(err)
 		return nil, err
 	}
 
+	if err := json.Unmarshal(artilceIdsJSON, &scenarioData.ArticleIds); err != nil {
+		p.log.Error(err)
+		return nil, err
+	}
+
+	if firstStep.Valid {
+		scenarioData.FirstStep = firstStep.String
+	}
 	return &scenarioData, nil
 }
 
@@ -250,8 +285,8 @@ func (p *PostgresStorage) SetFirstStep(scenarioId, stepId string) error {
 	if _, err := p.db.Exec(`
 		UPDATE scenarios
 		SET
-			first_step = $2
-		WHERE uuid = $1;
+			first_step = $1
+		WHERE uuid = $2;
 	`, stepId, scenarioId); err != nil {
 		var pgerr *pq.Error
 		if errors.As(err, &pgerr) && pgerr.Code == pqerror.ForeignKeyViolation {
@@ -265,10 +300,9 @@ func (p *PostgresStorage) SetFirstStep(scenarioId, stepId string) error {
 
 func (p *PostgresStorage) GetErrors(sessionId string) (*[]string, error) {
 	rows, err := p.db.Query(`
-		SELECT 
-			error
+		SELECT error
 		FROM errors_to_session 
-		WHERE session_id = $1
+		WHERE session_id = $1;
 	`, sessionId)
 	if err != nil {
 		p.log.Error(err)
@@ -292,10 +326,9 @@ func (p *PostgresStorage) GetErrors(sessionId string) (*[]string, error) {
 }
 func (p *PostgresStorage) GetTrusts(sessionId string) (*[]int, error) {
 	rows, err := p.db.Query(`
-		SELECT 
-			trust
+		SELECT trust
 		FROM trusts
-		WHERE session_id = $1
+		WHERE session_id = $1;
 	`, sessionId)
 	if err != nil {
 		p.log.Error(err)
@@ -318,20 +351,22 @@ func (p *PostgresStorage) GetTrusts(sessionId string) (*[]int, error) {
 	return &trusts, nil
 }
 
-func (p *PostgresStorage) CreateStep(previousAnswer, previosStep string, maxTrust, minTrust *int) (string, error) {
+func (p *PostgresStorage) CreateStep(scenariodId string, previousAnswer, previosStep *string, maxTrust, minTrust *int) (string, error) {
 	var stepId string
 
 	if err := p.db.QueryRow(`
-		INSERT INTO steps (previous_answer, previous_step, max_trust, min_trust)
-		VALUES ($1, $2, COALESCE($3::int, NULL), COALESCE($4::int, NULL))
+		INSERT INTO steps (previous_answer, previous_step, max_trust, min_trust, scenario_id)
+		VALUES (COALESCE($1::uuid, NULL), COALESCE($2::uuid, NULL), COALESCE($3::int, NULL), COALESCE($4::int, NULL), $5)
 		RETURNING uuid;
-	`, previousAnswer, previosStep, maxTrust, minTrust).
+	`, previousAnswer, previosStep, maxTrust, minTrust, scenariodId).
 		Scan(
 			&stepId,
 		); err != nil {
 		var pgerr *pq.Error
 		if errors.As(err, &pgerr) && pgerr.Code == pqerror.CheckViolation {
 			return "", cErr.NewTypedError(storage.ErrDataConfllict, "")
+		} else if errors.Is(err, sql.ErrNoRows) {
+			return "", cErr.NewTypedError(storage.ErrResourseNotFound, "")
 		}
 		p.log.Error(err)
 		return "", err
@@ -350,6 +385,8 @@ func (p *PostgresStorage) EditStep(stepID string, maxTrust, minTrust *int) error
 		var pgerr *pq.Error
 		if errors.As(err, &pgerr) && pgerr.Code == pqerror.CheckViolation {
 			return cErr.NewTypedError(storage.ErrDataConfllict, "")
+		} else if errors.Is(err, sql.ErrNoRows) {
+			return cErr.NewTypedError(storage.ErrResourseNotFound, "")
 		}
 		p.log.Error(err)
 		return err
@@ -358,8 +395,10 @@ func (p *PostgresStorage) EditStep(stepID string, maxTrust, minTrust *int) error
 	return nil
 }
 func (p *PostgresStorage) GetStep(stepId string) (*models.StepData, error) {
+	// var previousStep, previosAnswer sql.NullString
+	// var MinTrust, MaxTrust sql.NullInt64
 	var step models.StepData
-	var actionIds []string
+	var actionIds []uint8
 
 	if err := p.db.QueryRow(`
 		SELECT 
@@ -378,6 +417,15 @@ func (p *PostgresStorage) GetStep(stepId string) (*models.StepData, error) {
 		FROM steps s
 		LEFT JOIN actions a ON s.uuid = a.step_id
 		WHERE s.uuid = $1::uuid
+		GROUP BY 
+			s.uuid,
+			s.previous_step,
+			s.previous_answer,
+			s.min_trust,
+			s.max_trust,
+			s.scenario_id,
+			s.created_at,
+			s.updated_at;
 	`, stepId).Scan(
 		&step.UUID,
 		&step.PreviousStep,
@@ -390,13 +438,17 @@ func (p *PostgresStorage) GetStep(stepId string) (*models.StepData, error) {
 		&actionIds,
 	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, cErr.NewTypedError(storage.ErrNotFound, fmt.Sprintf("Step with uuid: %s not found", stepId))
+			return nil, cErr.NewTypedError(storage.ErrResourseNotFound, "")
 		}
 		p.log.Error(err)
 		return nil, err
 	}
 
-	step.ActionIds = &actionIds
+	if err := json.Unmarshal(actionIds, &step.ActionIds); err != nil {
+		p.log.Error(err)
+		return nil, err
+	}
+
 	return &step, nil
 }
 
@@ -424,11 +476,11 @@ func (p *PostgresStorage) DeleteAllMatchActionToStep(stepId string) error {
 	}
 	return nil
 }
-func (p *PostgresStorage) GetNextStepByStepId(currentStepId string) (*[]string, error) {
+func (p *PostgresStorage) GetNextStepsByStepId(currentStepId string) (*[]string, error) {
 	rows, err := p.db.Query(`
 		SELECT uuid
 		FROM steps 
-		WHERE previous_step = $1
+		WHERE previous_step = $1;
 	`, currentStepId)
 	if err != nil {
 		p.log.Error(err)
@@ -450,11 +502,11 @@ func (p *PostgresStorage) GetNextStepByStepId(currentStepId string) (*[]string, 
 	}
 	return &nextSteps, nil
 }
-func (p *PostgresStorage) GetNextStepByAnswerId(answerId string) (*[]string, error) {
+func (p *PostgresStorage) GetNextStepsByAnswerId(answerId string) (*[]string, error) {
 	rows, err := p.db.Query(`
 		SELECT uuid
 		FROM steps 
-		WHERE previous_answer = $1
+		WHERE previous_answer = $1;
 	`, answerId)
 	if err != nil {
 		p.log.Error(err)
@@ -483,7 +535,7 @@ func (p *PostgresStorage) CreateAction(actionType, messageId string, delay int) 
 	if err := p.db.QueryRow(`
 		INSERT INTO actions (type, message_id, delay)
 		VALUES ($1, $2, $3)
-		RETURNING uuid
+		RETURNING uuid;
 	`, actionType, messageId, delay).Scan(&actionId); err != nil {
 		var pgerr *pq.Error
 		if errors.As(err, &pgerr) && pgerr.Code == pqerror.ForeignKeyViolation {
@@ -496,16 +548,17 @@ func (p *PostgresStorage) CreateAction(actionType, messageId string, delay int) 
 	return actionId, nil
 }
 func (p *PostgresStorage) EditAction(actionId, actionType, messageId string, delay *int) error {
-	if err := p.db.QueryRow(`
+	if _, err := p.db.Exec(`
 		UPDATE actions 
 		SET 
-				action_type = $1,
+				type = $1,
 				message_id = $2,
-				delay = COALESCE($3, delay),
-				updated_at = CURRENT_TIMESTAMP
-		WHERE id = $4
-		RETURNING id
-    `, actionType, messageId, delay, actionId).Scan(); err != nil {
+				delay = COALESCE($3, delay)
+		WHERE uuid = $4;
+    `, actionType, messageId, delay, actionId); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return cErr.NewTypedError(storage.ErrResourseNotFound, "")
+		}
 		p.log.Error(err)
 		return err
 	}
@@ -517,19 +570,20 @@ func (p *PostgresStorage) GetActionById(actionId string) (*models.ActionData, er
 	if err := p.db.QueryRow(`
 		SELECT 
 				uuid,
-				step_id,
-				action_type,
+				type,
 				message_id,
 				delay
 		FROM actions
-		WHERE uuid = $1
+		WHERE uuid = $1;
     `, actionId).Scan(
 		&action.UUID,
-		&action.StepId,
 		&action.Type,
 		&action.MessageId,
 		&action.Delay,
 	); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, cErr.NewTypedError(storage.ErrResourseNotFound, "")
+		}
 		p.log.Error(err)
 		return nil, err
 	}
@@ -537,12 +591,12 @@ func (p *PostgresStorage) GetActionById(actionId string) (*models.ActionData, er
 	return &action, nil
 }
 
-func (p *PostgresStorage) CreateMessage(senderId, senderName, text string) (string, error) {
+func (p *PostgresStorage) CreateMessage(senderId, text *string, senderName string) (string, error) {
 	var messageId string
 
 	err := p.db.QueryRow(`
 		INSERT INTO messages (sender_id, sender_name, text)
-		VALUES ($1, $2, $3)
+		VALUES (COALESCE($1, uuid_generate_v4()), $2, COALESCE($3, NULL))
 		RETURNING uuid;
 	`, senderId, senderName, text).Scan(&messageId)
 
@@ -553,16 +607,18 @@ func (p *PostgresStorage) CreateMessage(senderId, senderName, text string) (stri
 
 	return messageId, nil
 }
-func (p *PostgresStorage) EditMessage(messageId, senderId, senderName, text string) error {
+func (p *PostgresStorage) EditMessage(messageId string, senderId, senderName, text *string) error {
 	if _, err := p.db.Exec(`
 		UPDATE messages
 		SET 
-			sender_id = COALESCE(NULLIF($1, ''), sender_id),
-			sender_name = COALESCE(NULLIF($2, ''), sender_name),
-			text = COALESCE(NULLIF($3, ''), text)
-		WHERE uuid = $4::uuid
-		RETURNING uuid;
+			sender_id = COALESCE($1, sender_id),
+			sender_name = COALESCE($2, sender_name),
+			text = COALESCE($3, text)
+		WHERE uuid = $4::uuid;
 	`, senderId, senderName, text, messageId); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return cErr.NewTypedError(storage.ErrResourseNotFound, "")
+		}
 		p.log.Error(err)
 		return err
 	}
@@ -585,8 +641,8 @@ func (p *PostgresStorage) DeleteAllMatchAnswerToMessage(messageId string) error 
 	if _, err := p.db.Exec(`
 		UPDATE answers 
 		SET 
-			message_id = NULL,
-		WHERE message_id = ANY($1::uuid[]);
+			message_id = NULL
+		WHERE message_id = $1;
 	`, messageId); err != nil {
 		p.log.Error(err)
 		return err
@@ -598,7 +654,7 @@ func (p *PostgresStorage) DeleteAllMatchFileToMessage(messageId string) error {
 		UPDATE files 
 		SET 
 			message_id = NULL,
-		WHERE message_id = ANY($1::uuid[]);
+		WHERE message_id = $1;
 	`, messageId); err != nil {
 		p.log.Error(err)
 		return err
@@ -635,6 +691,9 @@ func (p *PostgresStorage) GetMessageById(messageId string) (*models.MessageData,
 		&message.SenderName,
 		&text,
 	); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, cErr.NewTypedError(storage.ErrResourseNotFound, "")
+		}
 		p.log.Error(err)
 		return nil, err
 	}
@@ -670,8 +729,11 @@ func (p *PostgresStorage) EditAnswer(answerId string, errorText, text *string, a
 				text = COALESCE($2, text),
 				add_trust = COALESCE($3, add_trust),
 				updated_at = CURRENT_TIMESTAMP
-		WHERE id = $4;
+		WHERE uuid = $4;
     `, errorText, text, addTrust, answerId); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return cErr.NewTypedError(storage.ErrResourseNotFound, "")
+		}
 		p.log.Error(err)
 		return err
 	}
@@ -682,7 +744,7 @@ func (p *PostgresStorage) GetAnswerById(answerId string) (*models.AnswerData, er
 	var answer models.AnswerData
 	if err := p.db.QueryRow(`
 		SELECT 
-				uuuid,
+				uuid,
 				text,
 				add_trust,
 				error
@@ -694,6 +756,9 @@ func (p *PostgresStorage) GetAnswerById(answerId string) (*models.AnswerData, er
 		&answer.AddTrust,
 		&answer.Error,
 	); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, cErr.NewTypedError(storage.ErrResourseNotFound, "")
+		}
 		p.log.Error(err)
 		return nil, err
 	}
@@ -750,6 +815,9 @@ func (p *PostgresStorage) CreateFile(filename string, isSafe bool, size int, fil
 		) VALUES ($1, $2, $3, $4)
 		RETURNING uuid
     `, filename, isSafe, size, fileError).Scan(&id); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", cErr.NewTypedError(storage.ErrResourseNotFound, "")
+		}
 		p.log.Error(err)
 		return "", err
 	}
@@ -765,7 +833,7 @@ func (p *PostgresStorage) EditFile(fileId string, filename, fileError *string, i
             is_safe = COALESCE($3, is_safe),
             size = COALESCE($4, size),
             updated_at = CURRENT_TIMESTAMP
-        WHERE id = $5
+        WHERE uuid = $5
     `, filename, fileError, isSafe, size, fileId); err != nil {
 		p.log.Error(err)
 		return err
@@ -775,12 +843,7 @@ func (p *PostgresStorage) EditFile(fileId string, filename, fileError *string, i
 }
 func (p *PostgresStorage) GetFilesByMessageId(messageId string) (*[]models.FileData, error) {
 	rows, err := p.db.Query(`
-		SELECT 
-				uuid,
-				filename,
-				is_safe,
-				size,
-				error
+		SELECT uuid, filename, is_safe, size, error
 		FROM files
 		WHERE message_id = $1;
     `, messageId)
@@ -811,12 +874,7 @@ func (p *PostgresStorage) GetFilesByMessageId(messageId string) (*[]models.FileD
 func (p *PostgresStorage) GetFileById(fileId string) (*models.FileData, error) {
 	var file models.FileData
 	if err := p.db.QueryRow(`
-		SELECT 
-			uuid,
-			filename,
-			is_safe,
-			size,
-			error
+		SELECT uuid, filename, is_safe,  size, error
 		FROM files
 		WHERE uuid = $1;
     `, fileId).Scan(
@@ -826,6 +884,9 @@ func (p *PostgresStorage) GetFileById(fileId string) (*models.FileData, error) {
 		&file.Size,
 		&file.Error,
 	); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, cErr.NewTypedError(storage.ErrResourseNotFound, "")
+		}
 		p.log.Error(err)
 		return nil, err
 	}

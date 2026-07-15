@@ -236,7 +236,7 @@ func (p *PostgresStorage) RevokeSession(sessionId string) error {
 	if _, err := p.db.Exec(`
 		UPDATE sessions
 		SET revoked = True
-		WHERE session_id = $1
+		WHERE uuid = $1
 	`, sessionId); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return storage.ErrSessionNotFound

@@ -22,7 +22,7 @@ type SimulatorDataProvider interface {
 	MarkSessionAsFinished(sessionId string) error
 
 	CreateScenario(title, description, difficulty string) (string, error)
-	UpdateScenario(scenarioId, title, description, difficulty string) error
+	EditScenario(scenarioId string, title, description, difficulty *string) error
 	GetAllScenarios() (*[]models.ScenarioData, error)
 	GetScenario(scenarioId string) (*models.ScenarioData, error)
 	MatchArticleToScenario(articleIds *[]string, scenarioId string) error
@@ -32,20 +32,20 @@ type SimulatorDataProvider interface {
 	GetErrors(sessionId string) (*[]string, error)
 	GetTrusts(sessionId string) (*[]int, error)
 
-	CreateStep(previousAnswer, previosStep string, maxTrust, minTrust *int) (string, error)
+	CreateStep(scenariodId string, previousAnswer, previosStep *string, maxTrust, minTrust *int) (string, error)
 	EditStep(stepId string, maxTrust, minTrust *int) error
 	GetStep(stepId string) (*models.StepData, error)
 	MatchActionToStep(actionIds *[]string, StepId string) error
 	DeleteAllMatchActionToStep(stepId string) error
-	GetNextStepByStepId(currentStepId string) (*[]string, error)
-	GetNextStepByAnswerId(answerId string) (*[]string, error)
+	GetNextStepsByStepId(currentStepId string) (*[]string, error)
+	GetNextStepsByAnswerId(answerId string) (*[]string, error)
 
 	CreateAction(actionType, messageId string, delay int) (string, error)
 	EditAction(actionId, actionType, messageId string, delay *int) error
 	GetActionById(actionId string) (*models.ActionData, error)
 
-	CreateMessage(senderId, senderName, text string) (string, error)
-	EditMessage(messageId, senderId, senderName, text string) error
+	CreateMessage(senderId, text *string, senderName string) (string, error)
+	EditMessage(messageId string, senderId, senderName, text *string) error
 	MatchAnswerToMessage(answerIds *[]string, messageId string) error
 	DeleteAllMatchAnswerToMessage(messageId string) error
 	DeleteAllMatchFileToMessage(messageId string) error
@@ -117,64 +117,27 @@ func (s *simulatorService) GetResults(userId string) (*simulator.SimulationFinal
 }
 
 func (s *simulatorService) CreateScenario(data *simulator.ScenarioBaseRequired) (*simulator.ScenarioFull, error) {
+
 	scenarioId, err := s.repo.CreateScenario(data.Title, data.Description, string(data.Difficulty))
 	if err != nil {
 		s.log.Error(err)
 		return nil, err
 	}
 
-	strSlice := convert.AnyToStringSlice(data.ArticleIds, func(id uuid.UUID) string {
+	strSlice := convert.AnyToStringSlice(data.ArticleIds, func(id types.UUID) string {
 		return id.String()
 	})
-
 	if data.ArticleIds != nil {
 		if err := s.repo.MatchArticleToScenario(strSlice, scenarioId); err != nil {
 			s.log.Error(err)
 			return nil, err
 		}
 	}
-	scenario, err := s.repo.GetScenario(scenarioId)
-	if err != nil {
-		s.log.Error(err)
-		return nil, err
-	}
-
-	var scenarioUUID types.UUID
-	if scenarioUUID.Scan(scenario.UUID) != nil {
-		s.log.Error(err)
-		return nil, err
-	}
-	articleIdSlice := convert.StringToAnySlice(scenario.ArticleIds, func(s string) types.UUID {
-		var uuid types.UUID
-		if uuid.Scan(s) != nil {
-			return types.UUID{}
-		}
-		return uuid
-	})
-
-	return &simulator.ScenarioFull{
-		ArticleIds:  articleIdSlice,
-		Description: scenario.Description,
-		Difficulty:  simulator.ScenarioFullDifficulty(scenario.Difficulty),
-		Id:          scenarioUUID,
-		Title:       scenario.Title,
-	}, nil
+	return s.GetScenarioById(scenarioId)
 }
 func (s *simulatorService) EditScenario(scenarioId string, editedData *simulator.ScenarioBase) (*simulator.ScenarioFull, error) {
 
-	var title, description, difficulty string
-
-	if editedData.Title != nil {
-		title = *editedData.Title
-	}
-	if editedData.Description != nil {
-		description = *editedData.Description
-	}
-	if editedData.Difficulty != nil {
-		difficulty = string(*editedData.Difficulty)
-	}
-
-	if err := s.repo.UpdateScenario(scenarioId, title, description, difficulty); err != nil {
+	if err := s.repo.EditScenario(scenarioId, editedData.Title, editedData.Description, (*string)(editedData.Difficulty)); err != nil {
 		s.log.Error(err)
 		return nil, err
 	}
@@ -195,32 +158,7 @@ func (s *simulatorService) EditScenario(scenarioId string, editedData *simulator
 		}
 
 	}
-	scenario, err := s.repo.GetScenario(scenarioId)
-	if err != nil {
-		s.log.Error(err)
-		return nil, err
-	}
-
-	var scenarioUUID types.UUID
-	if scenarioUUID.Scan(scenario.UUID) != nil {
-		s.log.Error(err)
-		return nil, err
-	}
-	articleIdSlice := convert.StringToAnySlice(scenario.ArticleIds, func(s string) types.UUID {
-		var uuid types.UUID
-		if uuid.Scan(s) != nil {
-			return types.UUID{}
-		}
-		return uuid
-	})
-
-	return &simulator.ScenarioFull{
-		ArticleIds:  articleIdSlice,
-		Description: scenario.Description,
-		Difficulty:  simulator.ScenarioFullDifficulty(scenario.Difficulty),
-		Id:          scenarioUUID,
-		Title:       scenario.Title,
-	}, nil
+	return s.GetScenarioById(scenarioId)
 }
 func (s *simulatorService) GetAllScenarios() (*[]simulator.ScenarioFull, error) {
 	scenarios, err := s.repo.GetAllScenarios()
@@ -231,14 +169,17 @@ func (s *simulatorService) GetAllScenarios() (*[]simulator.ScenarioFull, error) 
 
 	return convert.AnyToAnySlice(scenarios, func(d models.ScenarioData) simulator.ScenarioFull {
 		articleIdSlice := convert.StringToAnySlice(d.ArticleIds, func(s string) types.UUID {
-			var uuid types.UUID
-			if uuid.Scan(s) != nil {
+			var articleUUID types.UUID
+			if articleUUID.Scan(s) != nil {
 				return types.UUID{}
 			}
-			return uuid
+			return articleUUID
 		})
+		var scenarioUUID types.UUID
+		scenarioUUID.Scan(d.UUID)
 
 		return simulator.ScenarioFull{
+			Id:          scenarioUUID,
 			ArticleIds:  articleIdSlice,
 			Description: d.Description,
 			Difficulty:  simulator.ScenarioFullDifficulty(d.Difficulty),
@@ -277,30 +218,31 @@ func (s *simulatorService) GetScenarioById(scenarioId string) (*simulator.Scenar
 
 func (s *simulatorService) CreateStep(step *simulator.StepMetaRequired) (*simulator.StepMetaFull, error) {
 	// Установка дефолтных значений
-	var previousAnswer, previousStep string
-	if step.PreviousStep == nil {
-		previousStep = ""
+	var previousAnswer, previousStep *string
+	if step.PreviousStep != nil {
+		strId := step.PreviousStep.String()
+		previousStep = &strId
 	}
-	if step.PreviousAnswer == nil {
-		previousAnswer = ""
+	if step.PreviousAnswer != nil {
+		strId := step.PreviousAnswer.String()
+		previousAnswer = &strId
 	}
 
 	// Создание шага
-	stepId, err := s.repo.CreateStep(previousAnswer, previousStep, step.MaxTrust, step.MinTrust)
+	stepId, err := s.repo.CreateStep(step.ScenarioId.String(), previousAnswer, previousStep, step.MaxTrust, step.MinTrust)
 	if err != nil {
 		s.log.Error(err)
 		return nil, err
 	}
 
 	// Привязка Action
-	strSlice := convert.AnyToStringSlice(&step.Actions, func(id uuid.UUID) string {
+	strSlice := convert.AnyToStringSlice(&step.Actions, func(id types.UUID) string {
 		return id.String()
 	})
 	if err := s.repo.MatchActionToStep(strSlice, stepId); err != nil {
 		s.log.Error(err)
 		return nil, err
 	}
-
 	// Привязка первого шага к Scenario
 	if step.PreviousAnswer == nil && step.PreviousStep == nil {
 		s.repo.SetFirstStep(step.ScenarioId.String(), stepId)
@@ -346,7 +288,7 @@ func (s *simulatorService) GetStep(userId string) (*simulator.StepBase, error) {
 	}
 
 	// Получаем возможные Step
-	nextStepsId, err := s.repo.GetNextStepByStepId(session.CurrentStepId)
+	nextStepsId, err := s.repo.GetNextStepsByStepId(session.CurrentStepId)
 	if err != nil {
 		s.log.Error(err)
 		return nil, err
@@ -441,6 +383,7 @@ func (s *simulatorService) CreateAnswer(answer *simulator.AnswerBaseRequired) (*
 		AddTrust: answerData.AddTrust,
 		Error:    answerData.Error,
 		Id:       answerUUID,
+		Text:     answerData.Text,
 	}, nil
 }
 func (s *simulatorService) EditAnswer(answerId string, editedData *simulator.AnswerBase) (*simulator.AnswerFull, error) {
@@ -465,6 +408,7 @@ func (s *simulatorService) EditAnswer(answerId string, editedData *simulator.Ans
 		AddTrust: answerData.AddTrust,
 		Error:    answerData.Error,
 		Id:       answerUUID,
+		Text:     answerData.Text,
 	}, nil
 }
 func (s *simulatorService) SendUserAnswer(userId, answerId string) error {
@@ -476,7 +420,7 @@ func (s *simulatorService) SendUserAnswer(userId, answerId string) error {
 	}
 
 	// Регистрируем nextStep
-	nextStepsId, err := s.repo.GetNextStepByAnswerId(answerId)
+	nextStepsId, err := s.repo.GetNextStepsByAnswerId(answerId)
 	if err != nil {
 		s.log.Error(err)
 		return err
@@ -587,15 +531,12 @@ func (s *simulatorService) GetFileByFileId(fileId, userId string) (*simulator.Fi
 }
 
 func (s *simulatorService) CreateMessage(message *simulator.MessageBaseRequired) (*simulator.MessageFull, error) {
-	var senderId, text string
+	var senderId *string
 	if message.SenderId != nil {
-		senderId = message.SenderId.String()
+		senderIdStr := message.SenderId.String()
+		senderId = &senderIdStr
 	}
-	if message.Text != nil {
-		text = *message.Text
-	}
-
-	messageId, err := s.repo.CreateMessage(senderId, message.SenderName, text)
+	messageId, err := s.repo.CreateMessage(senderId, message.Text, message.SenderName)
 	if err != nil {
 		s.log.Error(err)
 		return nil, err
@@ -626,18 +567,13 @@ func (s *simulatorService) CreateMessage(message *simulator.MessageBaseRequired)
 }
 
 func (s *simulatorService) EditMessage(messageId string, editedData *simulator.MessageBase) (*simulator.MessageFull, error) {
-	var senderId, senderName, text string
+	var senderId *string
 	if editedData.SenderId != nil {
-		senderId = editedData.SenderId.String()
-	}
-	if editedData.Text != nil {
-		text = *editedData.Text
-	}
-	if editedData.SenderName != nil {
-		senderName = *editedData.SenderName
+		senderIdStr := editedData.SenderId.String()
+		senderId = &senderIdStr
 	}
 
-	err := s.repo.EditMessage(messageId, senderId, senderName, text)
+	err := s.repo.EditMessage(messageId, senderId, editedData.SenderName, editedData.Text)
 	if err != nil {
 		s.log.Error(err)
 		return nil, err
@@ -688,16 +624,23 @@ func (s *simulatorService) GetStepMetaById(stepId string) (*simulator.StepMetaFu
 		s.log.Error(err)
 		return nil, err
 	}
-	var previosAnswerUUID types.UUID
-	if err := previosAnswerUUID.Scan(stepData.PreviousAnswer); err != nil {
-		s.log.Error(err)
-		return nil, err
+
+	var previosAnswerUUID *types.UUID
+	if stepData.PreviousAnswer != nil {
+		if err := previosAnswerUUID.Scan(stepData.PreviousAnswer); err != nil {
+			s.log.Error(err)
+			return nil, err
+		}
 	}
-	var previosStepUUID types.UUID
-	if err := previosStepUUID.Scan(stepData.PreviousStep); err != nil {
-		s.log.Error(err)
-		return nil, err
+
+	var previosStepUUID *types.UUID
+	if stepData.PreviousStep != nil {
+		if err := previosStepUUID.Scan(stepData.PreviousStep); err != nil {
+			s.log.Error(err)
+			return nil, err
+		}
 	}
+
 	var scenarioUUID types.UUID
 	if err := scenarioUUID.Scan(stepData.ScenarioId); err != nil {
 		s.log.Error(err)
@@ -716,10 +659,10 @@ func (s *simulatorService) GetStepMetaById(stepId string) (*simulator.StepMetaFu
 
 	return &simulator.StepMetaFull{
 		Id:             stepUUID,
-		MaxTrust:       &stepData.MaxTrust,
-		MinTrust:       &stepData.MinTrust,
-		PreviousAnswer: &previosAnswerUUID,
-		PreviousStep:   &scenarioUUID,
+		MaxTrust:       stepData.MaxTrust,
+		MinTrust:       stepData.MinTrust,
+		PreviousAnswer: previosAnswerUUID,
+		PreviousStep:   previosStepUUID,
 		ScenarioId:     scenarioUUID,
 		Actions:        actions,
 	}, nil

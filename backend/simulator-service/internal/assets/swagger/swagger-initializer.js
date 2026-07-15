@@ -5,7 +5,7 @@ window.onload = function () {
   window.ui = SwaggerUIBundle({
     urls: [
       {
-        name: "simulator Service",
+        name: "Simulator Service",
         url: "/specs/docs/simulator-service/simulator.swagger.yaml",
       },
     ],

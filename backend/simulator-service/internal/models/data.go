@@ -7,7 +7,7 @@ type SessionData struct {
 	CreatedAt     time.Time
 	CurrentStepId string
 	CurrentTrust  int
-	FinishedAt    time.Time
+	FinishedAt    *time.Time
 }
 
 type ScenarioData struct {
@@ -23,10 +23,10 @@ type ScenarioData struct {
 
 type StepData struct {
 	UUID           string
-	PreviousStep   string
-	PreviousAnswer string
-	MinTrust       int
-	MaxTrust       int
+	PreviousStep   *string
+	PreviousAnswer *string
+	MinTrust       *int
+	MaxTrust       *int
 	ScenarioId     string
 	ActionIds      *[]string
 	CreatedAt      time.Time
@@ -34,8 +34,8 @@ type StepData struct {
 }
 
 type ActionData struct {
-	UUID      string
-	StepId    string
+	UUID string
+	// StepId    *string
 	Type      string
 	MessageId string
 	Delay     int

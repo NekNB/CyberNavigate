@@ -6,8 +6,8 @@ import (
 
 var (
 	ErrAlreadyExists = errors.New("Entity already exists")
+	ErrNotFound      = errors.New("Entity not found")
+	ErrDataConfllict = errors.New("Data conflict")
 
-	ErrNotFound = errors.New("Entity not found")
-
-	ErrDataConfllict = errors.New("Data Conflict")
+	ErrResourseNotFound = errors.New("Resourse with passed id not found")
 )

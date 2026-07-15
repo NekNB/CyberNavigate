@@ -31,7 +31,11 @@ func main() {
 		panic(err)
 	}
 
-	go app.Start()
+	if cfg.Env == envLocal {
+		go app.HTTPStart()
+	} else {
+		go app.HTTPSStart()
+	}
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)

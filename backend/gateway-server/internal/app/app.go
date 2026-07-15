@@ -72,8 +72,10 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: []string{
-			"http://localhost:9000",
-			"http://127.0.0.1:9000",
+			"https://localhost:443",
+			"https://127.0.0.1:443",
+			"http://localhost:80",
+			"http://127.0.0.1:80",
 		},
 		AllowMethods: []string{
 			"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS",
