@@ -386,11 +386,6 @@ type CreateSimulatorSessionParams struct {
 	XUserId string `json:"X-User-Id"`
 }
 
-// GetStepJSONBody defines parameters for GetStep.
-type GetStepJSONBody struct {
-	CurrentStepId openapi_types.UUID `json:"currentStepId"`
-}
-
 // GetStepParams defines parameters for GetStep.
 type GetStepParams struct {
 	XUserId openapi_types.UUID `json:"X-User-Id"`
@@ -431,9 +426,6 @@ type EditScenarioJSONRequestBody = ScenarioBase
 
 // CreateSimulatorSessionJSONRequestBody defines body for CreateSimulatorSession for application/json ContentType.
 type CreateSimulatorSessionJSONRequestBody CreateSimulatorSessionJSONBody
-
-// GetStepJSONRequestBody defines body for GetStep for application/json ContentType.
-type GetStepJSONRequestBody GetStepJSONBody
 
 // CreateStepJSONRequestBody defines body for CreateStep for application/json ContentType.
 type CreateStepJSONRequestBody = StepMetaRequired

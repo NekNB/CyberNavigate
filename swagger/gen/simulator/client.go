@@ -161,10 +161,8 @@ type ClientInterface interface {
 
 	CreateSimulatorSession(ctx context.Context, params *CreateSimulatorSessionParams, body CreateSimulatorSessionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetStepWithBody request with any body
-	GetStepWithBody(ctx context.Context, params *GetStepParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	GetStep(ctx context.Context, params *GetStepParams, body GetStepJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetStep request
+	GetStep(ctx context.Context, params *GetStepParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateStepWithBody request with any body
 	CreateStepWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -513,20 +511,8 @@ func (c *Client) CreateSimulatorSession(ctx context.Context, params *CreateSimul
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetStepWithBody(ctx context.Context, params *GetStepParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetStepRequestWithBody(c.Server, params, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetStep(ctx context.Context, params *GetStepParams, body GetStepJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetStepRequest(c.Server, params, body)
+func (c *Client) GetStep(ctx context.Context, params *GetStepParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetStepRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1274,19 +1260,8 @@ func NewCreateSimulatorSessionRequestWithBody(server string, params *CreateSimul
 	return req, nil
 }
 
-// NewGetStepRequest calls the generic GetStep builder with application/json body
-func NewGetStepRequest(server string, params *GetStepParams, body GetStepJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewGetStepRequestWithBody(server, params, "application/json", bodyReader)
-}
-
-// NewGetStepRequestWithBody generates requests for GetStep with any type of body
-func NewGetStepRequestWithBody(server string, params *GetStepParams, contentType string, body io.Reader) (*http.Request, error) {
+// NewGetStepRequest generates requests for GetStep
+func NewGetStepRequest(server string, params *GetStepParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1304,12 +1279,10 @@ func NewGetStepRequestWithBody(server string, params *GetStepParams, contentType
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodGet, queryURL.String(), body)
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
-
-	req.Header.Add("Content-Type", contentType)
 
 	if params != nil {
 
@@ -1529,10 +1502,8 @@ type ClientWithResponsesInterface interface {
 
 	CreateSimulatorSessionWithResponse(ctx context.Context, params *CreateSimulatorSessionParams, body CreateSimulatorSessionJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSimulatorSessionResponse, error)
 
-	// GetStepWithBodyWithResponse request with any body
-	GetStepWithBodyWithResponse(ctx context.Context, params *GetStepParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GetStepResponse, error)
-
-	GetStepWithResponse(ctx context.Context, params *GetStepParams, body GetStepJSONRequestBody, reqEditors ...RequestEditorFn) (*GetStepResponse, error)
+	// GetStepWithResponse request
+	GetStepWithResponse(ctx context.Context, params *GetStepParams, reqEditors ...RequestEditorFn) (*GetStepResponse, error)
 
 	// CreateStepWithBodyWithResponse request with any body
 	CreateStepWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateStepResponse, error)
@@ -2411,17 +2382,9 @@ func (c *ClientWithResponses) CreateSimulatorSessionWithResponse(ctx context.Con
 	return ParseCreateSimulatorSessionResponse(rsp)
 }
 
-// GetStepWithBodyWithResponse request with arbitrary body returning *GetStepResponse
-func (c *ClientWithResponses) GetStepWithBodyWithResponse(ctx context.Context, params *GetStepParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GetStepResponse, error) {
-	rsp, err := c.GetStepWithBody(ctx, params, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetStepResponse(rsp)
-}
-
-func (c *ClientWithResponses) GetStepWithResponse(ctx context.Context, params *GetStepParams, body GetStepJSONRequestBody, reqEditors ...RequestEditorFn) (*GetStepResponse, error) {
-	rsp, err := c.GetStep(ctx, params, body, reqEditors...)
+// GetStepWithResponse request returning *GetStepResponse
+func (c *ClientWithResponses) GetStepWithResponse(ctx context.Context, params *GetStepParams, reqEditors ...RequestEditorFn) (*GetStepResponse, error) {
+	rsp, err := c.GetStep(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
