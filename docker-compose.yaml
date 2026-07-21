@@ -75,6 +75,15 @@ services:
 
     depends_on:
       - postgres
+  simulator-service:
+    image: cyber-navigate/simulator-service
+    secrets:
+      - source: simulator_service_secret
+        target: simulator_service_secret
+
+    depends_on:
+      - postgres
+ 
  
     
 
@@ -82,7 +91,7 @@ services:
 volumes:
   mongo_data:
   postgres_data:
-    driver: local
+
 
 
 secrets:
@@ -93,4 +102,6 @@ secrets:
   article_service_secret:
     external: true
   user_service_secret:
+    external: true
+  simulator_service_secret:
     external: true

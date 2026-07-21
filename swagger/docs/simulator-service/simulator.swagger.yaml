@@ -1,0 +1,1019 @@
+openapi: 3.2.0
+
+info:
+  title: API CyberNavigate
+  version: "1.0"
+  description: |
+    API сервиса пользователей с авторизацией по username/password.
+    Аутентификация реализована через access и refresh JWT токены.
+servers:
+  - url: http://127.0.0.1:9080/api/v1
+    description: Local API Gateway Server
+  - url: https://127.0.0.1:9443/api/v1
+    description: Local API Gateway Server
+  - url: http://127.0.0.1:8000/api/v1
+    description: Local Service
+  - url: http://cyber-navigate_gateway-server/api/v1
+    description: Internal Docker API Gateway Server
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Answers
+  - name: Files
+  - name: Messages
+  - name: Action
+  - name: Step
+  - name: Scenario
+  - name: Sessions
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    ForbiddenResponse:
+      description: Forbidden - You don't have permission to access this resource
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: "Insufficient permissions to perform this actionBase"
+
+    UnauthorizedResponse:
+      description: Unauthorized - Authentication is required or token is invalid/expired
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: "Missing or invalid authentication token"
+
+    NotFoundResponse:
+      description: Not Found - Requested resource does not exist
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: "Resource with id not found"
+
+    UnprocessableEntityResponse:
+      description: Unprocessable Entity - Validation failed
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: "Validation failed: some fields is required"
+
+  schemas:
+    # =========================
+    #       BASE ENTITY
+    # =========================
+    BaseId:
+      type: object
+      required: ["id"]
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+
+    ErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+
+    # ============================
+    #         SCENARIO
+    # ============================
+
+    ScenarioBaseRequired:
+      allOf:
+        - $ref: "#/components/schemas/ScenarioBase"
+        - required: [difficulty, title, description]
+
+    ScenarioBase:
+      properties:
+        difficulty:
+          type: string
+          enum:
+            - easy
+            - middle
+            - hard
+          example: easy
+        title:
+          type: string
+          example: first scenatio
+        description:
+          type: string
+          example: about our scenario
+        articleIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+            example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+
+    ScenarioFull:
+      allOf:
+        - $ref: "#/components/schemas/BaseId"
+        - $ref: "#/components/schemas/ScenarioBaseRequired"
+
+    # =================================
+    #            STEP
+    # =================================
+    StepBase:
+      required: ["actions"]
+      allOf:
+        - $ref: "#/components/schemas/BaseId"
+        - type: object
+          properties:
+            actions:
+              type: array
+              items:
+                $ref: "#/components/schemas/ActionFull"
+    StepMetaMin:
+      type: object
+      properties:
+        minTrust:
+          type: integer
+          example: 0
+        maxTrust:
+          type: integer
+          example: 3
+        actions:
+          type: array
+          items:
+            type: string
+            format: uuid
+            example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+    StepMeta:
+      type: object
+      properties:
+        scenarioId:
+          type: string
+          format: uuid
+          example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+        previousStep:
+          type: string
+          format: uuid
+          example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+        previousAnswer:
+          type: string
+          format: uuid
+          example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+        minTrust:
+          type: integer
+          example: 0
+        maxTrust:
+          type: integer
+          example: 3
+        actions:
+          type: array
+          items:
+            type: string
+            format: uuid
+            example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+
+    StepMetaRequired:
+      allOf:
+        - $ref: "#/components/schemas/StepMeta"
+        - required: ["scenarioId", "actions"]
+    StepMetaFull:
+      allOf:
+        - $ref: "#/components/schemas/BaseId"
+        - $ref: "#/components/schemas/StepMetaRequired"
+        - type: object
+          properties:
+            actions:
+              type: array
+              items:
+                $ref: "#/components/schemas/ActionFull"
+
+    # ========================================
+    #               ACTION
+    # ========================================
+    ActionBase:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [message, sms]
+        message:
+          type: string
+          format: uuid
+          example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+        delay:
+          type: integer
+          example: 10
+    ActionBaseRequired:
+      allOf:
+        - $ref: "#/components/schemas/ActionBase"
+        - required: ["type", "message", "delay"]
+    ActionFull:
+      allOf:
+        - $ref: "#/components/schemas/BaseId"
+        - $ref: "#/components/schemas/ActionBaseRequired"
+        - type: object
+          properties:
+            message:
+              $ref: "#/components/schemas/MessageFull"
+    # ========================================
+    #               MESSAGE
+    # ========================================
+    MessageBase:
+      type: object
+      properties:
+        senderId:
+          type: string
+          format: uuid
+          example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+        senderName:
+          type: string
+          example: Коля
+        text:
+          type: string
+          example: Привет Друг!
+        files:
+          type: array
+          items:
+            type: string
+            format: uuid
+            example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+        answers:
+          type: array
+          items:
+            type: string
+            format: uuid
+            example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+    MessageBaseRequired:
+      allOf:
+        - $ref: "#/components/schemas/MessageBase"
+        - required: ["senderName"]
+    MessageFull:
+      allOf:
+        - $ref: "#/components/schemas/BaseId"
+        - $ref: "#/components/schemas/MessageBaseRequired"
+        - type: object
+          properties:
+            senderId:
+              type: string
+              format: uuid
+              example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+            files:
+              type: array
+              items:
+                $ref: "#/components/schemas/FileFull"
+            answers:
+              type: array
+              items:
+                $ref: "#/components/schemas/AnswerFull"
+
+    # =============================
+    #           FILE
+    # =============================
+    FileBase:
+      type: object
+      properties:
+        filename:
+          type: string
+          example: game.apk
+        isSafe:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "Нельзя скачивать подозрительные файлы"
+        size:
+          type: integer
+          example: 10
+    FileBaseRequired:
+      allOf:
+        - $ref: "#/components/schemas/FileBase"
+        - required: ["filename", "isSafe", "size"]
+    FileFull:
+      allOf:
+        - $ref: "#/components/schemas/BaseId"
+        - $ref: "#/components/schemas/FileBaseRequired"
+    # =============================
+    #           ANSWER
+    # =============================
+    AnswerBase:
+      type: object
+      properties:
+        text:
+          type: string
+          example: Привет Друг!
+        error:
+          type: string
+          example: "Нельзя присылать маме подозрительные коды"
+        addTrust:
+          type: integer
+          example: -10
+    AnswerBaseRequired:
+      allOf:
+        - $ref: "#/components/schemas/AnswerBase"
+        - required: ["text", "addTrust"]
+    AnswerFull:
+      allOf:
+        - $ref: "#/components/schemas/BaseId"
+        - $ref: "#/components/schemas/AnswerBaseRequired"
+    SimulationFinal:
+      type: object
+      properties:
+        gameDuration:
+          type: integer
+          example: 15
+        errors:
+          type: array
+          items:
+            type: string
+            example: Нельзя называть маме номер банковской карточки
+        trustGraph:
+          type: array
+          items:
+            type: integer
+          example: [2, 3]
+
+paths:
+  # ========================================
+  #               SCENARIO
+  # ========================================
+  /simulator/scenarios:
+    get:
+      x-auth:
+        public: true
+        permission: user
+      security: []
+      tags:
+        - Scenario
+      summary: Get All Scenariod
+      operationId: getAllScenarios
+      responses:
+        "200":
+          description: Get All Scenarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ScenarioFull"
+
+    post:
+      x-auth:
+        public: false
+        permission: admin
+      tags:
+        - Scenario
+      summary: Created Scenario
+      operationId: createScenario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScenarioBaseRequired"
+
+      responses:
+        "201":
+          description: Scenario Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScenarioFull"
+        "400":
+          description: Article Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+
+  /simulator/scenarios/{scenarioId}:
+    get:
+      x-auth:
+        public: true
+        permission: user
+      tags:
+        - Scenario
+      security: []
+      parameters:
+        - name: scenarioId
+          in: path
+          description: ID of scenario
+          required: true
+          schema:
+            type: string
+      summary: Get Scenario By Id
+      operationId: getScenarioById
+      responses:
+        "200":
+          description: Scenario Info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScenarioFull"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+
+    patch:
+      x-auth:
+        public: false
+        permission: admin
+
+      tags:
+        - Scenario
+      summary: Edit Scenario
+      operationId: editScenario
+      parameters:
+        - name: scenarioId
+          in: path
+          description: ID of scenario
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScenarioBase"
+      responses:
+        "200":
+          description: Scenario Edited
+          content:
+            applicaton/json:
+              schema:
+                $ref: "#/components/schemas/ScenarioFull"
+        "400":
+          description: Article Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+  # ========================================
+  #               STEP
+  # ========================================
+  /simulator/step:
+    get:
+      x-auth:
+        public: false
+        permission: user
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      tags:
+        - Step
+      summary: Get Step
+      operationId: getStep
+      responses:
+        "200":
+          description: Step Info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StepBase"
+        "204":
+          description: "Scenario Complete! Get Results"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+
+    post:
+      x-auth:
+        public: false
+        permission: admin
+      tags:
+        - Step
+      summary: Create Step
+      operationId: createStep
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StepMetaRequired"
+
+      responses:
+        "201":
+          description: Step Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StepMetaFull"
+        "400":
+          description: Action Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+
+  /simulator/step/{stepId}:
+    patch:
+      x-auth:
+        public: false
+        permission: admin
+      parameters:
+        - name: stepId
+          in: path
+          required: true
+          schema:
+            type: string
+      tags:
+        - Step
+      summary: Edit Step
+      operationId: editStep
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StepMetaMin"
+      responses:
+        "200":
+          description: Step Edited
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StepMetaFull"
+        "400":
+          description: Action Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+  # ========================================
+  #               ACTION
+  # ========================================
+  /simulator/action:
+    post:
+      x-auth:
+        public: false
+        permission: admin
+      tags: ["Action"]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActionBaseRequired"
+      operationId: createAction
+      summary: Create Action
+      responses:
+        "201":
+          description: Action created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActionFull"
+        "400":
+          description: Message Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+
+  /simulator/action/{actionId}:
+    patch:
+      x-auth:
+        public: false
+        permission: admin
+      tags:
+        - Action
+      parameters:
+        - name: actionId
+          in: path
+          required: true
+          schema:
+            type: string
+      summary: Edit Action
+      operationId: editAction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActionBase"
+      responses:
+        "200":
+          description: Action edited
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActionFull"
+        "400":
+          description: Message Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+  /simulator/action/answer:
+    post:
+      x-auth:
+        public: false
+        permission: user
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: string
+      tags:
+        - Action
+      summary: Send User Answer
+      operationId: sendUserAnswer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                answerId:
+                  type: string
+                  format: uuid
+                  example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+      responses:
+        "204":
+          description: Answer Processed
+        "400":
+          description: Message Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+
+  # ======================================
+  #              FILES
+  # ======================================
+  /simulator/files:
+    post:
+      x-auth:
+        public: false
+        permission: admin
+      tags:
+        - Files
+      summary: Create File
+      operationId: createFile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FileBaseRequired"
+      responses:
+        "201":
+          description: File created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileFull"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+
+  /simulator/files/{fileId}:
+    get:
+      x-auth:
+        public: false
+        permission: user
+      tags:
+        - Files
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: string
+
+      summary: Get File By Id
+      operationId: getFileByFileId
+      responses:
+        "200":
+          description: File Info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileFull"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+    patch:
+      x-auth:
+        public: false
+        permission: admin
+      tags:
+        - Files
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+      summary: Edit file
+      operationId: editFile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FileBase"
+      responses:
+        "200":
+          description: File edited
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileFull"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+
+  # ======================================
+  #       СЕССИЯ ИГРЫ
+  # ======================================
+  /simulator/sessions:
+    post:
+      x-auth:
+        public: false
+        permission: user
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: string
+      tags:
+        - Sessions
+      summary: Создает сессию симулятора
+      operationId: createSimulatorSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - scenarioId
+              properties:
+                scenarioId:
+                  type: string
+                  format: uuid
+                  example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+
+      responses:
+        "204":
+          description: Session Created
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+    delete:
+      x-auth:
+        public: false
+        permission: user
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: string
+      tags:
+        - Sessions
+      summary: Запрашивает результаты игры
+      operationId: getResults
+      responses:
+        "200":
+          description: Результат игры
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimulationFinal"
+        "400":
+          description: Session Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+
+  # =============================
+  #         MESSAGE
+  # =============================
+  /simulator/messages:
+    post:
+      x-auth:
+        public: false
+        permission: admin
+      tags:
+        - Messages
+      description: SenderId is not required. If one wasn't transferred, it will be generated and anew Sender will be created
+      summary: Create Message
+      operationId: createMessage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MessageBaseRequired"
+      responses:
+        "201":
+          description: Message created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageFull"
+        "400":
+          description: Object Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "409":
+          description: SenderName and SenderId don't match
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+
+  /simulator/messages/{messageId}:
+    patch:
+      x-auth:
+        public: false
+        permission: admin
+      tags:
+        - Messages
+      description: SenderId is not required. If one is passed, the Message will be assigned to the Sender with SenderId from Request Body
+      summary: Edit Message
+      operationId: editMessage
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MessageBase"
+      responses:
+        "200":
+          description: Message edited
+          content:
+            applicaton/json:
+              schema:
+                $ref: "#/components/schemas/MessageFull"
+        "400":
+          description: Object Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+  # =============================
+  #         ANSWER
+  # =============================
+  /simulator/answers:
+    post:
+      x-auth:
+        public: false
+        permission: admin
+      tags:
+        - Answers
+      summary: Create Answer
+      operationId: createAnswer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnswerBaseRequired"
+      responses:
+        "201":
+          description: Answer created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnswerFull"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+  /simulator/answers/{answerId}:
+    patch:
+      x-auth:
+        public: false
+        permission: admin
+      tags:
+        - Answers
+      summary: Edit Answer
+      operationId: editAnswer
+      parameters:
+        - name: answerId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnswerBase"
+      responses:
+        "200":
+          description: Answer edited
+          content:
+            applicaton/json:
+              schema:
+                $ref: "#/components/schemas/AnswerFull"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntityResponse"

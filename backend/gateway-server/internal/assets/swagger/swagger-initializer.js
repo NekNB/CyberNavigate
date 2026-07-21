@@ -5,6 +5,10 @@ window.onload = function () {
   window.ui = SwaggerUIBundle({
     urls: [
       {
+        name: "Simulator Service",
+        url: "/specs/docs/simulator-service/simulator.swagger.yaml",
+      },
+      {
         name: "Article Service",
         url: "/specs/docs/article-service/article.swagger.yaml",
       },

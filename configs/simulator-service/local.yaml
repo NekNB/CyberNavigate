@@ -1,0 +1,18 @@
+env: "local" # dev, prod
+
+http:
+  port: 8000
+  timeout: 10h
+
+storages:
+  postgres:
+    database: simulator_service_db
+    host: localhost
+    port: 5777
+    user: simulator_service_role
+
+certs:
+  ca_cert: ../../secrets/certs/simulator-service/ca-cert.pem
+
+  server_cert: ../../secrets/certs/simulator-service/server-cert.pem
+  server_key: ../../secrets/certs/simulator-service/server-key.pem

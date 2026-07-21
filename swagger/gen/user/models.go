@@ -10,17 +10,20 @@ import (
 )
 
 const (
-	BearerAuthScopes bearerAuthContextKey = "bearerAuth.Scopes"
+	BearerAuthScopes bearerAuthContextKey = "BearerAuth.Scopes"
 )
 
 // ServerUrlInternalDockerAPIGatewayServer defines the Server URL for Internal Docker API Gateway Server
 const ServerUrlInternalDockerAPIGatewayServer = "http://cyber-navigate_gateway-server/api/v1"
 
 // ServerUrlLocalAPIGatewayServer defines the Server URL for Local API Gateway Server
-const ServerUrlLocalAPIGatewayServer = "http://localhost:9000/api/v1"
+const ServerUrlLocalAPIGatewayServer = "http://127.0.0.1:9080/api/v1"
 
 // ServerUrlLocalAPIGatewayServer1 defines the Server URL for Local API Gateway Server
-const ServerUrlLocalAPIGatewayServer1 = "http://127.0.0.1:9000/api/v1"
+const ServerUrlLocalAPIGatewayServer1 = "https://127.0.0.1:9443/api/v1"
+
+// ServerUrlLocalService defines the Server URL for Local Service
+const ServerUrlLocalService = "http://127.0.0.1:8000/api/v1"
 
 // ErrorResponse defines model for ErrorResponse.
 type ErrorResponse struct {
@@ -64,7 +67,7 @@ type UnauthorizedResponse = ErrorResponse
 // UnprocessableEntityResponse defines model for UnprocessableEntityResponse.
 type UnprocessableEntityResponse = ErrorResponse
 
-// bearerAuthContextKey is the context key for bearerAuth security scheme
+// bearerAuthContextKey is the context key for BearerAuth security scheme
 type bearerAuthContextKey string
 
 // LoginJSONRequestBody defines body for Login for application/json ContentType.
