@@ -1,0 +1,27 @@
+env: "local" # dev, prod
+
+http:
+  port: 8000
+  timeout: 10h
+
+storages:
+  postgres:
+    database: user_service_db
+    host: localhost
+    port: 5777
+    user: user_service_role
+tokens:
+  access:
+    expiration: 900 # 15 минут
+
+  refresh:
+    expiration: 2592000 # 30 дней
+
+private_key_path: ../../secrets/keys/private.pem
+public_key_path: ../../secrets/keys/public.pem
+
+certs:
+  ca_cert: ../../secrets/certs/user-service/ca-cert.pem
+
+  server_cert: ../../secrets/certs/user-service/server-cert.pem
+  server_key: ../../secrets/certs/user-service/server-key.pem

@@ -1,18 +1,19 @@
 {
-	"cSpell.words": [
-		"CTYPE",
-		"envsubst",
-		"gomplate",
-		"initdb",
-		"ossp",
-		"pgcrypto",
-		"plpgsql",
-		"rolname",
-		"sqlite",
-		"swarmpit"
-	],
+  "cSpell.words": [
+    "CTYPE",
+    "envsubst",
+    "gomplate",
+    "initdb",
+    "ossp",
+    "pgcrypto",
+    "plpgsql",
+    "rolname",
+    "sqlite",
+    "swarmpit"
+  ],
 
-	"files.associations": {
-		"*.env": "env"
-	}
+  "files.associations": {
+    "*.env": "env"
+  },
+  "editor.tabSize": 2
 }

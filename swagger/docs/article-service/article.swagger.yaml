@@ -3,14 +3,21 @@ info:
   title: API CyberNavigate
   version: "1.0"
 servers:
-  - url: http://localhost:9000/api/v1
+  - url: http://127.0.0.1:9080/api/v1
     description: Local API Gateway Server
-  - url: http://127.0.0.1:9000/api/v1
+  - url: https://127.0.0.1:9443/api/v1
     description: Local API Gateway Server
+  - url: http://127.0.0.1:8000/api/v1
+    description: Local Service
   - url: http://cyber-navigate_gateway-server/api/v1
     description: Internal Docker API Gateway Server
 
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     ArticleMetaData:
       type: object
@@ -36,7 +43,7 @@ components:
               message:
                 type: string
             example:
-              - message: "Article With ArticleID Not Found"
+              message: "Article With ArticleID Not Found"
     ArticleTextNotCreatedYet:
       description: Article Text Not Created
       content:
@@ -47,7 +54,7 @@ components:
               message:
                 type: string
             example:
-              - message: "Article Text With ArticleID Not Created Yet"
+              message: "Article Text With ArticleID Not Created Yet"
     ArticleAlreadyExists:
       description: Article Already Exists
       content:
@@ -59,9 +66,15 @@ components:
                 type: string
             example:
               message: "Article With ArticleText Already Exists"
+security:
+  - BearerAuth: []
+
 paths:
   /articles:
     post:
+      x-auth:
+        public: false
+        permission: admin
       tags:
         - Admin
       summary: Create article with articleName
@@ -89,6 +102,9 @@ paths:
           $ref: "#/components/responses/ArticleAlreadyExists"
 
     get:
+      x-auth:
+        public: true
+        permission: user
       tags:
         - User
       summary: Get All Articles Entity
@@ -105,6 +121,9 @@ paths:
 
   /articles/{articleId}:
     patch:
+      x-auth:
+        public: false
+        permission: admin
       tags:
         - Admin
       summary: Update article by Id
@@ -143,6 +162,9 @@ paths:
           $ref: "#/components/responses/ArticleNotFound"
 
     get:
+      x-auth:
+        public: true
+        permission: user
       tags:
         - User
       summary: Find article by Id
@@ -167,6 +189,9 @@ paths:
 
   /articles/{articleId}/text:
     post:
+      x-auth:
+        public: false
+        permission: admin
       tags:
         - Admin
       summary: Upload Article Text by articleId
@@ -195,6 +220,9 @@ paths:
           $ref: "#/components/responses/ArticleNotFound"
 
     put:
+      x-auth:
+        public: false
+        permission: admin
       tags:
         - Admin
       summary: Update Article Text by ArticleId
@@ -226,6 +254,9 @@ paths:
           $ref: "#/components/responses/ArticleTextNotCreatedYet"
 
     get:
+      x-auth:
+        public: true
+        permission: user
       tags:
         - User
       summary: Article Text By articleId

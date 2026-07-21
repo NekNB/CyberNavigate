@@ -19,8 +19,12 @@ services:
     depends_on:
       - article-service
     ports:
-      - target: 9000
-        published: 9000
+      - target: 443
+        published: 9443
+        protocol: tcp
+        mode: host
+      - target: 80
+        published: 9080
         protocol: tcp
         mode: host
         
@@ -59,16 +63,35 @@ services:
     secrets:
       - source: article_service_secret
         target: article_service_secret
+
     depends_on:
       - postgres
       - mongo
+  user-service:
+    image: cyber-navigate/user-service
+    secrets:
+      - source: user_service_secret
+        target: user_service_secret
+
+    depends_on:
+      - postgres
+  simulator-service:
+    image: cyber-navigate/simulator-service
+    secrets:
+      - source: simulator_service_secret
+        target: simulator_service_secret
+
+    depends_on:
+      - postgres
+ 
+ 
     
 
 
 volumes:
   mongo_data:
   postgres_data:
-    driver: local
+
 
 
 secrets:
@@ -77,4 +100,8 @@ secrets:
   mongo_secret:
     external: true
   article_service_secret:
+    external: true
+  user_service_secret:
+    external: true
+  simulator_service_secret:
     external: true

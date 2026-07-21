@@ -1,0 +1,327 @@
+openapi: 3.0.3
+
+info:
+  title: API CyberNavigate
+  version: "1.0"
+  description: |
+    API сервиса пользователей с авторизацией по username/password.
+    Аутентификация реализована через access и refresh JWT токены.
+servers:
+  - url: http://127.0.0.1:9080/api/v1
+    description: Local API Gateway Server
+  - url: https://127.0.0.1:9443/api/v1
+    description: Local API Gateway Server
+  - url: http://127.0.0.1:8000/api/v1
+    description: Local Service
+  - url: http://cyber-navigate_gateway-server/api/v1
+    description: Internal Docker API Gateway Server
+
+tags:
+  - name: Auth
+    description: Методы авторизации и аутентификации
+  - name: Users
+    description: Методы работы с пользователем
+  - name: Admin
+    description: Методы работы с пользователем для администраторов
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    BadRequestResponse:
+      description: Bad Request - Invalid request parameters or body
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: "Invalid email format"
+
+    MessageResponse:
+      description: Response with message
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - message
+            properties:
+              message:
+                type: string
+          example:
+            message: "Successfully"
+
+    UnauthorizedResponse:
+      description: Unauthorized - Authentication is required or token is invalid/expired
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: "Missing or invalid authentication token"
+    ForbiddenResponse:
+      description: Forbidden - You don't have permission to access this resource
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: "Insufficient permissions to perform this action"
+    NotFoundResponse:
+      description: Not Found - Requested resource does not exist
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: "Resource with id 123 not found"
+    UnprocessableEntityResponse:
+      description: Unprocessable Entity - Validation failed
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: "Validation failed: fields 'username' is required"
+    InternalServerErrorResponse:
+      description: Internal Server Error - Something went wrong on the server
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: "An unexpected error occurred. Please try again later."
+
+  schemas:
+    UserRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: johndoe
+        password:
+          type: string
+          format: password
+          example: secret123
+
+    UserResponse:
+      type: object
+      required:
+        - id
+        - is_admin
+        - username
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+        is_admin:
+          type: boolean
+          example: false
+        username:
+          type: string
+          example: johndoe
+        createdAt:
+          type: string
+          format: date-time
+          example: 2026-05-11T10:00:00Z
+
+    ErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+
+security:
+  - BearerAuth: []
+
+paths:
+  /auth/login:
+    post:
+      x-auth:
+        public: true
+        permission: user
+      tags:
+        - Auth
+      summary: Авторизация пользователя
+      description: Возвращает access и refresh токены
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRequest"
+      responses:
+        "200":
+          description: Успешная авторизация
+          headers:
+            Set-Cookie:
+              description: |
+                Sets access and refresh tokens as HTTP-only cookies
+              schema:
+                type: string
+                example: "access_token=eyJhbGciOiJSUzI1NiIs...; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=900"
+          $ref: "#/components/responses/MessageResponse"
+          example:
+            message: "Ok"
+        "401":
+          description: Неверные логин или пароль
+          $ref: "#/components/responses/UnauthorizedResponse"
+          example:
+            message: "Invalid login or password"
+        "422":
+          description: Некорректный запрос
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+        "500":
+          description: Ошибка обработки
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /auth/refresh:
+    put:
+      x-auth:
+        public: false
+        permission: user
+      tags:
+        - Auth
+      summary: Обновление access токена
+      description: Выдает новую пару access/refresh токенов
+      operationId: refreshToken
+      responses:
+        "200":
+          description: Успешная авторизация
+          headers:
+            Set-Cookie:
+              description: |
+                Sets access and refresh tokens as HTTP-only cookies
+              schema:
+                type: string
+                example: "access_token=eyJhbGciOiJSUzI1NiIs...; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=900"
+
+          $ref: "#/components/responses/MessageResponse"
+        "401":
+          description: Refresh токен невалиден или истек
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "422":
+          description: Некорректный запрос
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+        "500":
+          description: Ошибка обработки
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /auth/logout:
+    delete:
+      x-auth:
+        public: false
+        permission: user
+      tags:
+        - Auth
+      summary: Выход пользователя
+      description: Инвалидирует refresh токен
+      operationId: logout
+      responses:
+        "204":
+          description: Успешный logout
+        "422":
+          description: Некорректный запрос
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+        "500":
+          description: Ошибка обработки
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /users/me:
+    get:
+      x-auth:
+        public: false
+        permission: user
+      tags:
+        - Users
+      summary: Получить текущего пользователя
+      operationId: getCurrentUser
+      responses:
+        "200":
+          description: Информация о текущем пользователе
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: Неавторизован
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "404":
+          description: Пользователь не найден
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          description: Некорректный запрос
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+        "500":
+          description: Ошибка обработки
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /users:
+    get:
+      x-auth:
+        public: false
+        permission: admin
+      tags:
+        - Admin
+      summary: Получить список пользователей
+      operationId: getAllUsers
+      responses:
+        "200":
+          description: Информация о всех пользователях
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: Неавторизован
+          $ref: "#/components/responses/UnauthorizedResponse"
+
+        "403":
+          description: В доступе отказано
+          $ref: "#/components/responses/ForbiddenResponse"
+        "422":
+          description: Некорректный запрос
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+        "500":
+          description: Ошибка обработки
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+    post:
+      x-auth:
+        public: true
+        permission: user
+      tags:
+        - Users
+      summary: Зарегистрировать пользователя
+      operationId: registerNewUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRequest"
+      responses:
+        "201":
+          description: Успешно создан пользователь
+          $ref: "#/components/responses/MessageResponse"
+        "400":
+          description: Пользователь уже существует
+          $ref: "#/components/responses/BadRequestResponse"
+        "422":
+          description: Некорректный запрос
+          $ref: "#/components/responses/UnprocessableEntityResponse"
+        "500":
+          description: Ошибка обработки
+          $ref: "#/components/responses/InternalServerErrorResponse"

@@ -63,10 +63,19 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO user_service_role;
 CREATE TABLE users (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     username VARCHAR(50) UNIQUE,
-		email VARCHAR(254) NOT NULL UNIQUE,
-		password_hash VARCHAR(256) NOT NULL,
-		salt VARCHAR(256) NOT NULL,
-    is_superuser BOOLEAN DEFAULT false,
+    password_hash VARCHAR(256) NOT NULL,
+    salt VARCHAR(256) NOT NULL,
+    is_admin BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE sessions (
+    uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(uuid),
+    refresh_token VARCHAR(16) NOT NULL UNIQUE DEFAULT encode(gen_random_bytes(8), 'hex'),
+    revoked BOOLEAN NOT NULL DEFAULT false,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

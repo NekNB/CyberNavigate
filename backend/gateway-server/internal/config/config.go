@@ -8,16 +8,29 @@ import (
 )
 
 type Config struct {
-	Env    string       `yaml:"env" env-default:"local"`
-	Server ServerConfig `yaml:"server" env-required:"true"`
+	Env           string       `yaml:"env" env-default:"local"`
+	Server        serverConfig `yaml:"server" env-required:"true"`
+	Certs         certsConfig  `yaml:"certs" env-required:"true"`
+	PublicKeyPath string       `yaml:"public_key_path"`
 }
 
-type ServerConfig struct {
-	Port     int                     `yaml:"port"`
-	Services []map[string]ServiceCfg `yaml:"services"`
+type certsConfig struct {
+	CaCertPath string `yaml:"ca_cert" env-required:"true"`
+
+	ClientCertPath string `yaml:"client_cert" env-required:"true"`
+	ClientKeyPath  string `yaml:"client_key" env-required:"true"`
+
+	PublicCertPath string `yaml:"public_cert" env-required:"true"`
+	PublicKeyPath  string `yaml:"public_key" env-required:"true"`
+}
+type serverConfig struct {
+	Host      string                  `yaml:"host"`
+	HTTPPort  int                     `yaml:"http_port"`
+	HTTPSPort int                     `yaml:"https_port"`
+	Services  []map[string]serviceCfg `yaml:"services"`
 }
 
-type ServiceCfg struct {
+type serviceCfg struct {
 	Path     string `yaml:"path"`
 	Protocol string `yaml:"protocol" env-default:"http"`
 	Host     string `yaml:"host"`
@@ -62,7 +75,7 @@ func fetchConfigPath() string {
 
 type Service struct {
 	Name string
-	Cfg  ServiceCfg
+	Cfg  serviceCfg
 }
 
 func Normalize(cfg *Config) []Service {

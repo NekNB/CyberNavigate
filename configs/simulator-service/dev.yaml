@@ -1,0 +1,18 @@
+env: "dev" # dev, prod
+
+http:
+  port: 8000
+  timeout: 10h
+
+storages:
+  postgres:
+    database: simulator_service_db
+    host: cyber-navigate_postgres
+    port: 5432
+    user: simulator_service_role
+
+certs:
+  ca_cert: ./certs/ca-cert.pem
+
+  server_cert: ./certs/server-cert.pem
+  server_key: ./certs/server-key.pem
