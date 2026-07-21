@@ -36,24 +36,37 @@ func New(log *logrus.Logger, uri string) (*PostgresStorage, error) {
 	return &PostgresStorage{db: db, log: log}, nil
 }
 
-func (p *PostgresStorage) CreateSession(userId, stepId string) error {
-	if _, err := p.db.Exec(`
-	INSERT INTO sessions (user_id, current_step)
-	VALUES($1, $2);
-	`, userId, stepId); err != nil {
+func (p *PostgresStorage) CreateSession(userId, stepId string) (string, error) {
+	var sessionId string
 
+	// Блокируем все старые сессии
+	if _, err := p.db.Exec(`
+    UPDATE sessions 
+    SET finished_at = CURRENT_TIMESTAMP
+    WHERE user_id = $1 AND finished_at IS NULL;
+	`, userId); err != nil {
 		p.log.Error(err)
-		return err
+		return "", err
 	}
-	return nil
+
+	// Создаем новую сессию
+	if err := p.db.QueryRow(`
+		INSERT INTO sessions (user_id, current_step)
+		VALUES ($1, $2)
+		RETURNING uuid;
+	`, userId, stepId).Scan(&sessionId); err != nil {
+		p.log.Error(err)
+		return "", err
+	}
+	return sessionId, nil
 }
-func (p *PostgresStorage) GetSession(userId string) (*models.SessionData, error) {
+func (p *PostgresStorage) GetCurrentSession(userId string) (*models.SessionData, error) {
 	var sessionData models.SessionData
 	var finishedAt sql.NullTime
 	if err := p.db.QueryRow(`
 	SELECT uuid, created_at, current_step, current_trust, finished_at
 	FROM sessions
-	WHERE user_id = $1;
+	WHERE user_id = $1 AND finished_at IS NULL;
 	`, userId).Scan(
 		&sessionData.UUID,
 		&sessionData.CreatedAt,
@@ -73,9 +86,36 @@ func (p *PostgresStorage) GetSession(userId string) (*models.SessionData, error)
 	}
 	return &sessionData, nil
 }
-func (p *PostgresStorage) SetCurrentStep(sessionId, stepId string) error {
+
+func (p *PostgresStorage) GetSessionBySessionId(sessionId string) (*models.SessionData, error) {
+	var sessionData models.SessionData
+	var finishedAt sql.NullTime
+	if err := p.db.QueryRow(`
+	SELECT uuid, created_at, current_step, current_trust, finished_at
+	FROM sessions
+	WHERE uuid = $1;
+	`, sessionId).Scan(
+		&sessionData.UUID,
+		&sessionData.CreatedAt,
+		&sessionData.CurrentStepId,
+		&sessionData.CurrentTrust,
+		&finishedAt,
+	); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, cErr.NewTypedError(storage.ErrResourseNotFound, "")
+		}
+		p.log.Error(err)
+		return nil, err
+	}
+
+	if finishedAt.Valid {
+		sessionData.FinishedAt = &finishedAt.Time
+	}
+	return &sessionData, nil
+}
+func (p *PostgresStorage) SetCurrentStep(sessionId string, stepId *string) error {
 	if _, err := p.db.Exec(`
-		UPDATE session
+		UPDATE sessions
 		SET
 			current_step = $1
 		WHERE uuid = $2
@@ -88,7 +128,7 @@ func (p *PostgresStorage) SetCurrentStep(sessionId, stepId string) error {
 
 func (p *PostgresStorage) SetSessionError(sessionId, userError string) error {
 	if _, err := p.db.Exec(`
-	INSERT INTO errors_to_user (error, session_id) 
+	INSERT INTO errors_to_session (error, session_id) 
 	VALUES ($1, $2);
 	`, userError, sessionId); err != nil {
 		p.log.Error(err)
@@ -98,10 +138,10 @@ func (p *PostgresStorage) SetSessionError(sessionId, userError string) error {
 }
 func (p *PostgresStorage) MarkSessionAsFinished(sessionId string) error {
 	if _, err := p.db.Exec(`
-		UPDATE session
+		UPDATE sessions
 		SET
 			finished_at = CURRENT_TIMESTAMP
-		WHERE uuid = $2
+		WHERE uuid = $1
 	`, sessionId); err != nil {
 		p.log.Error(err)
 		return err
@@ -301,7 +341,7 @@ func (p *PostgresStorage) SetFirstStep(scenarioId, stepId string) error {
 func (p *PostgresStorage) GetErrors(sessionId string) (*[]string, error) {
 	rows, err := p.db.Query(`
 		SELECT error
-		FROM errors_to_session 
+		FROM errors_to_session
 		WHERE session_id = $1;
 	`, sessionId)
 	if err != nil {
@@ -324,6 +364,7 @@ func (p *PostgresStorage) GetErrors(sessionId string) (*[]string, error) {
 	}
 	return &errors, nil
 }
+
 func (p *PostgresStorage) GetTrusts(sessionId string) (*[]int, error) {
 	rows, err := p.db.Query(`
 		SELECT trust
@@ -356,7 +397,7 @@ func (p *PostgresStorage) CreateStep(scenariodId string, previousAnswer, previos
 
 	if err := p.db.QueryRow(`
 		INSERT INTO steps (previous_answer, previous_step, max_trust, min_trust, scenario_id)
-		VALUES (COALESCE($1::uuid, NULL), COALESCE($2::uuid, NULL), COALESCE($3::int, NULL), COALESCE($4::int, NULL), $5)
+		VALUES (COALESCE($1::uuid, NULL), COALESCE($2::uuid, NULL), COALESCE($3::int, 100), COALESCE($4::int, -100), $5)
 		RETURNING uuid;
 	`, previousAnswer, previosStep, maxTrust, minTrust, scenariodId).
 		Scan(
@@ -476,57 +517,37 @@ func (p *PostgresStorage) DeleteAllMatchActionToStep(stepId string) error {
 	}
 	return nil
 }
-func (p *PostgresStorage) GetNextStepsByStepId(currentStepId string) (*[]string, error) {
-	rows, err := p.db.Query(`
-		SELECT uuid
-		FROM steps 
-		WHERE previous_step = $1;
-	`, currentStepId)
-	if err != nil {
+func (p *PostgresStorage) GetNextStepByStepId(currentStepId string, currentTrust int) (*string, error) {
+	var nextStepId string
+	if err := p.db.QueryRow(`
+	SELECT uuid
+	FROM steps 
+	WHERE previous_step = $1 AND $2 BETWEEN min_trust AND max_trust;
+	`, currentStepId, currentTrust).Scan(&nextStepId); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
 		p.log.Error(err)
 		return nil, err
 	}
-	defer rows.Close()
 
-	var nextSteps []string
-	for rows.Next() {
-		var nextStepId string
-		if err := rows.Scan(
-			&nextStepId,
-		); err != nil {
-			p.log.Error(err)
-			return nil, err
-		}
-
-		nextSteps = append(nextSteps, nextStepId)
-	}
-	return &nextSteps, nil
+	return &nextStepId, nil
 }
-func (p *PostgresStorage) GetNextStepsByAnswerId(answerId string) (*[]string, error) {
-	rows, err := p.db.Query(`
+func (p *PostgresStorage) GetNextStepByAnswerId(answerId string, currentTrust int) (*string, error) {
+	var nextStepId string
+	if err := p.db.QueryRow(`
 		SELECT uuid
 		FROM steps 
-		WHERE previous_answer = $1;
-	`, answerId)
-	if err != nil {
+		WHERE previous_answer = $1 AND $2 BETWEEN min_trust AND max_trust;
+	`, answerId, currentTrust).Scan(&nextStepId); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
 		p.log.Error(err)
 		return nil, err
 	}
-	defer rows.Close()
 
-	var nextSteps []string
-	for rows.Next() {
-		var nextStepId string
-		if err := rows.Scan(
-			&nextStepId,
-		); err != nil {
-			p.log.Error(err)
-			return nil, err
-		}
-
-		nextSteps = append(nextSteps, nextStepId)
-	}
-	return &nextSteps, nil
+	return &nextStepId, nil
 }
 
 func (p *PostgresStorage) CreateAction(actionType, messageId string, delay int) (string, error) {
@@ -804,6 +825,37 @@ func (p *PostgresStorage) GetAnswersByMessageId(messageId string) (*[]models.Ans
 	return &answers, nil
 }
 
+func (p *PostgresStorage) SaveBeginTrustLevel(sessionId string) error {
+	if _, err := p.db.Exec(`
+		INSERT INTO trusts (session_id, trust)
+		VALUES ($1, 0);
+	`, sessionId); err != nil {
+		var pgerr *pq.Error
+		if errors.As(err, &pgerr) && pgerr.Code == pqerror.ForeignKeyViolation {
+			return cErr.NewTypedError(storage.ErrNotFound, fmt.Sprintf("Session With Id: %s not found", sessionId))
+		}
+		p.log.Error(err)
+		return err
+	}
+	return nil
+}
+
+func (p *PostgresStorage) RegisterTrustLevel(sessionId string, addTrust int) error {
+	if _, err := p.db.Exec(`
+		WITH updated AS (
+			UPDATE sessions 
+			SET current_trust = GREATEST(-100, LEAST(100, current_trust + $1::int))
+			WHERE uuid = $2
+			RETURNING uuid, current_trust
+		)
+		INSERT INTO trusts (session_id, trust)
+		SELECT $2, current_trust
+		FROM updated;
+	`, addTrust, sessionId); err != nil {
+
+	}
+	return nil
+}
 func (p *PostgresStorage) CreateFile(filename string, isSafe bool, size int, fileError *string) (string, error) {
 	var id string
 	if err := p.db.QueryRow(`

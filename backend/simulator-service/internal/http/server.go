@@ -96,7 +96,7 @@ func (a *APIServer) CreateSimulatorSession(c fiber.Ctx, params simulator.CreateS
 
 	if err := a.simulatorService.CreateSession(params.XUserId, req.ScenarioId.String()); err != nil {
 		a.log.Error(err)
-		c.SendStatus(500)
+		return c.SendStatus(500)
 	}
 
 	return c.SendStatus(204)
@@ -192,6 +192,8 @@ func (a *APIServer) GetStep(c fiber.Ctx, params simulator.GetStepParams) error {
 	if err != nil {
 		a.log.Error(err)
 		return c.SendStatus(500)
+	} else if step == nil {
+		return c.SendStatus(fiber.StatusNoContent)
 	}
 
 	return c.Status(200).JSON(step)

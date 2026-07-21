@@ -5,7 +5,7 @@ import "time"
 type SessionData struct {
 	UUID          string
 	CreatedAt     time.Time
-	CurrentStepId string
+	CurrentStepId *string
 	CurrentTrust  int
 	FinishedAt    *time.Time
 }

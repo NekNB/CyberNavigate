@@ -81,14 +81,14 @@ CREATE TABLE files (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     filename VARCHAR(30) NOT NULL UNIQUE, 
     is_safe BOOLEAN NOT NULL,
-    message_id UUID  REFERENCES messages(uuid),
+    message_id UUID  REFERENCES messages(uuid) ON DELETE CASCADE,
     size INTEGER NOT NULL,
     error VARCHAR(256)
 );
 CREATE TABLE answers (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     text VARCHAR(50) NOT NULL,
-    message_id UUID REFERENCES messages(uuid),
+    message_id UUID REFERENCES messages(uuid) ON DELETE CASCADE,
     add_trust INTEGER NOT NULL DEFAULT 0,
     error VARCHAR(256)
 );
@@ -97,11 +97,11 @@ CREATE TABLE answers (
 
 CREATE TABLE steps (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    previous_step UUID REFERENCES steps(uuid),
-    previous_answer UUID REFERENCES answers(uuid),
+    previous_step UUID REFERENCES steps(uuid) ON DELETE CASCADE,
+    previous_answer UUID REFERENCES answers(uuid) ON DELETE CASCADE,
    
-    min_trust INT,
-    max_trust INT,
+    min_trust INT NOT NULL DEFAULT -100,
+    max_trust INT NOT NULL DEFAULT 100,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 
@@ -116,24 +116,24 @@ CREATE TABLE scenarios (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     title VARCHAR(50) NOT NULL UNIQUE,
     description VARCHAR(200) NOT NULL,
-    difficulty VARCHAR(10) NOT NULL REFERENCES difficulty(level),
-    first_step UUID UNIQUE REFERENCES steps(uuid),
+    difficulty VARCHAR(10) NOT NULL REFERENCES difficulty(level) ON DELETE CASCADE,
+    first_step UUID UNIQUE REFERENCES steps(uuid) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-ALTER TABLE steps ADD COLUMN scenario_id UUID NOT NULL REFERENCES scenarios(uuid);
+ALTER TABLE steps ADD COLUMN scenario_id UUID NOT NULL REFERENCES scenarios(uuid) ON DELETE CASCADE;
 
 CREATE TABLE article_ids_to_scenario_id (
     article_id UUID PRIMARY KEY,
-    scenario_id UUID NOT NULL REFERENCES scenarios(uuid)
+    scenario_id UUID NOT NULL REFERENCES scenarios(uuid ) ON DELETE CASCADE
 );
 
 
 CREATE TABLE actions (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    step_id UUID REFERENCES steps(uuid),
-    type VARCHAR(10) NOT NULL REFERENCES action_type(name),
-    message_id UUID NOT NULL REFERENCES messages(uuid),
+    step_id UUID REFERENCES steps(uuid) ON DELETE CASCADE,
+    type VARCHAR(10) NOT NULL REFERENCES action_type(name) ON DELETE CASCADE,
+    message_id UUID NOT NULL REFERENCES messages(uuid) ON DELETE CASCADE,
     delay INTEGER NOT NULL DEFAULT 0
 );
 
@@ -141,27 +141,25 @@ CREATE TABLE actions (
 
 
 
-
-
 CREATE TABLE sessions (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    user_id UUID UNIQUE NOT NULL,
+    user_id UUID NOT NULL,
     current_trust INTEGER CHECK (current_trust BETWEEN -100 AND 100) DEFAULT 0,
-    current_step UUID NOT NULL REFERENCES steps(uuid),
+    current_step UUID REFERENCES steps(uuid) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     finished_at TIMESTAMP WITH TIME ZONE
 );
 
 CREATE TABLE errors_to_session (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    session_id UUID REFERENCES sessions(uuid),
+    session_id UUID REFERENCES sessions(uuid) ON DELETE CASCADE,
     error VARCHAR(256) NOT NULL
 );
 CREATE TABLE trusts (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    trust INTEGER CHECK (trust BETWEEN -100 AND 100),
-    session_id UUID NOT NULL REFERENCES sessions(uuid),
-    noted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    trust INTEGER NOT NULL CHECK (trust BETWEEN -100 AND 100),
+    session_id UUID NOT NULL REFERENCES sessions(uuid) ON DELETE CASCADE,
+    noted_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 
@@ -207,3 +205,12 @@ INSERT INTO difficulty (level) VALUES
 INSERT INTO action_type (name) VALUES 
     ('message'),
     ('sms');
+
+-- =============================================
+-- 8. INDEX
+-- =============================================
+
+-- Гарантируем, что у пользователя может быть только одна активная сессия
+CREATE UNIQUE INDEX idx_sessions_active_user 
+ON sessions (user_id) 
+WHERE finished_at IS NULL;

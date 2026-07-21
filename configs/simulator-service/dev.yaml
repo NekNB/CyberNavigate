@@ -1,4 +1,4 @@
-env: "local" # dev, prod
+env: "dev" # dev, prod
 
 http:
   port: 8000

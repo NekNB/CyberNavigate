@@ -15,10 +15,12 @@ import (
 var _ http.SimulatorServiceInterface = (*simulatorService)(nil)
 
 type SimulatorDataProvider interface {
-	CreateSession(userId, stepId string) error
-	GetSession(userId string) (*models.SessionData, error)
-	SetCurrentStep(sessionId, stepId string) error
+	CreateSession(userId, stepId string) (string, error)
+	GetCurrentSession(userId string) (*models.SessionData, error)
+	GetSessionBySessionId(sessionId string) (*models.SessionData, error)
+	SetCurrentStep(sessionId string, stepId *string) error
 	SetSessionError(sessionId, error string) error
+	SaveBeginTrustLevel(sessionId string) error
 	MarkSessionAsFinished(sessionId string) error
 
 	CreateScenario(title, description, difficulty string) (string, error)
@@ -37,8 +39,8 @@ type SimulatorDataProvider interface {
 	GetStep(stepId string) (*models.StepData, error)
 	MatchActionToStep(actionIds *[]string, StepId string) error
 	DeleteAllMatchActionToStep(stepId string) error
-	GetNextStepsByStepId(currentStepId string) (*[]string, error)
-	GetNextStepsByAnswerId(answerId string) (*[]string, error)
+	GetNextStepByStepId(currentStepId string, currentTrust int) (*string, error)
+	GetNextStepByAnswerId(answerId string, currentTrust int) (*string, error)
 
 	CreateAction(actionType, messageId string, delay int) (string, error)
 	EditAction(actionId, actionType, messageId string, delay *int) error
@@ -56,6 +58,7 @@ type SimulatorDataProvider interface {
 	EditAnswer(answerId string, errorText, text *string, addTrust *int) error
 	GetAnswerById(answerId string) (*models.AnswerData, error)
 	GetAnswersByMessageId(messageId string) (*[]models.AnswerData, error)
+	RegisterTrustLevel(sessionId string, addTrust int) error
 
 	CreateFile(filename string, isSafe bool, size int, fileError *string) (string, error)
 	EditFile(fileId string, filename, fileError *string, isSafe *bool, size *int) error
@@ -84,11 +87,26 @@ func (s *simulatorService) CreateSession(userId string, scenarioId string) error
 		return err
 	}
 
-	return s.repo.CreateSession(userId, scenario.FirstStep)
+	sessionId, err := s.repo.CreateSession(userId, scenario.FirstStep)
+	if err != nil {
+		s.log.Error(err)
+		return err
+	}
+
+	return s.repo.SaveBeginTrustLevel(sessionId)
 }
 func (s *simulatorService) GetResults(userId string) (*simulator.SimulationFinal, error) {
+	session, err := s.repo.GetCurrentSession(userId)
+	if err != nil {
+		s.log.Error(err)
+		return nil, err
+	}
+	if err := s.repo.MarkSessionAsFinished(session.UUID); err != nil {
+		s.log.Error(err)
+		return nil, err
+	}
 
-	session, err := s.repo.GetSession(userId)
+	session, err = s.repo.GetSessionBySessionId(session.UUID)
 	if err != nil {
 		s.log.Error(err)
 		return nil, err
@@ -281,37 +299,19 @@ func (s *simulatorService) EditStep(stepId string, editedStep *simulator.StepMet
 }
 func (s *simulatorService) GetStep(userId string) (*simulator.StepBase, error) {
 	// Получаем сессию с  SessionId, CurrentTrust и CurrentStepId
-	session, err := s.repo.GetSession(userId)
+	session, err := s.repo.GetCurrentSession(userId)
 	if err != nil {
 		s.log.Error(err)
 		return nil, err
+	} else if session.CurrentStepId == nil {
+		return nil, nil
 	}
 
 	// Получаем возможные Step
-	nextStepsId, err := s.repo.GetNextStepsByStepId(session.CurrentStepId)
+	nextStepId, err := s.repo.GetNextStepByStepId(*session.CurrentStepId, session.CurrentTrust)
 	if err != nil {
 		s.log.Error(err)
 		return nil, err
-	}
-	nextStepId := (*nextStepsId)[0]
-	if len(nextStepId) != 1 {
-		for _, stepId := range *nextStepsId {
-			stepMeta, err := s.GetStepMetaById(stepId)
-			if err != nil {
-				s.log.Error(err)
-				return nil, err
-			}
-			if stepMeta.MinTrust != nil && stepMeta.MaxTrust != nil {
-				if *stepMeta.MinTrust <= session.CurrentTrust && *stepMeta.MaxTrust >= session.CurrentTrust {
-					nextStepId = stepId
-					break
-				}
-			} else {
-				// Работает как заглушка и говорит об ошибке
-				nextStepId = stepId
-			}
-
-		}
 	}
 
 	if err := s.repo.SetCurrentStep(session.UUID, nextStepId); err != nil {
@@ -320,7 +320,7 @@ func (s *simulatorService) GetStep(userId string) (*simulator.StepBase, error) {
 	}
 
 	//  Возвращаем текущий Step
-	stepMeta, err := s.GetStepMetaById(session.CurrentStepId)
+	stepMeta, err := s.GetStepMetaById(*session.CurrentStepId)
 	if err != nil {
 		s.log.Error(err)
 		return nil, err
@@ -413,37 +413,17 @@ func (s *simulatorService) EditAnswer(answerId string, editedData *simulator.Ans
 }
 func (s *simulatorService) SendUserAnswer(userId, answerId string) error {
 	// Получаем SessionId
-	session, err := s.repo.GetSession(userId)
+	session, err := s.repo.GetCurrentSession(userId)
 	if err != nil {
 		s.log.Error(err)
 		return err
 	}
 
 	// Регистрируем nextStep
-	nextStepsId, err := s.repo.GetNextStepsByAnswerId(answerId)
+	nextStepId, err := s.repo.GetNextStepByAnswerId(answerId, session.CurrentTrust)
 	if err != nil {
 		s.log.Error(err)
 		return err
-	}
-	nextStepId := (*nextStepsId)[0]
-	if len(nextStepId) != 1 {
-		for _, stepId := range *nextStepsId {
-			stepMeta, err := s.GetStepMetaById(stepId)
-			if err != nil {
-				s.log.Error(err)
-				return err
-			}
-			if stepMeta.MinTrust != nil && stepMeta.MaxTrust != nil {
-				if *stepMeta.MinTrust <= session.CurrentTrust && *stepMeta.MaxTrust >= session.CurrentTrust {
-					nextStepId = stepId
-					break
-				}
-			} else {
-				// Работает как заглушка и говорит об ошибке
-				nextStepId = stepId
-			}
-
-		}
 	}
 
 	if err := s.repo.SetCurrentStep(session.UUID, nextStepId); err != nil {
@@ -454,6 +434,11 @@ func (s *simulatorService) SendUserAnswer(userId, answerId string) error {
 	// Получаем Answer и регистрируем ошибку если она есть
 	answerData, err := s.repo.GetAnswerById(answerId)
 	if err != nil {
+		s.log.Error(err)
+		return err
+	}
+	// Изменяем уровень trust
+	if err := s.repo.RegisterTrustLevel(session.UUID, answerData.AddTrust); err != nil {
 		s.log.Error(err)
 		return err
 	}
@@ -504,7 +489,7 @@ func (s *simulatorService) GetFileByFileId(fileId, userId string) (*simulator.Fi
 
 	// Если файл небезопасен - завершаем игру
 	if !file.IsSafe {
-		session, err := s.repo.GetSession(userId)
+		session, err := s.repo.GetCurrentSession(userId)
 		if err != nil {
 			s.log.Error(err)
 			return nil, err
@@ -516,7 +501,7 @@ func (s *simulatorService) GetFileByFileId(fileId, userId string) (*simulator.Fi
 	}
 
 	if file.Error != nil && *file.Error != "" {
-		session, err := s.repo.GetSession(userId)
+		session, err := s.repo.GetCurrentSession(userId)
 		if err != nil {
 			s.log.Error(err)
 			return nil, err
