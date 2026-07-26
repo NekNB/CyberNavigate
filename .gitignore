@@ -6,6 +6,8 @@ protos/go.sum
 package-lock.json
 **/.vscode/**
 
-
+**/.vscode/**
 *.pem
 *.srl
+
+**/node_modules/**

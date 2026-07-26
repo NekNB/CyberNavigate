@@ -40,20 +40,21 @@ func AuthorizationMiddleware(cfg *config.Config, log *logrus.Logger, specs *pars
 
 			tokenString := parts[1]
 			if tokenString == "" {
-				c.Next()
 				return handleError(c, fiber.ErrUnauthorized, "Token not found in cookie")
 			}
-			claims, err := token.ParseAccessToken(tokenString, publicKey)
-			if err != nil {
-				return handleError(c, fiber.ErrUnauthorized, "Invalid token claims")
-			}
 
-			// Добавляем к запросу заголовок с Id
-			c.Request().Header.Add("X-User-Id", claims.ID)
+			if policy.JWT {
+				claims, err := token.ParseAccessToken(tokenString, publicKey)
+				if err != nil {
+					return handleError(c, fiber.ErrUnauthorized, "Invalid token claims")
+				}
+				// Добавляем к запросу заголовок с Id
+				c.Request().Header.Add("X-User-Id", claims.ID)
 
-			if policy.Permission == "admin" {
-				if !claims.IsAdmin {
-					return handleError(c, fiber.ErrForbidden, "access denied")
+				if policy.Permission == "admin" {
+					if !claims.IsAdmin {
+						return handleError(c, fiber.ErrForbidden, "access denied")
+					}
 				}
 			}
 		}
