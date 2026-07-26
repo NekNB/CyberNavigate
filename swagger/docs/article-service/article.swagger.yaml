@@ -73,6 +73,7 @@ paths:
   /articles:
     post:
       x-auth:
+        jwt: true
         public: false
         permission: admin
       tags:
@@ -103,6 +104,7 @@ paths:
 
     get:
       x-auth:
+        jwt: false
         public: true
         permission: user
       tags:
@@ -122,6 +124,7 @@ paths:
   /articles/{articleId}:
     patch:
       x-auth:
+        jwt: true
         public: false
         permission: admin
       tags:
@@ -163,6 +166,7 @@ paths:
 
     get:
       x-auth:
+        jwt: false
         public: true
         permission: user
       tags:
@@ -190,6 +194,7 @@ paths:
   /articles/{articleId}/text:
     post:
       x-auth:
+        jwt: true
         public: false
         permission: admin
       tags:
@@ -221,6 +226,7 @@ paths:
 
     put:
       x-auth:
+        jwt: true
         public: false
         permission: admin
       tags:
@@ -255,6 +261,7 @@ paths:
 
     get:
       x-auth:
+        jwt: false
         public: true
         permission: user
       tags:

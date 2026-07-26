@@ -147,6 +147,7 @@ paths:
   /auth/login:
     post:
       x-auth:
+        jwt: false
         public: true
         permission: user
       tags:
@@ -188,6 +189,7 @@ paths:
   /auth/refresh:
     put:
       x-auth:
+        jwt: false
         public: false
         permission: user
       tags:
@@ -220,6 +222,7 @@ paths:
   /auth/logout:
     delete:
       x-auth:
+        jwt: true
         public: false
         permission: user
       tags:
@@ -240,6 +243,7 @@ paths:
   /users/me:
     get:
       x-auth:
+        jwt: true
         public: false
         permission: user
       tags:
@@ -269,6 +273,7 @@ paths:
   /users:
     get:
       x-auth:
+        jwt: true
         public: false
         permission: admin
       tags:
@@ -300,6 +305,7 @@ paths:
 
     post:
       x-auth:
+        jwt: false
         public: true
         permission: user
       tags:

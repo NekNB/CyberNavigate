@@ -58,7 +58,6 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 	}
 
 	// 2. Вывести политики по сервисам
-	fmt.Println("\n=== POLICIES BY SERVICE ===")
 	specs.PrintPoliciesByService()
 
 	app := fiber.New(fiber.Config{
@@ -119,7 +118,6 @@ func (s *Server) HTTPStart() {
 
 	if err := s.app.Listen(socket); err != nil {
 		s.log.Error(err)
-
 		panic(err)
 	}
 }
@@ -133,11 +131,13 @@ func (s *Server) HTTPSStart() {
 	)
 	if err != nil {
 		s.log.Error(err)
-
 		panic(err)
 	}
 
-	panic(s.app.Listener(ln))
+	if err := s.app.Listener(ln); err != nil {
+		s.log.Error(err)
+		panic(err)
+	}
 }
 
 func (s *Server) Stop() error {
