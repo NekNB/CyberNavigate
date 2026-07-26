@@ -104,7 +104,7 @@ paths:
 
     get:
       x-auth:
-        jwt: true
+        jwt: false
         public: true
         permission: user
       tags:
@@ -166,7 +166,7 @@ paths:
 
     get:
       x-auth:
-        jwt: true
+        jwt: false
         public: true
         permission: user
       tags:
@@ -261,7 +261,7 @@ paths:
 
     get:
       x-auth:
-        jwt: true
+        jwt: false
         public: true
         permission: user
       tags:

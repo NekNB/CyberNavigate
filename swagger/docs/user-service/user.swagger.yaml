@@ -147,7 +147,7 @@ paths:
   /auth/login:
     post:
       x-auth:
-        jwt: true
+        jwt: false
         public: true
         permission: user
       tags:
@@ -305,7 +305,7 @@ paths:
 
     post:
       x-auth:
-        jwt: true
+        jwt: false
         public: true
         permission: user
       tags:
