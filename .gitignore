@@ -7,3 +7,5 @@ protos/go.sum
 **/.vscode/**
 *.pem
 *.srl
+
+**/node_modules/**
