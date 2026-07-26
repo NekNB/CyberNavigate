@@ -3,7 +3,7 @@ module github.com/NekNB/CyberNavigate/backend/simulator-service
 go 1.26.2
 
 require (
-	github.com/NekNB/CyberNavigate/swagger v0.0.0-20260716200040-d5cd4be76bfc
+	github.com/NekNB/CyberNavigate/swagger v0.0.0-20260726165358-8ee64d6f4184
 	github.com/gofiber/fiber/v3 v3.2.0
 	github.com/google/uuid v1.6.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0

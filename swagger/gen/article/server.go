@@ -47,8 +47,6 @@ type HandlerMiddlewareFunc func(c fiber.Ctx, next fiber.Handler) error
 // GetArticles operation middleware
 func (siw *ServerInterfaceWrapper) GetArticles(c fiber.Ctx) error {
 
-	c.Context().SetUserValue((BearerAuthScopes), []string{})
-
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.GetArticles(c)
 	}
@@ -66,8 +64,6 @@ func (siw *ServerInterfaceWrapper) GetArticles(c fiber.Ctx) error {
 
 // PostArticles operation middleware
 func (siw *ServerInterfaceWrapper) PostArticles(c fiber.Ctx) error {
-
-	c.Context().SetUserValue((BearerAuthScopes), []string{})
 
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.PostArticles(c)
@@ -98,8 +94,6 @@ func (siw *ServerInterfaceWrapper) GetArticleById(c fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter articleId: %w", err).Error())
 	}
 
-	c.Context().SetUserValue((BearerAuthScopes), []string{})
-
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.GetArticleById(c, articleId)
 	}
@@ -128,8 +122,6 @@ func (siw *ServerInterfaceWrapper) PatchArticleById(c fiber.Ctx) error {
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter articleId: %w", err).Error())
 	}
-
-	c.Context().SetUserValue((BearerAuthScopes), []string{})
 
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.PatchArticleById(c, articleId)
@@ -160,8 +152,6 @@ func (siw *ServerInterfaceWrapper) GetArticleTextById(c fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter articleId: %w", err).Error())
 	}
 
-	c.Context().SetUserValue((BearerAuthScopes), []string{})
-
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.GetArticleTextById(c, articleId)
 	}
@@ -191,8 +181,6 @@ func (siw *ServerInterfaceWrapper) PostArticleTextById(c fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter articleId: %w", err).Error())
 	}
 
-	c.Context().SetUserValue((BearerAuthScopes), []string{})
-
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.PostArticleTextById(c, articleId)
 	}
@@ -221,8 +209,6 @@ func (siw *ServerInterfaceWrapper) PutArticleTextById(c fiber.Ctx) error {
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter articleId: %w", err).Error())
 	}
-
-	c.Context().SetUserValue((BearerAuthScopes), []string{})
 
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.PutArticleTextById(c, articleId)

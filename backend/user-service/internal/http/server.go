@@ -147,7 +147,7 @@ func (a *APIServer) Login(c fiber.Ctx) error {
 		MaxAge:   a.cfg.Tokens.Access.Expiration,
 		HTTPOnly: true,
 		Secure:   true,
-		SameSite: "Strict",
+		SameSite: "Lax",
 		Path:     "/",
 	})
 	c.Cookie(&fiber.Cookie{
@@ -156,7 +156,7 @@ func (a *APIServer) Login(c fiber.Ctx) error {
 		MaxAge:   a.cfg.Tokens.Refresh.Expiration,
 		HTTPOnly: true,
 		Secure:   true,
-		SameSite: "Strict",
+		SameSite: "Lax",
 		Path:     "/",
 	})
 

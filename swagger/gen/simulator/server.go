@@ -85,8 +85,6 @@ type HandlerMiddlewareFunc func(c fiber.Ctx, next fiber.Handler) error
 // CreateAction operation middleware
 func (siw *ServerInterfaceWrapper) CreateAction(c fiber.Ctx) error {
 
-	c.Locals(BearerAuthScopes, []string{})
-
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.CreateAction(c)
 	}
@@ -107,8 +105,6 @@ func (siw *ServerInterfaceWrapper) SendUserAnswer(c fiber.Ctx) error {
 
 	var err error
 	_ = err
-
-	c.Locals(BearerAuthScopes, []string{})
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params SendUserAnswerParams
@@ -164,8 +160,6 @@ func (siw *ServerInterfaceWrapper) EditAction(c fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter actionId: %w", err).Error())
 	}
 
-	c.Locals(BearerAuthScopes, []string{})
-
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.EditAction(c, actionId)
 	}
@@ -183,8 +177,6 @@ func (siw *ServerInterfaceWrapper) EditAction(c fiber.Ctx) error {
 
 // CreateAnswer operation middleware
 func (siw *ServerInterfaceWrapper) CreateAnswer(c fiber.Ctx) error {
-
-	c.Locals(BearerAuthScopes, []string{})
 
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.CreateAnswer(c)
@@ -215,8 +207,6 @@ func (siw *ServerInterfaceWrapper) EditAnswer(c fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter answerId: %w", err).Error())
 	}
 
-	c.Locals(BearerAuthScopes, []string{})
-
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.EditAnswer(c, answerId)
 	}
@@ -234,8 +224,6 @@ func (siw *ServerInterfaceWrapper) EditAnswer(c fiber.Ctx) error {
 
 // CreateFile operation middleware
 func (siw *ServerInterfaceWrapper) CreateFile(c fiber.Ctx) error {
-
-	c.Locals(BearerAuthScopes, []string{})
 
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.CreateFile(c)
@@ -265,8 +253,6 @@ func (siw *ServerInterfaceWrapper) GetFileByFileId(c fiber.Ctx) error {
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter fileId: %w", err).Error())
 	}
-
-	c.Locals(BearerAuthScopes, []string{})
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetFileByFileIdParams
@@ -322,8 +308,6 @@ func (siw *ServerInterfaceWrapper) EditFile(c fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter fileId: %w", err).Error())
 	}
 
-	c.Locals(BearerAuthScopes, []string{})
-
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.EditFile(c, fileId)
 	}
@@ -341,8 +325,6 @@ func (siw *ServerInterfaceWrapper) EditFile(c fiber.Ctx) error {
 
 // CreateMessage operation middleware
 func (siw *ServerInterfaceWrapper) CreateMessage(c fiber.Ctx) error {
-
-	c.Locals(BearerAuthScopes, []string{})
 
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.CreateMessage(c)
@@ -372,8 +354,6 @@ func (siw *ServerInterfaceWrapper) EditMessage(c fiber.Ctx) error {
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter messageId: %w", err).Error())
 	}
-
-	c.Locals(BearerAuthScopes, []string{})
 
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.EditMessage(c, messageId)
@@ -410,8 +390,6 @@ func (siw *ServerInterfaceWrapper) GetAllScenarios(c fiber.Ctx) error {
 
 // CreateScenario operation middleware
 func (siw *ServerInterfaceWrapper) CreateScenario(c fiber.Ctx) error {
-
-	c.Locals(BearerAuthScopes, []string{})
 
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.CreateScenario(c)
@@ -471,8 +449,6 @@ func (siw *ServerInterfaceWrapper) EditScenario(c fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter scenarioId: %w", err).Error())
 	}
 
-	c.Locals(BearerAuthScopes, []string{})
-
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.EditScenario(c, scenarioId)
 	}
@@ -493,8 +469,6 @@ func (siw *ServerInterfaceWrapper) GetResults(c fiber.Ctx) error {
 
 	var err error
 	_ = err
-
-	c.Locals(BearerAuthScopes, []string{})
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetResultsParams
@@ -542,8 +516,6 @@ func (siw *ServerInterfaceWrapper) CreateSimulatorSession(c fiber.Ctx) error {
 	var err error
 	_ = err
 
-	c.Locals(BearerAuthScopes, []string{})
-
 	// Parameter object where we will unmarshal all parameters from the context
 	var params CreateSimulatorSessionParams
 
@@ -590,8 +562,6 @@ func (siw *ServerInterfaceWrapper) GetStep(c fiber.Ctx) error {
 	var err error
 	_ = err
 
-	c.Locals(BearerAuthScopes, []string{})
-
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetStepParams
 
@@ -635,8 +605,6 @@ func (siw *ServerInterfaceWrapper) GetStep(c fiber.Ctx) error {
 // CreateStep operation middleware
 func (siw *ServerInterfaceWrapper) CreateStep(c fiber.Ctx) error {
 
-	c.Locals(BearerAuthScopes, []string{})
-
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.CreateStep(c)
 	}
@@ -665,8 +633,6 @@ func (siw *ServerInterfaceWrapper) EditStep(c fiber.Ctx) error {
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter stepId: %w", err).Error())
 	}
-
-	c.Locals(BearerAuthScopes, []string{})
 
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.EditStep(c, stepId)

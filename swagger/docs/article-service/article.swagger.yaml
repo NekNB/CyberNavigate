@@ -13,11 +13,6 @@ servers:
     description: Internal Docker API Gateway Server
 
 components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
   schemas:
     ArticleMetaData:
       type: object
@@ -66,8 +61,7 @@ components:
                 type: string
             example:
               message: "Article With ArticleText Already Exists"
-security:
-  - BearerAuth: []
+security: []
 
 paths:
   /articles:

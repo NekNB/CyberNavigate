@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"crypto/rsa"
-	"strings"
 
 	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/config"
 	"github.com/NekNB/CyberNavigate/backend/gateway-server/internal/lib/parser"
@@ -26,25 +25,13 @@ func AuthorizationMiddleware(cfg *config.Config, log *logrus.Logger, specs *pars
 		log.Printf("Service: %s, Public: %v, Permission: %s",
 			serviceName, policy.Public, policy.Permission)
 		if !policy.Public {
-			// 1. Получаем токен из cookie
-			authHeader := c.Get("Authorization")
-			if authHeader == "" {
-				return handleError(c, fiber.ErrUnauthorized, "Invalid token claims")
-			}
-
-			// Проверяем формат "Bearer <token>"
-			parts := strings.Split(authHeader, " ")
-			if len(parts) != 2 || parts[0] != "Bearer" {
-				return handleError(c, fiber.ErrUnauthorized, "Invalid authorization header format. Use 'Bearer <token>'")
-			}
-
-			tokenString := parts[1]
-			if tokenString == "" {
-				return handleError(c, fiber.ErrUnauthorized, "Token not found in cookie")
-			}
-
 			if policy.JWT {
-				claims, err := token.ParseAccessToken(tokenString, publicKey)
+				// 1. Получаем токен из cookie
+				accessToken := c.Cookies("accessToken")
+				if accessToken == "" {
+					return handleError(c, fiber.ErrUnauthorized, "Access token not found")
+				}
+				claims, err := token.ParseAccessToken(accessToken, publicKey)
 				if err != nil {
 					return handleError(c, fiber.ErrUnauthorized, "Invalid token claims")
 				}
@@ -58,7 +45,6 @@ func AuthorizationMiddleware(cfg *config.Config, log *logrus.Logger, specs *pars
 				}
 			}
 		}
-
 		return c.Next()
 	}
 }
