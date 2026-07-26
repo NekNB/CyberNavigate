@@ -41,8 +41,6 @@ type HandlerMiddlewareFunc func(c fiber.Ctx, next fiber.Handler) error
 // Login operation middleware
 func (siw *ServerInterfaceWrapper) Login(c fiber.Ctx) error {
 
-	c.Locals(BearerAuthScopes, []string{})
-
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.Login(c)
 	}
@@ -60,8 +58,6 @@ func (siw *ServerInterfaceWrapper) Login(c fiber.Ctx) error {
 
 // Logout operation middleware
 func (siw *ServerInterfaceWrapper) Logout(c fiber.Ctx) error {
-
-	c.Locals(BearerAuthScopes, []string{})
 
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.Logout(c)
@@ -81,8 +77,6 @@ func (siw *ServerInterfaceWrapper) Logout(c fiber.Ctx) error {
 // RefreshToken operation middleware
 func (siw *ServerInterfaceWrapper) RefreshToken(c fiber.Ctx) error {
 
-	c.Locals(BearerAuthScopes, []string{})
-
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.RefreshToken(c)
 	}
@@ -100,8 +94,6 @@ func (siw *ServerInterfaceWrapper) RefreshToken(c fiber.Ctx) error {
 
 // GetAllUsers operation middleware
 func (siw *ServerInterfaceWrapper) GetAllUsers(c fiber.Ctx) error {
-
-	c.Locals(BearerAuthScopes, []string{})
 
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.GetAllUsers(c)
@@ -121,8 +113,6 @@ func (siw *ServerInterfaceWrapper) GetAllUsers(c fiber.Ctx) error {
 // RegisterNewUser operation middleware
 func (siw *ServerInterfaceWrapper) RegisterNewUser(c fiber.Ctx) error {
 
-	c.Locals(BearerAuthScopes, []string{})
-
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.RegisterNewUser(c)
 	}
@@ -140,8 +130,6 @@ func (siw *ServerInterfaceWrapper) RegisterNewUser(c fiber.Ctx) error {
 
 // GetCurrentUser operation middleware
 func (siw *ServerInterfaceWrapper) GetCurrentUser(c fiber.Ctx) error {
-
-	c.Locals(BearerAuthScopes, []string{})
 
 	handler := func(c fiber.Ctx) error {
 		return siw.Handler.GetCurrentUser(c)

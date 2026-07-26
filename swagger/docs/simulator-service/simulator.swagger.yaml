@@ -15,8 +15,7 @@ servers:
     description: Local Service
   - url: http://cyber-navigate_gateway-server/api/v1
     description: Internal Docker API Gateway Server
-security:
-  - BearerAuth: []
+security: []
 
 tags:
   - name: Answers
@@ -28,12 +27,6 @@ tags:
   - name: Sessions
 
 components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-
   responses:
     ForbiddenResponse:
       description: Forbidden - You don't have permission to access this resource

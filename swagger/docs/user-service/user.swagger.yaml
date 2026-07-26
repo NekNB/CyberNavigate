@@ -24,12 +24,9 @@ tags:
   - name: Admin
     description: Методы работы с пользователем для администраторов
 
+security: []
+
 components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
   responses:
     BadRequestResponse:
       description: Bad Request - Invalid request parameters or body
@@ -139,9 +136,6 @@ components:
       properties:
         message:
           type: string
-
-security:
-  - BearerAuth: []
 
 paths:
   /auth/login:

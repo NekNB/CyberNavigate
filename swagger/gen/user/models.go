@@ -9,10 +9,6 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-const (
-	BearerAuthScopes bearerAuthContextKey = "BearerAuth.Scopes"
-)
-
 // ServerUrlInternalDockerAPIGatewayServer defines the Server URL for Internal Docker API Gateway Server
 const ServerUrlInternalDockerAPIGatewayServer = "http://cyber-navigate_gateway-server/api/v1"
 
@@ -66,9 +62,6 @@ type UnauthorizedResponse = ErrorResponse
 
 // UnprocessableEntityResponse defines model for UnprocessableEntityResponse.
 type UnprocessableEntityResponse = ErrorResponse
-
-// bearerAuthContextKey is the context key for BearerAuth security scheme
-type bearerAuthContextKey string
 
 // LoginJSONRequestBody defines body for Login for application/json ContentType.
 type LoginJSONRequestBody = UserRequest
