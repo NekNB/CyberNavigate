@@ -3,7 +3,7 @@ module github.com/NekNB/CyberNavigate/backend/user-service
 go 1.26.2
 
 require (
-	github.com/NekNB/CyberNavigate/swagger v0.0.0-20260514194000-4fb2f559eb44
+	github.com/NekNB/CyberNavigate/swagger v0.0.0-20260726165358-8ee64d6f4184
 	github.com/gofiber/fiber/v3 v3.2.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/lib/pq v1.12.3
