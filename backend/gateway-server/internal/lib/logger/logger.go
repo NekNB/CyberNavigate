@@ -41,10 +41,28 @@ func Init(runMode string) (*logrus.Logger, error) {
 		)
 	case "dev":
 		log.SetLevel(logrus.DebugLevel)
-		log.SetFormatter(&logrus.JSONFormatter{})
+		log.SetFormatter(&logrus.JSONFormatter{
+			TimestampFormat: "2006-01-02 15:04:05",
+			CallerPrettyfier: func(f *runtime.Frame) (string, string) {
+				// Обрезаем путь до корня проекта
+				file := f.File
+				if idx := strings.Index(file, projectRoot); idx != -1 {
+					file = file[idx+len(projectRoot):]
+				}
+				return "", fmt.Sprintf(" => %s:%d =>", file, f.Line)
+			}})
 	case "prod":
 		log.SetLevel(logrus.InfoLevel)
-		log.SetFormatter(&logrus.JSONFormatter{})
+		log.SetFormatter(&logrus.JSONFormatter{
+			TimestampFormat: "2006-01-02 15:04:05",
+			CallerPrettyfier: func(f *runtime.Frame) (string, string) {
+				// Обрезаем путь до корня проекта
+				file := f.File
+				if idx := strings.Index(file, projectRoot); idx != -1 {
+					file = file[idx+len(projectRoot):]
+				}
+				return "", fmt.Sprintf(" => %s:%d =>", file, f.Line)
+			}})
 	default:
 		return nil, fmt.Errorf("Not known logLevel: %s", runMode)
 	}

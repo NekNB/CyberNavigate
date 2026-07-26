@@ -25,6 +25,7 @@ func ParseAccessToken(tokenString string, publicKey *rsa.PublicKey) (*AccessClai
 		}
 		return publicKey, nil
 	})
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse token: %w", err)
 	}

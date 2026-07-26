@@ -12,6 +12,7 @@ import (
 type Policy struct {
 	Public     bool
 	Permission string
+	JWT        bool
 }
 
 // Node представляет узел в дереве путей
@@ -143,6 +144,7 @@ func extractPolicy(operation *openapi3.Operation) (*Policy, error) {
 	policy := &Policy{
 		Public:     false,
 		Permission: "user",
+		JWT:        true,
 	}
 
 	// Извлекаем public
@@ -159,6 +161,12 @@ func extractPolicy(operation *openapi3.Operation) (*Policy, error) {
 		}
 	}
 
+	// Извлекаем jwt
+	if jwtRaw, exists := xAuthMap["jwt"]; exists {
+		if jwt, ok := jwtRaw.(bool); ok {
+			policy.JWT = jwt
+		}
+	}
 	return policy, nil
 }
 
