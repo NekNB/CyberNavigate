@@ -351,6 +351,7 @@ paths:
   /simulator/scenarios:
     get:
       x-auth:
+        jwt: true
         public: true
         permission: user
       security: []
@@ -370,6 +371,7 @@ paths:
 
     post:
       x-auth:
+        jwt: true
         public: false
         permission: admin
       tags:
@@ -406,6 +408,7 @@ paths:
   /simulator/scenarios/{scenarioId}:
     get:
       x-auth:
+        jwt: true
         public: true
         permission: user
       tags:
@@ -432,6 +435,7 @@ paths:
 
     patch:
       x-auth:
+        jwt: true
         public: false
         permission: admin
 
@@ -479,6 +483,7 @@ paths:
   /simulator/step:
     get:
       x-auth:
+        jwt: true
         public: false
         permission: user
       parameters:
@@ -506,6 +511,7 @@ paths:
 
     post:
       x-auth:
+        jwt: true
         public: false
         permission: admin
       tags:
@@ -541,6 +547,7 @@ paths:
   /simulator/step/{stepId}:
     patch:
       x-auth:
+        jwt: true
         public: false
         permission: admin
       parameters:
@@ -585,6 +592,7 @@ paths:
   /simulator/action:
     post:
       x-auth:
+        jwt: true
         public: false
         permission: admin
       tags: ["Action"]
@@ -618,6 +626,7 @@ paths:
   /simulator/action/{actionId}:
     patch:
       x-auth:
+        jwt: true
         public: false
         permission: admin
       tags:
@@ -658,6 +667,7 @@ paths:
   /simulator/action/answer:
     post:
       x-auth:
+        jwt: true
         public: false
         permission: user
       parameters:
@@ -701,6 +711,7 @@ paths:
   /simulator/files:
     post:
       x-auth:
+        jwt: true
         public: false
         permission: admin
       tags:
@@ -730,6 +741,7 @@ paths:
   /simulator/files/{fileId}:
     get:
       x-auth:
+        jwt: true
         public: false
         permission: user
       tags:
@@ -761,6 +773,7 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
     patch:
       x-auth:
+        jwt: true
         public: false
         permission: admin
       tags:
@@ -799,6 +812,7 @@ paths:
   /simulator/sessions:
     post:
       x-auth:
+        jwt: true
         public: false
         permission: user
       parameters:
@@ -834,6 +848,7 @@ paths:
           $ref: "#/components/responses/UnprocessableEntityResponse"
     delete:
       x-auth:
+        jwt: true
         public: false
         permission: user
       parameters:
@@ -870,6 +885,7 @@ paths:
   /simulator/messages:
     post:
       x-auth:
+        jwt: true
         public: false
         permission: admin
       tags:
@@ -911,6 +927,7 @@ paths:
   /simulator/messages/{messageId}:
     patch:
       x-auth:
+        jwt: true
         public: false
         permission: admin
       tags:
@@ -957,6 +974,7 @@ paths:
   /simulator/answers:
     post:
       x-auth:
+        jwt: true
         public: false
         permission: admin
       tags:
@@ -984,6 +1002,7 @@ paths:
   /simulator/answers/{answerId}:
     patch:
       x-auth:
+        jwt: true
         public: false
         permission: admin
       tags:
