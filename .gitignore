@@ -1,11 +1,13 @@
 *.env
 !*.tmp.env
 bin/*
-go.sum
-protos/go.sum
+
+
+**/.vscode/**
 
 **/.vscode/**
 *.pem
 *.srl
 
 **/node_modules/**
+**/dist/**

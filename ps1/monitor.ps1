@@ -1,6 +1,6 @@
 function Show-Status {
     Clear-Host
-    docker stack ps cyber-navigate
+    docker stack ps -f desired-state=running -f desired-state=ready cyber-navigate
     Write-Host ""
     Write-Host "R — обновить"
 		 Write-Host "Q — выйти"
