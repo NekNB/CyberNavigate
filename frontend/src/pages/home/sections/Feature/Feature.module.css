@@ -1,0 +1,104 @@
+.featuresText {
+  text-align: center;
+  max-width: 800px;
+  margin: 60px auto 40px;
+  font-size: 20px;
+  font-weight: bold;
+  line-height: 1.4;
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 50px;
+}
+
+.card {
+  flex: 1;
+  background-color: #03624c;
+  padding: 40px 25px;
+  border-radius: 15px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* justify-content: space-between; */
+  width: 100%;
+  /* min-height: 250px; */
+  transition: transform 0.3s ease;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.card:hover {
+  transform: translateY(-10px);
+  background-color: #125245;
+}
+
+.title {
+  display: grid;
+  place-items: center;
+  height: 60px;
+  text-transform: uppercase;
+  margin: 0;
+  color: #f1f7f7;
+  font-size: 18px;
+}
+
+.text {
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  line-height: 1.6;
+  height: 100%;
+  color: #ffffff;
+}
+
+.cardsButton {
+  text-align: center;
+  margin: 40px 0 80px;
+}
+
+.buttonMore {
+  display: inline-block;
+  padding: 15px 60px;
+  background-color: #0d4237;
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: 50px;
+  border: 1px solid #4ee2c0;
+  transition: all 0.3s ease;
+}
+
+.buttonMore:hover {
+  background-color: #4ee2c0;
+  color: #051a15;
+  box-shadow: 0 0 20px rgba(78, 226, 192, 0.4);
+}
+
+@media (max-width: 800px) {
+  .cardsGrid {
+    display: flex;
+    flex-direction: column;
+  }
+  .card {
+    padding: 0;
+    justify-content: space-around;
+  }
+  .text {
+    display: none;
+  }
+}
+
+@media (max-width: 650px) {
+  .title {
+    height: 60px;
+    text-transform: uppercase;
+  }
+}

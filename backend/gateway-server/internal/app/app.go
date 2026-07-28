@@ -65,16 +65,18 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 		ProxyHeader: fiber.HeaderXForwardedHost,
 	})
 	app.Use(recover.New())
-	app.Use(logger.New())
-	// 3. auth middleware
-	app.Use(middlewares.AuthorizationMiddleware(cfg, log, specs, publicKey))
-
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: []string{
 			"https://localhost:443",
 			"https://127.0.0.1:443",
+			"https://localhost:9443",
+			"https://127.0.0.1:9443",
 			"http://localhost:80",
 			"http://127.0.0.1:80",
+			"http://localhost:9080",
+			"http://127.0.0.1:9080",
+			"http://127.0.0.1:3777",
+			"http://localhost:3777",
 		},
 		AllowMethods: []string{
 			"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS",
@@ -84,6 +86,9 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 		},
 		AllowCredentials: true,
 	}))
+	app.Use(logger.New())
+	// 3. auth middleware
+	app.Use(middlewares.AuthorizationMiddleware(cfg, log, specs, publicKey))
 
 	proxy.Register(cfg, log, app.Name("GateWay"))
 

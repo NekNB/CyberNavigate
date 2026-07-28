@@ -72,8 +72,13 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 			"http://localhost:9000",
 			"http://localhost:8000",
 			"http://127.0.0.1:9000",
-			"http://127.0.0.1:8000",
 			"http://cyber-navigate_gateway-server:9000",
+			"http://127.0.0.1:3777",
+			"http://127.0.0.1:9080",
+		},
+		AllowOriginsFunc: func(origin string) bool {
+			fmt.Println(origin)
+			return true
 		},
 		AllowMethods: []string{
 			"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS",

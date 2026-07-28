@@ -227,9 +227,6 @@ paths:
       responses:
         "204":
           description: Успешный logout
-        "422":
-          description: Некорректный запрос
-          $ref: "#/components/responses/UnprocessableEntityResponse"
         "500":
           description: Ошибка обработки
           $ref: "#/components/responses/InternalServerErrorResponse"

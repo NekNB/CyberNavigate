@@ -8,7 +8,6 @@ COPY  /backend/gateway-server/internal ./internal
 
 
 RUN go mod tidy
-
 RUN go build  -o ./gateway-server ./cmd
 
 # final stage

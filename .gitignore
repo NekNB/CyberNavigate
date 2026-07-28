@@ -1,9 +1,8 @@
 *.env
 !*.tmp.env
 bin/*
-go.sum
-protos/go.sum
-package-lock.json
+
+
 **/.vscode/**
 
 **/.vscode/**
@@ -11,3 +10,4 @@ package-lock.json
 *.srl
 
 **/node_modules/**
+**/dist/**
