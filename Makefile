@@ -5,7 +5,7 @@
 ARGS = $(filter-out $@,$(MAKECMDGOALS))
 
 init:
-	pwsh -Command "Push-Location ./ps1; ./convert-env.ps1; ./create-keys.ps1; Pop-Location"
+	powershell -Command "Push-Location ./ps1; ./convert-env.ps1; ./create-keys.ps1; Pop-Location"
 
 
 run:
