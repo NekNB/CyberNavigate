@@ -2,12 +2,12 @@
 FROM golang:1.26.2-alpine3.22 AS builder
 
 WORKDIR /build
-COPY /backend/simulator-service/go.mod ./
+COPY /backend/simulator-service/go.sum /backend/simulator-service/go.mod ./
+RUN go mod download -x
+
+
 COPY /backend/simulator-service/cmd  ./cmd 
 COPY  /backend/simulator-service/internal ./internal
-
-
-RUN go mod tidy
 
 RUN go build  -o ./simulator-service ./cmd
 

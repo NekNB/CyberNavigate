@@ -441,6 +441,8 @@ func (p *PostgresStorage) GetStep(stepId string) (*models.StepData, error) {
 	var step models.StepData
 	var actionIds []uint8
 
+	var previousStep, previousAnswer sql.NullString
+
 	if err := p.db.QueryRow(`
 		SELECT 
 			s.uuid,
@@ -469,8 +471,8 @@ func (p *PostgresStorage) GetStep(stepId string) (*models.StepData, error) {
 			s.updated_at;
 	`, stepId).Scan(
 		&step.UUID,
-		&step.PreviousStep,
-		&step.PreviousAnswer,
+		&previousStep,
+		&previousAnswer,
 		&step.MinTrust,
 		&step.MaxTrust,
 		&step.ScenarioId,
@@ -488,6 +490,13 @@ func (p *PostgresStorage) GetStep(stepId string) (*models.StepData, error) {
 	if err := json.Unmarshal(actionIds, &step.ActionIds); err != nil {
 		p.log.Error(err)
 		return nil, err
+	}
+
+	if previousStep.Valid {
+		step.PreviousStep = &previousStep.String
+	}
+	if previousAnswer.Valid {
+		step.PreviousAnswer = &previousAnswer.String
 	}
 
 	return &step, nil

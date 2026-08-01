@@ -125,7 +125,7 @@ func (s *SessionService) RefreshAccessToken(refreshToken string) (*models.Tokens
 	if err != nil {
 		return nil, err
 	}
-	if user.UserId == "" || user.IsAdmin == false {
+	if user.UserId == "" {
 		err := &models.CustomError{Msg: fmt.Sprintf("Невалидные данные: %+v", user)}
 		s.log.Error(err)
 		return nil, err
