@@ -2,12 +2,13 @@
 FROM golang:1.26.2-alpine3.22 AS builder
 
 WORKDIR /build
-COPY /backend/user-service/go.mod ./
+COPY /backend/user-service/go.mod  /backend/user-service/go.sum ./
+RUN go mod download -x
+
 COPY /backend/user-service/cmd  ./cmd 
 COPY  /backend/user-service/internal ./internal
 
 
-RUN go mod tidy
 
 RUN go build  -o ./user-service ./cmd
 

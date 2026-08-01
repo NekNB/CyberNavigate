@@ -55,15 +55,17 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 		AllowOrigins: []string{
 			"http://localhost:9000",
 			"http://localhost:8000",
+			"http://127.0.0.1:3000",
 			"http://127.0.0.1:9000",
 			"http://127.0.0.1:8000",
+			"http://127.0.0.1:9080",
 			"http://cyber-navigate_gateway-server:9000",
 		},
 		AllowMethods: []string{
 			"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS",
 		},
 		AllowHeaders: []string{
-			"Origin", "Content-Type", "Accept", "Authorization", "Content-Encoding",
+			"X-User-Id", "Origin", "Content-Type", "Accept", "Authorization", "Content-Encoding",
 		},
 		AllowCredentials: true,
 	}))

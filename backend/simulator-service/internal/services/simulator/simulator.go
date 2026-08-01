@@ -610,17 +610,19 @@ func (s *simulatorService) GetStepMetaById(stepId string) (*simulator.StepMetaFu
 		return nil, err
 	}
 
-	var previosAnswerUUID *types.UUID
+	var previousAnswerUUID *types.UUID
 	if stepData.PreviousAnswer != nil {
-		if err := previosAnswerUUID.Scan(stepData.PreviousAnswer); err != nil {
+		previousAnswerUUID = &types.UUID{}
+		if err := previousAnswerUUID.Scan(*(stepData.PreviousAnswer)); err != nil {
 			s.log.Error(err)
 			return nil, err
 		}
 	}
 
-	var previosStepUUID *types.UUID
+	var previousStepUUID *types.UUID
 	if stepData.PreviousStep != nil {
-		if err := previosStepUUID.Scan(stepData.PreviousStep); err != nil {
+		previousStepUUID = &types.UUID{}
+		if err := previousStepUUID.Scan(*(stepData.PreviousStep)); err != nil {
 			s.log.Error(err)
 			return nil, err
 		}
@@ -646,8 +648,8 @@ func (s *simulatorService) GetStepMetaById(stepId string) (*simulator.StepMetaFu
 		Id:             stepUUID,
 		MaxTrust:       stepData.MaxTrust,
 		MinTrust:       stepData.MinTrust,
-		PreviousAnswer: previosAnswerUUID,
-		PreviousStep:   previosStepUUID,
+		PreviousAnswer: previousAnswerUUID,
+		PreviousStep:   previousStepUUID,
 		ScenarioId:     scenarioUUID,
 		Actions:        actions,
 	}, nil

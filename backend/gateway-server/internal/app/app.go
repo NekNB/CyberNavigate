@@ -77,6 +77,7 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 			"http://127.0.0.1:9080",
 			"http://127.0.0.1:3777",
 			"http://localhost:3777",
+			"http://127.0.0.1:3000",
 		},
 		AllowMethods: []string{
 			"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS",

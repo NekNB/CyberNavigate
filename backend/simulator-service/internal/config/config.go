@@ -2,7 +2,6 @@ package config
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"time"
 
@@ -83,5 +82,4 @@ func fetchConfigPath() string {
 // Получение паролей к базам данных из Env
 func fetchDatabasePasswords(cfg *Config) {
 	cfg.Storage.Postgres.Password = os.Getenv("POSTGRES_PASSWORD")
-	fmt.Println(os.Getenv("POSTGRES_PASSWORD"))
 }

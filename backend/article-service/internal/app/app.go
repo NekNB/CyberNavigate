@@ -55,6 +55,7 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 			"http://127.0.0.1:8000",
 			"http://cyber-navigate_gateway-server:80",
 			"http://cyber-navigate_gateway-server:443",
+			"http://127.0.0.1:3000",
 		},
 		AllowMethods: []string{
 			"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS",

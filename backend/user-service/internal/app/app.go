@@ -28,6 +28,7 @@ import (
 type Server struct {
 	cfg    *config.Config
 	app    *fiber.App
+	log    *logrus.Logger
 	TLSCfg *tls.Config
 }
 
@@ -75,6 +76,7 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 			"http://cyber-navigate_gateway-server:9000",
 			"http://127.0.0.1:3777",
 			"http://127.0.0.1:9080",
+			"http://127.0.0.1:3000",
 		},
 		AllowOriginsFunc: func(origin string) bool {
 			fmt.Println(origin)
@@ -110,10 +112,10 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 		return c.Status(fiber.StatusPermanentRedirect).Redirect().To("/swagger")
 	})
 
-	return &Server{app: app, cfg: cfg, TLSCfg: TLSCfg}, nil
+	return &Server{log: log, app: app, cfg: cfg, TLSCfg: TLSCfg}, nil
 }
 
-func (s *Server) Start() {
+func (s *Server) HTTPSStart() {
 	ln, err := tls.Listen(
 		"tcp",
 		fmt.Sprintf("0.0.0.0:%d", s.cfg.HTTP.Port),
@@ -124,6 +126,17 @@ func (s *Server) Start() {
 	}
 
 	panic(s.app.Listener(ln))
+}
+
+func (s *Server) HTTPStart() {
+	s.log.Debug("Start")
+	if err := s.app.Listen(fmt.Sprintf("127.0.0.1:%d", s.cfg.HTTP.Port), fiber.ListenConfig{
+		ShutdownTimeout: s.cfg.HTTP.Timeout,
+	}); err != nil {
+		s.log.Error(err)
+
+		panic(err)
+	}
 }
 
 func (s *Server) Stop() error {
