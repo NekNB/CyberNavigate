@@ -40,7 +40,7 @@ const Feature: FC = () => {
         </div>
 
         <div className={styles.cardsButton}>
-          <a href="#" className={styles.buttonMore}>
+          <a href="/articles" className={styles.buttonMore}>
             Больше наших статей
           </a>
         </div>

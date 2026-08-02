@@ -1,111 +1,229 @@
-* {
-  box-sizing: border-box;
-}
-
-html {
-  overflow-x: hidden;
-}
-
-h1,
-h2,
-h3 {
-  margin: 0;
-  color: #f1f7f7;
-  font-size: 36px;
-}
-
-h3 {
-  font-size: 18px;
-}
-
-p {
-  font-size: 18px;
-  color: #aacbc4;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
+/* 1. ОБЩИЕ СТИЛИ ШАПКИ */
 
 .header {
-  background-color: #03624c;
-  padding: 0;
+  width: 100%;
   height: 80px;
+  background-color: #03624c;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  padding-right: 32px;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 50;
+}
 
-  max-width: 100%;
-  margin: 0;
-  padding: 0;
+.leftSection {
+  display: flex;
+  align-items: center;
+  height: 100%;
 }
 
 .logo {
   display: flex;
   align-items: center;
   justify-content: center;
-
-  background-color: #021b1a;
+  width: 280px;
   height: 100%;
-
+  background-color: #021b1a;
+  flex-shrink: 0;
   text-decoration: none;
 }
 
 .logo img {
-  height: 75px;
+  height: 65px;
   width: auto;
   display: block;
 }
 
-.nav {
-  flex: 1;
+.rightSection {
   display: flex;
-  justify-content: space-around;
   align-items: center;
 }
 
-.headerLink {
-  color: #f1f7f7;
-  text-decoration: none;
-  font-weight: bold;
-  text-transform: uppercase;
-  font-size: 14px;
-}
-
-.headerLink:hover {
-  color: #4ee2c0;
-}
-
 .profile {
-  height: 80%;
+  height: 38px;
   width: auto;
-  padding-right: 10px;
+  cursor: pointer;
+  display: block;
 }
 
-@media (max-width: 650px) {
-  .header {
-    flex-direction: column;
-    background-color: #021b1a;
-    padding-bottom: 2%;
+/* 2.ТОЛЬКО ДЕСКТОП (экран от 769px) */
+@media (min-width: 769px) {
+  .leftSection {
+    flex-grow: 1 !important;
+    display: flex !important;
+    align-items: center !important;
   }
 
-  .nav {
-    width: 100%;
+  .logo {
+    width: 300px !important;
+    min-width: 300px !important;
+    height: 100% !important;
+    background-color: #021b1a !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+  }
 
-    justify-content: space-between;
+  .navMainLinks {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-grow: 1 !important;
+    margin: 0 !important;
+    gap: 60px !important;
+  }
+
+  .headerLink {
+    color: #f1f7f7 !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    font-size: 15px !important;
+    letter-spacing: 1px !important;
+    transition: color 0.2s ease !important;
+    white-space: nowrap !important;
+  }
+
+  .headerLink:hover {
+    color: #4ee2c0 !important;
   }
 }
 
-@media (max-width: 300px) {
+/* 3.ТОЛЬКО МОБИЛКА (экран до 768px) */
+@media (max-width: 768px) {
   .header {
-    flex-direction: column;
-    background-color: #021b1a;
+    height: 60px;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
   }
-  .nav {
-    width: 100%;
-    /* flex-direction: column; */
-    justify-content: space-between;
-    /* grid: 5px; */
+
+  .leftSection {
+    gap: 8px !important;
+    height: 100% !important;
   }
+
+  .logo {
+    width: auto !important;
+    height: 100% !important;
+    background-color: #021b1a !important;
+    padding: 0 12px !important;
+    border-radius: 4px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .logo img {
+    height: 32px !important;
+    width: auto !important;
+  }
+
+  .navMainLinks {
+    display: flex !important;
+    align-items: center !important;
+    margin-left: 4px !important;
+    gap: 10px !important;
+  }
+
+  .headerLink {
+    color: #f1f7f7 !important;
+    text-decoration: none !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0 !important;
+    white-space: nowrap !important;
+    padding-right: 0 !important;
+  }
+
+  .profile {
+    height: 28px !important;
+  }
+}
+
+/* 4. МОБИЛЬНАЯ ВЫДВИЖНАЯ ШТОРКА */
+
+.articleDrawer {
+  position: fixed;
+  top: 0;
+  left: -320px;
+  width: 300px;
+  height: 100vh;
+  background-color: #021b1a;
+  padding: 24px 20px;
+  box-sizing: border-box;
+  z-index: 100;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.drawerActive {
+  left: 0;
+}
+
+.drawerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 16px;
+}
+
+.drawerTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #4ee2c0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.closeBtn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.mobileArticlesList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.mobileArticleItem {
+  color: #aacbc4;
+  font-size: 14px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mobileArticleItem:hover,
+.mobileArticleActive {
+  background-color: #03624c;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 99;
 }
