@@ -143,3 +143,4 @@ Copy-Item $CACertPath -Destination (Join-Path $GatewayPath "ca-cert.pem") -Force
 Write-Host "Gateway certs generated" -ForegroundColor Green
 Write-Host "article-service certs generated" -ForegroundColor Green
 Write-Host "user-service certs generated" -ForegroundColor Green
+Write-Host "simulator-service certs generated" -ForegroundColor Green
