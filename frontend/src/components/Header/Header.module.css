@@ -31,7 +31,7 @@
 }
 
 .logo img {
-  height: 65px;
+  height: 80%;
   width: auto;
   display: block;
 }
@@ -45,7 +45,6 @@
   color: #f1f7f7;
   text-decoration: none;
   text-transform: uppercase;
-  /* font-size: 14px; */
 }
 
 .headerLink:hover {
@@ -53,7 +52,7 @@
 }
 
 .profile {
-  height: 38px;
+  height: 45px;
   width: auto;
   cursor: pointer;
   display: block;
@@ -92,7 +91,7 @@
     text-decoration: none !important;
     font-weight: 600 !important;
     text-transform: uppercase !important;
-    font-size: 15px !important;
+    font-size: 18px !important;
     letter-spacing: 1px !important;
     transition: color 0.2s ease !important;
     white-space: nowrap !important;
@@ -107,7 +106,7 @@
 @media (max-width: 768px) {
   .header {
     height: 60px;
-    padding-left: 12px !important;
+    /* padding-left: 12px !important; */
     padding-right: 12px !important;
   }
 
@@ -121,7 +120,9 @@
     height: 100% !important;
     background-color: #021b1a !important;
     padding: 0 12px !important;
-    border-radius: 4px !important;
+    /* border-radius: 4px !important; */
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;

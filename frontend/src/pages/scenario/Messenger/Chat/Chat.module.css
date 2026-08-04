@@ -56,7 +56,8 @@
   padding-bottom: 4px;
   border-radius: 5pc;
   text-align: center;
-  height: min-content;
+
+  height: 100%;
   cursor: pointer;
 
   -webkit-user-select: none;

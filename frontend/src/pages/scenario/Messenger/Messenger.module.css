@@ -91,3 +91,19 @@
   grid-column: 2;
   grid-row: 1 / 3; /* Чат занимает обе строки справа */
 }
+
+@media (max-width: 768px) {
+  .chatName {
+    font-size: 18px;
+  }
+  .lastMessage {
+    display: none;
+  }
+  .chatCard {
+    display: flex;
+    justify-content: space-between;
+  }
+  .unReadCount {
+    margin-left: auto;
+  }
+}
