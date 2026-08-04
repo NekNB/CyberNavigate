@@ -146,6 +146,7 @@ CREATE TABLE sessions (
     user_id UUID NOT NULL,
     current_trust INTEGER CHECK (current_trust BETWEEN -100 AND 100) DEFAULT 0,
     current_step UUID REFERENCES steps(uuid) ON DELETE CASCADE,
+    is_finished BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     finished_at TIMESTAMP WITH TIME ZONE
 );

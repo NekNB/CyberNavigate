@@ -43,7 +43,7 @@ const Header: FC = () => {
 
   return (
     <header className={styles.header}>
-      {isLoginOpen ? (
+      {isLoginOpen && (
         <Login
           onClose={() => {
             setIsLoginOpen(false);
@@ -53,8 +53,8 @@ const Header: FC = () => {
             setIsRegisterOpen(true);
           }}
         />
-      ) : null}
-      {isRegisterOpen ? (
+      )}
+      {isRegisterOpen && (
         <Register
           onClose={() => {
             setIsRegisterOpen(false);
@@ -64,7 +64,7 @@ const Header: FC = () => {
             setIsLoginOpen(true);
           }}
         />
-      ) : null}
+      )}
       <a href="/" className={styles.logo}>
         <img src={logo} />
       </a>
