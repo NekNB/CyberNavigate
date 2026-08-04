@@ -15,6 +15,7 @@ run:
 	$(MAKE) build ARGS=user-service
 	$(MAKE) build ARGS=simulator-service
 	$(MAKE) build ARGS=gateway-server
+	$(MAKE) build ARGS=frontend
 	$(MAKE) secrets_update
 	$(MAKE) start
 
