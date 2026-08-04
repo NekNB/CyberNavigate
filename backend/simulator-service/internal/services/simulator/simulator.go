@@ -22,6 +22,7 @@ type SimulatorDataProvider interface {
 	SetSessionError(sessionId, error string) error
 	SaveBeginTrustLevel(sessionId string) error
 	MarkSessionAsFinished(sessionId string) error
+	CloseSession(sessionId string) error
 
 	CreateScenario(title, description, difficulty string) (string, error)
 	EditScenario(scenarioId string, title, description, difficulty *string) error
@@ -96,16 +97,19 @@ func (s *simulatorService) CreateSession(userId string, scenarioId string) error
 	return s.repo.SaveBeginTrustLevel(sessionId)
 }
 func (s *simulatorService) GetResults(userId string) (*simulator.SimulationFinal, error) {
+
 	session, err := s.repo.GetCurrentSession(userId)
 	if err != nil {
 		s.log.Error(err)
 		return nil, err
 	}
 	if err := s.repo.MarkSessionAsFinished(session.UUID); err != nil {
+
+	}
+	if err := s.repo.CloseSession(session.UUID); err != nil {
 		s.log.Error(err)
 		return nil, err
 	}
-
 	session, err = s.repo.GetSessionBySessionId(session.UUID)
 	if err != nil {
 		s.log.Error(err)
@@ -272,10 +276,13 @@ func (s *simulatorService) CreateStep(step *simulator.StepMetaRequired) (*simula
 }
 
 func (s *simulatorService) EditStep(stepId string, editedStep *simulator.StepMetaMin) (*simulator.StepMetaFull, error) {
+
 	// Редактирование Step
-	if err := s.repo.EditStep(stepId, editedStep.MaxTrust, editedStep.MinTrust); err != nil {
-		s.log.Error(err)
-		return nil, err
+	if editedStep.MaxTrust != nil || editedStep.MinTrust != nil {
+		if err := s.repo.EditStep(stepId, editedStep.MaxTrust, editedStep.MinTrust); err != nil {
+			s.log.Error(err)
+			return nil, err
+		}
 	}
 
 	// Обновление Actions (полная замена)
@@ -304,6 +311,9 @@ func (s *simulatorService) GetStep(userId string) (*simulator.StepBase, error) {
 		s.log.Error(err)
 		return nil, err
 	} else if session.CurrentStepId == nil {
+		s.repo.MarkSessionAsFinished(session.UUID)
+		return nil, nil
+	} else if session.IsFinished {
 		return nil, nil
 	}
 
@@ -425,10 +435,11 @@ func (s *simulatorService) SendUserAnswer(userId, answerId string) error {
 		s.log.Error(err)
 		return err
 	}
-
-	if err := s.repo.SetCurrentStep(session.UUID, nextStepId); err != nil {
-		s.log.Error(err)
-		return err
+	if nextStepId != nil {
+		if err := s.repo.SetCurrentStep(session.UUID, nextStepId); err != nil {
+			s.log.Error(err)
+			return err
+		}
 	}
 
 	// Получаем Answer и регистрируем ошибку если она есть
@@ -488,6 +499,17 @@ func (s *simulatorService) GetFileByFileId(fileId, userId string) (*simulator.Fi
 	}
 
 	// Если файл небезопасен - завершаем игру
+	if file.Error != nil && *file.Error != "" {
+		session, err := s.repo.GetCurrentSession(userId)
+		if err != nil {
+			s.log.Error(err)
+			return nil, err
+		}
+		if err := s.repo.SetSessionError(session.UUID, *file.Error); err != nil {
+			s.log.Error(err)
+			return nil, err
+		}
+	}
 	if !file.IsSafe {
 		session, err := s.repo.GetCurrentSession(userId)
 		if err != nil {
@@ -500,17 +522,6 @@ func (s *simulatorService) GetFileByFileId(fileId, userId string) (*simulator.Fi
 		}
 	}
 
-	if file.Error != nil && *file.Error != "" {
-		session, err := s.repo.GetCurrentSession(userId)
-		if err != nil {
-			s.log.Error(err)
-			return nil, err
-		}
-		if err := s.repo.SetSessionError(session.UUID, *file.Error); err != nil {
-			s.log.Error(err)
-			return nil, err
-		}
-	}
 	// Возвращаем file
 	return file, nil
 }
@@ -696,7 +707,7 @@ func (s *simulatorService) GetMessageById(messageId string) (*simulator.MessageF
 	}
 
 	var senderUUID types.UUID
-	if err := senderUUID.Scan(messageData.UUID); err != nil {
+	if err := senderUUID.Scan(messageData.SenderId); err != nil {
 		s.log.Error(err)
 		return nil, err
 	}

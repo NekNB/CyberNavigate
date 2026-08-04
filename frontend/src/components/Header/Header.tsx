@@ -1,7 +1,7 @@
 import { useEffect, useState, type FC } from "react";
+import { Logout } from "../../app/api/Auth/Auth";
 import { GetUser } from "../../app/api/User/User";
 import Login from "../Login/Login";
-import { Logout } from "../../app/api/Auth/Auth";
 import Register from "../Register/Register";
 import styles from "./Header.module.css";
 import logo from "/assets/logo.png";
@@ -48,7 +48,7 @@ const Header: FC<HeaderProps> = ({
     if (isAuth) {
       if (
         window.confirm(
-          "Вы уверены, что хотите выйти из профиля? Тогда ваш прогресс не будет сохранен"
+          "Вы уверены, что хотите выйти из профиля? Тогда ваш прогресс не будет сохранен",
         )
       ) {
         await Logout();
@@ -112,10 +112,16 @@ const Header: FC<HeaderProps> = ({
         />
       </div>
 
-      <aside className={`${styles.articleDrawer} ${isMenuOpen ? styles.drawerActive : ""}`}>
+      <aside
+        className={`${styles.articleDrawer} ${isMenuOpen ? styles.drawerActive : ""}`}
+      >
         <div className={styles.drawerHeader}>
           <span className={styles.drawerTitle}>Каталог статей</span>
-          <button className={styles.closeBtn} onClick={closeMenu} aria-label="Закрыть">
+          <button
+            className={styles.closeBtn}
+            onClick={closeMenu}
+            aria-label="Закрыть"
+          >
             ✕
           </button>
         </div>

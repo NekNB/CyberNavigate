@@ -51,7 +51,6 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       // Если сам запрос на обновление токенов провалился => logout
       if (isRefreshEndpoint(originalRequest.url)) {
-        // TODO: Добавить вызов окна логина
         return Promise.reject(error);
       }
 
@@ -75,7 +74,7 @@ apiClient.interceptors.response.use(
         return apiClient(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError);
-        // TODO: Добавить окно входа
+
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

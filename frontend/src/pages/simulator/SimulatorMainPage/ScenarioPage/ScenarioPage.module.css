@@ -1,0 +1,43 @@
+.text {
+  margin: 0;
+}
+
+.description {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.scenarioPage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
+  box-sizing: border-box;
+
+  /* Заставляем переносить любые длинные слова, если они не влезают */
+  overflow-wrap: break-word;
+  word-break: break-word; /* Для поддержки старых браузеров */
+  height: 85vh;
+}
+
+.buttonChoiceScenario {
+  position: absolute;
+  align-self: center;
+
+  bottom: 10px;
+  width: 70%;
+
+  background-color: rgba(44, 194, 149, 0.8); /* Синий цвет (можете поменять) */
+  color: white;
+
+  flex: 1; /* Чтобы кнопки занимали равное место */
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+
+  font-weight: 800;
+  font-size: 18px;
+  transition: all 0.3s ease;
+
+  margin-bottom: 15px;
+}

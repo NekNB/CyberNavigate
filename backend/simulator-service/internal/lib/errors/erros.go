@@ -6,10 +6,7 @@ type CustomError struct {
 }
 
 func (e *CustomError) Error() string {
-	if e.Msg == "" {
-		return e.Type.Error()
-	}
-	return e.Msg
+	return e.Type.Error() + e.Msg
 }
 
 func (e *CustomError) Is(target error) bool {

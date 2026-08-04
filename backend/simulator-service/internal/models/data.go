@@ -7,6 +7,7 @@ type SessionData struct {
 	CreatedAt     time.Time
 	CurrentStepId *string
 	CurrentTrust  int
+	IsFinished    bool
 	FinishedAt    *time.Time
 }
 
