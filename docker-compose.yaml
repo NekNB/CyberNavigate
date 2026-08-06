@@ -15,7 +15,10 @@ services:
      
 
   nginx:
-    image: nginx:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    image: cyber-navigate/nginx-certbot:latest
     ports:
       - target: 80
         published: 80
@@ -23,24 +26,13 @@ services:
       - target: 443
         published: 443
         mode: host
+    environment:
+      - DOMAINS=api.кибер-навигатор.рф www.кибер-навигатор.рф
+      - EMAIL=nikita.58baydin4@mail.ru # УКАЖИ СВОЮ ПОЧТУ
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - certbot-www:/var/www/certbot:ro
-      - certbot-certs:/etc/letsencrypt:ro
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == manager # Держим Nginx на менеджере, чтобы томы не "гуляли"
-
-  certbot:
-    image: certbot/certbot
-    volumes:
       - certbot-www:/var/www/certbot
       - certbot-certs:/etc/letsencrypt
-    # В Swarm один раз выполненный контейнер завершит работу. 
-    # Для автообновления лучше использовать cron на хосте, либо такой цикл:
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
     deploy:
       replicas: 1
       placement:
@@ -135,6 +127,9 @@ services:
 volumes:
   mongo_data:
   postgres_data:
+  certbot-www:
+  certbot-certs:
+
 
 
 

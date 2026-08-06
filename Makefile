@@ -1,4 +1,4 @@
-.PHONY: echorun build start stop secrets_remove srm secrets_create scr secrets_update init
+.PHONY: echorun build start stop secrets_remove srm secrets_create scr secrets_update ps1 sh
 
 .SILENT:
 
@@ -10,9 +10,10 @@ ps1:
 
 sh:
 	chmod +x ./sh/convert-env.sh ./sh/create-keys.sh ./sh/generate-mtls-certs.sh
-	pushd ./sh && ./convert-env.sh && ./create-keys.sh && ./generate-mtls-certs.sh && popd
+	cd ./sh && ./convert-env.sh && ./create-keys.sh && ./generate-mtls-certs.sh 
 
 run:
+	$(MAKE) build ARGS=nginx
 	$(MAKE) build ARGS=postgres
 	$(MAKE) build ARGS=mongo
 	$(MAKE) build ARGS=article-service
@@ -27,6 +28,9 @@ run:
 # Требует ввести name
 build:
 	docker build -f ./docker/${ARGS}.dockerfile -t cyber-navigate/${ARGS} .
+
+
+
 
 secrets_update: secrets_remove secrets_create
 
