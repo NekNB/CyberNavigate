@@ -8,6 +8,7 @@ import (
 	"github.com/NekNB/CyberNavigate/backend/article-service/internal/assets"
 	"github.com/NekNB/CyberNavigate/backend/article-service/internal/config"
 	articleAPI "github.com/NekNB/CyberNavigate/backend/article-service/internal/http"
+	"github.com/NekNB/CyberNavigate/backend/article-service/internal/middleware"
 	articleService "github.com/NekNB/CyberNavigate/backend/article-service/internal/services/article"
 	"github.com/NekNB/CyberNavigate/backend/article-service/internal/storage/mongo"
 	"github.com/NekNB/CyberNavigate/backend/article-service/internal/storage/postgres"
@@ -15,7 +16,6 @@ import (
 	"github.com/NekNB/CyberNavigate/swagger/gen/article"
 
 	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/middleware/cors"
 	"github.com/gofiber/fiber/v3/middleware/logger"
 
 	"github.com/gofiber/fiber/v3/middleware/recover"
@@ -28,6 +28,7 @@ import (
 type Server struct {
 	cfg    *config.Config
 	app    *fiber.App
+	log    *logrus.Logger
 	TLSCfg *tls.Config
 }
 
@@ -45,26 +46,11 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 	app := fiber.New(fiber.Config{
 		AppName: "ArStore ArticleServiceV1",
 	})
+	if cfg.Env != "local" {
+		app.Use(recover.New())
+	}
+	app.Use(middleware.LoggerMiddleware())
 	app.Use(logger.New())
-	app.Use(recover.New())
-	app.Use(cors.New(cors.Config{
-		AllowOrigins: []string{
-			"http://localhost:9000",
-			"http://localhost:8000",
-			"http://127.0.0.1:9000",
-			"http://127.0.0.1:8000",
-			"http://cyber-navigate_gateway-server:80",
-			"http://cyber-navigate_gateway-server:443",
-			"http://127.0.0.1:3000",
-		},
-		AllowMethods: []string{
-			"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS",
-		},
-		AllowHeaders: []string{
-			"Origin", "Content-Type", "Accept", "Authorization", "Content-Encoding",
-		},
-		AllowCredentials: true,
-	}))
 
 	mongoStorage, err := mongo.CreateConnection(log, fmt.Sprintf(
 		"mongodb://%s:%s@%s:%d",
@@ -111,10 +97,9 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 		Browse: true,
 	}))
 
-	return &Server{app: app, cfg: cfg, TLSCfg: TLSCfg}, nil
+	return &Server{log: log, app: app, cfg: cfg, TLSCfg: TLSCfg}, nil
 }
-
-func (s *Server) Start() {
+func (s *Server) HTTPSStart() {
 	ln, err := tls.Listen(
 		"tcp",
 		fmt.Sprintf("0.0.0.0:%d", s.cfg.HTTP.Port),
@@ -124,7 +109,20 @@ func (s *Server) Start() {
 		panic(err)
 	}
 
-	panic(s.app.Listener(ln))
+	if err := s.app.Listener(ln); err != nil {
+		s.log.Error(err)
+		panic(err)
+	}
+}
+
+func (s *Server) HTTPStart() {
+	s.log.Debug("Start")
+	if err := s.app.Listen(fmt.Sprintf("127.0.0.1:%d", s.cfg.HTTP.Port), fiber.ListenConfig{
+		ShutdownTimeout: s.cfg.HTTP.Timeout,
+	}); err != nil {
+		s.log.Error(err)
+		panic(err)
+	}
 }
 
 func (s *Server) Stop() error {

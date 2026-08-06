@@ -35,13 +35,15 @@ type SimulatorDataProvider interface {
 	GetErrors(sessionId string) (*[]string, error)
 	GetTrusts(sessionId string) (*[]int, error)
 
-	CreateStep(scenariodId string, previousAnswer, previosStep *string, maxTrust, minTrust *int) (string, error)
+	CreateStep(scenariodId string, maxTrust, minTrust *int) (string, error)
 	EditStep(stepId string, maxTrust, minTrust *int) error
 	GetStep(stepId string) (*models.StepData, error)
 	MatchActionToStep(actionIds *[]string, StepId string) error
 	DeleteAllMatchActionToStep(stepId string) error
 	GetNextStepByStepId(currentStepId string, currentTrust int) (*string, error)
 	GetNextStepByAnswerId(answerId string, currentTrust int) (*string, error)
+	MatchAnswerToStep(stepId, previousAnswerId string) error
+	MatchStepToStep(stepId, previousStepId string) error
 
 	CreateAction(actionType, messageId string, delay int) (string, error)
 	EditAction(actionId, actionType, messageId string, delay *int) error
@@ -239,22 +241,31 @@ func (s *simulatorService) GetScenarioById(scenarioId string) (*simulator.Scenar
 }
 
 func (s *simulatorService) CreateStep(step *simulator.StepMetaRequired) (*simulator.StepMetaFull, error) {
-	// Установка дефолтных значений
-	var previousAnswer, previousStep *string
-	if step.PreviousStep != nil {
-		strId := step.PreviousStep.String()
-		previousStep = &strId
-	}
-	if step.PreviousAnswer != nil {
-		strId := step.PreviousAnswer.String()
-		previousAnswer = &strId
-	}
 
 	// Создание шага
-	stepId, err := s.repo.CreateStep(step.ScenarioId.String(), previousAnswer, previousStep, step.MaxTrust, step.MinTrust)
+	stepId, err := s.repo.CreateStep(step.ScenarioId.String(), step.MaxTrust, step.MinTrust)
 	if err != nil {
 		s.log.Error(err)
 		return nil, err
+	}
+
+	// Привязка Previous Step к New Step
+	if step.PreviousSteps != nil {
+		for _, step := range *step.PreviousSteps {
+			if err := s.repo.MatchStepToStep(stepId, step.String()); err != nil {
+				s.log.Error(err)
+				return nil, err
+			}
+		}
+	}
+	// Привязка Previous Answer к New Step
+	if step.PreviousAnswers != nil {
+		for _, answer := range *step.PreviousAnswers {
+			if err := s.repo.MatchAnswerToStep(stepId, answer.String()); err != nil {
+				s.log.Error(err)
+				return nil, err
+			}
+		}
 	}
 
 	// Привязка Action
@@ -266,8 +277,11 @@ func (s *simulatorService) CreateStep(step *simulator.StepMetaRequired) (*simula
 		return nil, err
 	}
 	// Привязка первого шага к Scenario
-	if step.PreviousAnswer == nil && step.PreviousStep == nil {
-		s.repo.SetFirstStep(step.ScenarioId.String(), stepId)
+	if step.PreviousAnswers == nil && step.PreviousSteps == nil {
+		if err := s.repo.SetFirstStep(step.ScenarioId.String(), stepId); err != nil {
+			s.log.Error(err)
+			return nil, err
+		}
 	}
 
 	// Получение созданного Step
@@ -621,24 +635,6 @@ func (s *simulatorService) GetStepMetaById(stepId string) (*simulator.StepMetaFu
 		return nil, err
 	}
 
-	var previousAnswerUUID *types.UUID
-	if stepData.PreviousAnswer != nil {
-		previousAnswerUUID = &types.UUID{}
-		if err := previousAnswerUUID.Scan(*(stepData.PreviousAnswer)); err != nil {
-			s.log.Error(err)
-			return nil, err
-		}
-	}
-
-	var previousStepUUID *types.UUID
-	if stepData.PreviousStep != nil {
-		previousStepUUID = &types.UUID{}
-		if err := previousStepUUID.Scan(*(stepData.PreviousStep)); err != nil {
-			s.log.Error(err)
-			return nil, err
-		}
-	}
-
 	var scenarioUUID types.UUID
 	if err := scenarioUUID.Scan(stepData.ScenarioId); err != nil {
 		s.log.Error(err)
@@ -656,13 +652,11 @@ func (s *simulatorService) GetStepMetaById(stepId string) (*simulator.StepMetaFu
 	}
 
 	return &simulator.StepMetaFull{
-		Id:             stepUUID,
-		MaxTrust:       stepData.MaxTrust,
-		MinTrust:       stepData.MinTrust,
-		PreviousAnswer: previousAnswerUUID,
-		PreviousStep:   previousStepUUID,
-		ScenarioId:     scenarioUUID,
-		Actions:        actions,
+		Id:         stepUUID,
+		MaxTrust:   stepData.MaxTrust,
+		MinTrust:   stepData.MinTrust,
+		ScenarioId: scenarioUUID,
+		Actions:    actions,
 	}, nil
 }
 

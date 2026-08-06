@@ -1,12 +1,9 @@
 package http
 
 import (
-	"bufio"
 	"context"
 	"errors"
 	"fmt"
-	"strings"
-	"time"
 
 	"github.com/NekNB/CyberNavigate/backend/article-service/internal/storage"
 	"github.com/NekNB/CyberNavigate/swagger/gen/article"
@@ -32,7 +29,7 @@ type ArticleServiceInterface interface {
 	SaveArticleTextByUUID(ctx context.Context, articleId, text string) (*article.ArticleMetaData, error)
 	ArticleTextByUUID(ctx context.Context, articleId string) (string, error)
 	UpdateArticleTextByUUID(ctx context.Context, articleId, text string) (*article.ArticleMetaData, error)
-	UpdateArticleByUUID(articleId, text, title, videoURL, status string) (*article.ArticleMetaData, error)
+	UpdateArticleByUUID(articleId string, title, status *string) (*article.ArticleMetaData, error)
 }
 
 func New(log *logrus.Logger, articleService ArticleServiceInterface) *APIServer {
@@ -58,7 +55,7 @@ func (a *APIServer) PostArticles(c fiber.Ctx) error {
 		}
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
-	return c.Status(fiber.StatusOK).JSON(metadata)
+	return c.Status(fiber.StatusCreated).JSON(metadata)
 }
 
 func (a *APIServer) GetArticles(c fiber.Ctx) error {
@@ -84,20 +81,20 @@ func (a *APIServer) GetArticleById(c fiber.Ctx, articleId string) error {
 	return c.Status(fiber.StatusOK).JSON(metadata)
 }
 
-func chunkByWords(s string, wordsPerChunk int) []string {
-	words := strings.Fields(s)
-	var chunks []string
+// func chunkByWords(s string, wordsPerChunk int) []string {
+// 	words := strings.Fields(s)
+// 	var chunks []string
 
-	for i := 0; i < len(words); i += wordsPerChunk {
-		end := i + wordsPerChunk
-		if end > len(words) {
-			end = len(words)
-		}
-		chunks = append(chunks, strings.Join(words[i:end], " "))
-	}
+// 	for i := 0; i < len(words); i += wordsPerChunk {
+// 		end := i + wordsPerChunk
+// 		if end > len(words) {
+// 			end = len(words)
+// 		}
+// 		chunks = append(chunks, strings.Join(words[i:end], " "))
+// 	}
 
-	return chunks
-}
+// 	return chunks
+// }
 
 func (a *APIServer) GetArticleTextById(c fiber.Ctx, articleId string) error {
 	aS := a.articleService
@@ -112,18 +109,19 @@ func (a *APIServer) GetArticleTextById(c fiber.Ctx, articleId string) error {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	c.Set("Content-Type", "application/x-ndjson")
-	c.Set("Transfer-Encoding", "chunked")
+	// c.Set("Content-Type", "application/x-ndjson")
+	// c.Set("Transfer-Encoding", "chunked")
 
-	return c.SendStreamWriter(func(w *bufio.Writer) {
-		chunks := chunkByWords(text, 50)
+	// return c.SendStreamWriter(func(w *bufio.Writer) {
+	// 	chunks := chunkByWords(text, 50)
 
-		for _, chunk := range chunks {
-			fmt.Fprintln(w, chunk) // важно: \n для NDJSON
-			w.Flush()              // отправляем сразу клиенту
-			time.Sleep(500 * time.Millisecond)
-		}
-	})
+	// 	for _, chunk := range chunks {
+	// 		fmt.Fprintln(w, chunk) // важно: \n для NDJSON
+	// 		w.Flush()              // отправляем сразу клиенту
+	// 		time.Sleep(500 * time.Millisecond)
+	// 	}
+	// })
+	return c.Status(200).JSON(text)
 }
 
 func (a *APIServer) PatchArticleById(c fiber.Ctx, articleId string) error {
@@ -137,10 +135,8 @@ func (a *APIServer) PatchArticleById(c fiber.Ctx, articleId string) error {
 	// TODO: проверить работу
 	metadata, err := aS.UpdateArticleByUUID(
 		articleId,
-		"",
-		"",
-		*request.ArticleStatus,
-		*request.ArticleTitle,
+		request.ArticleTitle,
+		request.ArticleStatus,
 	)
 	if err != nil {
 		if errors.Is(err, storage.ErrArticleNotFound) {

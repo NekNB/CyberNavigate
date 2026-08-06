@@ -3,6 +3,7 @@ package config
 import (
 	"flag"
 	"os"
+	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
 )
@@ -24,17 +25,21 @@ type certsConfig struct {
 	PublicKeyPath  string `yaml:"public_key" env-required:"true"`
 }
 type serverConfig struct {
-	Host      string                  `yaml:"host"`
-	HTTPPort  int                     `yaml:"http_port"`
-	HTTPSPort int                     `yaml:"https_port"`
-	Services  []map[string]serviceCfg `yaml:"services"`
+	Host          string                  `yaml:"host"`
+	HTTPPort      int                     `yaml:"http_port"`
+	HTTPSPort     int                     `yaml:"https_port"`
+	Services      []map[string]serviceCfg `yaml:"services"`
+	GatewayOrigin string                  `yaml:"gateway_origin"`
+	AllowHeaders  []string                `yaml:"allow_headers"`
+	AllowOrigins  []string                `yaml:"allow_origins"`
 }
 
 type serviceCfg struct {
-	Path     string `yaml:"path"`
-	Protocol string `yaml:"protocol" env-default:"http"`
-	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
+	Path         string        `yaml:"path"`
+	Protocol     string        `yaml:"protocol" env-default:"http"`
+	Host         string        `yaml:"host"`
+	Port         int           `yaml:"port"`
+	ConnDuration time.Duration `yaml:"conn_duration"`
 }
 
 // "Must" means the function will panic rather than return an error

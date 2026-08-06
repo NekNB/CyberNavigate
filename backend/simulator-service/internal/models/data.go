@@ -23,15 +23,13 @@ type ScenarioData struct {
 }
 
 type StepData struct {
-	UUID           string
-	PreviousStep   *string
-	PreviousAnswer *string
-	MinTrust       *int
-	MaxTrust       *int
-	ScenarioId     string
-	ActionIds      *[]string
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
+	UUID       string
+	MinTrust   *int
+	MaxTrust   *int
+	ScenarioId string
+	ActionIds  *[]string
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
 }
 
 type ActionData struct {

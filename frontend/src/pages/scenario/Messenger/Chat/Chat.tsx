@@ -1,4 +1,4 @@
-import { useEffect, useState, type FC } from "react";
+import { useEffect, useRef, useState, type FC } from "react";
 import type FileDownloader from "../../../../types/fileDownloader";
 import type { IChat, IChatAnswer } from "../../../../types/messenger";
 
@@ -10,29 +10,43 @@ interface ChatProps {
   fileDownloader: FileDownloader;
   sendAnswer: (senderId: string, answer: IChatAnswer) => void;
   isFrozen: boolean;
+  setIsGetResults: (isGetResults: boolean) => void;
   setIsFinished: React.Dispatch<React.SetStateAction<boolean>>;
 }
-
 const Chat: FC<ChatProps> = ({
   chat,
   fileDownloader,
   isFrozen,
   sendAnswer,
   setIsFinished,
+  setIsGetResults,
 }) => {
+  // 1. Создаем ссылку на контейнер чата
+  const chatRef = useRef<HTMLDivElement>(null);
+
+  // 2. Добавляем useEffect для прокрутки вниз при изменении сообщений
+  useEffect(() => {
+    if (chatRef.current) {
+      chatRef.current.scrollTop = chatRef.current.scrollHeight;
+    }
+  }, [chat.messages]); // Зависимость от массива сообщений
+
   const handleAnswerOnClick = async (answer: IChatAnswer) => {
     sendAnswer(chat.senderId, answer);
   };
 
   const answers = chat.messages.at(-1)?.answers;
+
   return (
     <div className={`${isFrozen ? styles.frozen : ""} ${styles.chatWindow}`}>
       <div className={styles.chatName}>{chat.senderName}</div>
 
-      <div className={styles.chat}>
+      {/* 3. Привязываем ref к скроллящемуся контейнеру */}
+      <div className={styles.chat} ref={chatRef}>
         {chat.messages.map((message) => {
           return (
             <Message
+              setIsGetResults={setIsGetResults}
               key={message.messageId}
               isInput={message.isInput}
               text={message.text}
@@ -70,6 +84,7 @@ interface MessageProps {
   text?: string;
   files?: { fileId: string; filename: string; size: number }[];
   fileDownloader: FileDownloader;
+  setIsGetResults: (isGetResults: boolean) => void;
   setIsFinished: React.Dispatch<React.SetStateAction<boolean>>;
 }
 const Message: FC<MessageProps> = ({
@@ -77,7 +92,7 @@ const Message: FC<MessageProps> = ({
   text,
   files,
   fileDownloader,
-  setIsFinished,
+  setIsGetResults,
 }) => {
   return (
     <div
@@ -93,7 +108,7 @@ const Message: FC<MessageProps> = ({
                 filename={file.filename}
                 size={file.size}
                 fileDownloader={fileDownloader}
-                setIsFinished={setIsFinished}
+                setIsGetResults={setIsGetResults}
               />
             );
           })
@@ -107,7 +122,7 @@ interface FileProps {
   filename: string;
   size: number;
   fileDownloader: FileDownloader;
-  setIsFinished: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsGetResults: (isGetResults: boolean) => void;
 }
 // Константы для SVG круга
 const RADIUS = 24; // Радиус круга (подгоните под размер вашей картинки)
@@ -118,7 +133,7 @@ const File: FC<FileProps> = ({
   filename,
   size,
   fileDownloader,
-  setIsFinished,
+  setIsGetResults,
 }) => {
   const [isDownloaded, setIsDownloaded] = useState(
     fileDownloader.isDownloaded(fileId),
@@ -129,7 +144,7 @@ const File: FC<FileProps> = ({
   useEffect(() => {
     if (isGameFall && isDownloaded && !isLoading) {
       console.log("Игра окончена");
-      setIsFinished(true);
+      setIsGetResults(true);
     }
   }, [isGameFall, isDownloaded, isLoading]);
 
@@ -156,7 +171,7 @@ const File: FC<FileProps> = ({
     }
   };
 
-  const animationDuration = size / 100;
+  const animationDuration = size / 100 + 10;
 
   return (
     <div className={styles.file}>

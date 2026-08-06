@@ -1,6 +1,7 @@
 import { useEffect, useState, type FC } from "react";
 import { Logout } from "../../app/api/Auth/Auth";
 import { GetUser } from "../../app/api/User/User";
+import type { IArticle } from "../../types/articles";
 import Login from "../Login/Login";
 import Register from "../Register/Register";
 import styles from "./Header.module.css";
@@ -8,15 +9,10 @@ import logo from "/assets/logo.png";
 import openDoor from "/assets/open-door.svg";
 import profile from "/assets/profile.svg";
 
-interface ArticleItem {
-  id: string | number;
-  title: string;
-}
-
 interface HeaderProps {
-  articles?: ArticleItem[];
-  activeArticleId?: string | number;
-  onSelectArticle?: (id: string | number) => void;
+  articles?: IArticle[];
+  activeArticleId?: string;
+  onSelectArticle?: (id: string) => void;
   isMenuOpen?: boolean;
   setIsMenuOpen?: (open: boolean) => void;
 }
@@ -127,18 +123,18 @@ const Header: FC<HeaderProps> = ({
         </div>
 
         <ul className={styles.mobileArticlesList}>
-          {articles.map((art) => (
+          {articles.map((article) => (
             <li
-              key={art.id}
+              key={article.id}
               className={`${styles.mobileArticleItem} ${
-                art.id === activeArticleId ? styles.mobileArticleActive : ""
+                article.id === activeArticleId ? styles.mobileArticleActive : ""
               }`}
               onClick={() => {
-                if (onSelectArticle) onSelectArticle(art.id);
+                if (onSelectArticle) onSelectArticle(article.id);
                 closeMenu();
               }}
             >
-              {art.title}
+              {article.title}
             </li>
           ))}
         </ul>

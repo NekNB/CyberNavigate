@@ -20,7 +20,13 @@ import type {
   IChatFile,
   IChatMessage,
 } from "../../types/messenger";
-import type { IAction, IMessage, IResults, IStep } from "../../types/simulator";
+import {
+  type IAction,
+  type IMessage,
+  type IResults,
+  type ISMS,
+  type IStep,
+} from "../../types/simulator";
 import Final from "./Final/Final";
 import Loader, { type ILoaderProps } from "./Loader/Loader";
 import Messenger from "./Messenger/Messenger";
@@ -35,16 +41,19 @@ const withDelay = async (f: Promise<void>) => {
 const Scenario: FC = () => {
   const { id: scenarioId } = useParams<{ id: string }>();
   const [isLoading, setIsLoading] = useState(true);
-  const [isGameFinished, setIsGameFinished] = useState(false);
   const [step, setStep] = useState<IStep>();
   const [chats, setChats] = useState<Map<string, IChat>>(new Map());
   const [stepCompleted, setStepCompleted] = useState(false);
   const [isFrozen, setIsFrozen] = useState(false);
+  const [isGameFinished, setIsGameFinished] = useState(false);
+  const [isGetResults, setIsGetResults] = useState(false);
   const [results, setResults] = useState<IResults>({
     errors: [],
     gameDuration: 0,
     trustGraph: [],
   });
+
+  const [sms, setSms] = useState<ISMS[] | undefined>();
 
   const unReadCount = useMemo((): number => {
     let count = 0;
@@ -64,6 +73,17 @@ const Scenario: FC = () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, []);
+
+  useEffect(() => {
+    const getResults = async () => {
+      setResults(await GetResults());
+      setIsGameFinished(true);
+    };
+    if (isGetResults) {
+      getResults();
+    }
+    console.log(isGetResults);
+  }, [isGetResults]);
 
   const getStep = useCallback(async () => {
     const response = await GetStep();
@@ -86,7 +106,14 @@ const Scenario: FC = () => {
     const doAction = (action: IAction) => {
       switch (action.type) {
         case "sms":
-          // TODO: реализовать отправку sms
+          setSms((prevSms) => {
+            const newSms = action.message as ISMS;
+            if (prevSms) {
+              return [newSms, ...prevSms];
+            } else {
+              return [newSms];
+            }
+          });
           break;
         case "message":
           const msg = action.message as IMessage;
@@ -105,7 +132,6 @@ const Scenario: FC = () => {
             }),
             text: msg.text,
           };
-
           setChats((prevChats) => {
             const chat = prevChats?.get(msg.senderId);
             const newChats = new Map<string, IChat>(prevChats);
@@ -246,6 +272,8 @@ const Scenario: FC = () => {
   ) : (
     <>
       <Messenger
+        sms={sms}
+        setIsGetResults={(isGetResults) => setIsGetResults(isGetResults)}
         isFrozen={isFrozen}
         sendAnswer={sendAnswer}
         chats={chats as Map<string, IChat>}

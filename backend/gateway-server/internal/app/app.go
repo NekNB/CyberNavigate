@@ -66,31 +66,16 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 	})
 	app.Use(recover.New())
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: []string{
-			"https://localhost:443",
-			"https://127.0.0.1:443",
-			"https://localhost:9443",
-			"https://127.0.0.1:9443",
-			"http://localhost:80",
-			"http://127.0.0.1:80",
-			"http://localhost:9080",
-			"http://127.0.0.1:9080",
-			"http://127.0.0.1:3777",
-			"http://localhost:3777",
-			"http://127.0.0.1:3000",
-		},
+		AllowOrigins: cfg.Server.AllowOrigins,
 		AllowMethods: []string{
 			"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS",
 		},
-		AllowHeaders: []string{
-			"Origin", "Content-Type", "Accept", "Authorization", "Content-Encoding",
-		},
+		AllowHeaders:     cfg.Server.AllowHeaders,
 		AllowCredentials: true,
 	}))
 	app.Use(logger.New())
 	// 3. auth middleware
 	app.Use(middlewares.AuthorizationMiddleware(cfg, log, specs, publicKey))
-
 	proxy.Register(cfg, log, app.Name("GateWay"))
 
 	//Добавляем Specs директорию

@@ -79,7 +79,7 @@ CREATE TABLE messages (
 
 CREATE TABLE files (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    filename VARCHAR(30) NOT NULL UNIQUE, 
+    filename VARCHAR(30) NOT NULL, 
     is_safe BOOLEAN NOT NULL,
     message_id UUID  REFERENCES messages(uuid) ON DELETE CASCADE,
     size INTEGER NOT NULL,
@@ -97,8 +97,6 @@ CREATE TABLE answers (
 
 CREATE TABLE steps (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    previous_step UUID REFERENCES steps(uuid) ON DELETE CASCADE,
-    previous_answer UUID REFERENCES answers(uuid) ON DELETE CASCADE,
    
     min_trust INT NOT NULL DEFAULT -100,
     max_trust INT NOT NULL DEFAULT 100,
@@ -111,6 +109,17 @@ CREATE TABLE steps (
     CONSTRAINT chk_max_normal CHECK (max_trust BETWEEN -100 AND 100),
     CONSTRAINT chk_min_normal CHECK (min_trust BETWEEN -100 AND 100)
 );
+
+CREATE TABLE step_to_steps (
+    uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    step_uuid UUID NOT NULL REFERENCES steps(uuid) ON DELETE CASCADE,
+    previous_step_uuid UUID NOT NULL REFERENCES steps(uuid) ON DELETE CASCADE
+)
+CREATE TABLE step_to_answers (
+    uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    step_uuid UUID NOT NULL REFERENCES steps(uuid) ON DELETE CASCADE,
+    previous_answer_uuid UUID NOT NULL REFERENCES answers(uuid) ON DELETE CASCADE
+)
 
 CREATE TABLE scenarios (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,

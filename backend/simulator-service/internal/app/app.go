@@ -15,7 +15,6 @@ import (
 	"github.com/NekNB/CyberNavigate/swagger/gen/simulator"
 
 	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/middleware/cors"
 	"github.com/gofiber/fiber/v3/middleware/logger"
 
 	"github.com/gofiber/fiber/v3/middleware/recover"
@@ -48,27 +47,8 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 	})
 	app.Use(logger.New())
 	if cfg.Env != "local" {
-
 		app.Use(recover.New())
 	}
-	app.Use(cors.New(cors.Config{
-		AllowOrigins: []string{
-			"http://localhost:9000",
-			"http://localhost:8000",
-			"http://127.0.0.1:3000",
-			"http://127.0.0.1:9000",
-			"http://127.0.0.1:8000",
-			"http://127.0.0.1:9080",
-			"http://cyber-navigate_gateway-server:9000",
-		},
-		AllowMethods: []string{
-			"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS",
-		},
-		AllowHeaders: []string{
-			"X-User-Id", "Origin", "Content-Type", "Accept", "Authorization", "Content-Encoding",
-		},
-		AllowCredentials: true,
-	}))
 
 	postgresStorage, err := postgres.New(log, fmt.Sprintf(
 		"postgres://%s:%s@%s:%d/%s?sslmode=disable",

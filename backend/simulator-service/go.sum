@@ -9,6 +9,8 @@ github.com/NekNB/CyberNavigate/swagger v0.0.0-20260716200040-d5cd4be76bfc h1:EgP
 github.com/NekNB/CyberNavigate/swagger v0.0.0-20260716200040-d5cd4be76bfc/go.mod h1:EXRgzAUM1cYuXrA1MWbdzbGDk0hkRp0Kl/aClcxupQE=
 github.com/NekNB/CyberNavigate/swagger v0.0.0-20260726165358-8ee64d6f4184 h1:RHsV3gqdLFdrYsGZt3Mzp3zmLKPIJj7bQwDzpEefN2c=
 github.com/NekNB/CyberNavigate/swagger v0.0.0-20260726165358-8ee64d6f4184/go.mod h1:EXRgzAUM1cYuXrA1MWbdzbGDk0hkRp0Kl/aClcxupQE=
+github.com/NekNB/CyberNavigate/swagger v0.0.0-20260806151517-940b296c6d34 h1:DR8aL6VvpxPEGtYWplkXyV8ZC4Whtq6kfB0DgkD2RD8=
+github.com/NekNB/CyberNavigate/swagger v0.0.0-20260806151517-940b296c6d34/go.mod h1:EXRgzAUM1cYuXrA1MWbdzbGDk0hkRp0Kl/aClcxupQE=
 github.com/RaveNoX/go-jsoncommentstrip v1.0.0/go.mod h1:78ihd09MekBnJnxpICcwzCMzGrKSKYe4AqU6PDYYpjk=
 github.com/andybalholm/brotli v1.2.1 h1:R+f5xP285VArJDRgowrfb9DqL18yVK0gKAW/F+eTWro=
 github.com/andybalholm/brotli v1.2.1/go.mod h1:rzTDkvFWvIrjDXZHkuS16NPggd91W3kUSvPlQ1pLaKY=

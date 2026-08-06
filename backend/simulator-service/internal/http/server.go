@@ -137,8 +137,8 @@ func (a *APIServer) CreateStep(c fiber.Ctx) error {
 			return c.Status(400).JSON(simulator.ErrorResponse{Message: "MinTrust and MaxTrust must be both passed"})
 		}
 	}
-	if req.PreviousAnswer != nil && req.PreviousStep != nil {
-		return c.Status(400).JSON(simulator.ErrorResponse{Message: "PreviosAnswer and PreviousStep mustn't be both passed"})
+	if req.PreviousAnswers != nil && req.PreviousSteps != nil {
+		return c.Status(400).JSON(simulator.ErrorResponse{Message: "PreviosAnswers and PreviousSteps mustn't be both passed"})
 	}
 
 	stepMeta, err := a.simulatorService.CreateStep(req)

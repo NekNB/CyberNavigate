@@ -406,14 +406,14 @@ func (p *PostgresStorage) GetTrusts(sessionId string) (*[]int, error) {
 	return &trusts, nil
 }
 
-func (p *PostgresStorage) CreateStep(scenariodId string, previousAnswer, previosStep *string, maxTrust, minTrust *int) (string, error) {
+func (p *PostgresStorage) CreateStep(scenariodId string, maxTrust, minTrust *int) (string, error) {
 	var stepId string
 
 	if err := p.db.QueryRow(`
-		INSERT INTO steps (previous_answer, previous_step, max_trust, min_trust, scenario_id)
-		VALUES (COALESCE($1::uuid, NULL), COALESCE($2::uuid, NULL), COALESCE($3::int, 100), COALESCE($4::int, -100), $5)
+		INSERT INTO steps (max_trust, min_trust, scenario_id)
+		VALUES (COALESCE($1::int, 100), COALESCE($2::int, -100), $3)
 		RETURNING uuid;
-	`, previousAnswer, previosStep, maxTrust, minTrust, scenariodId).
+	`, maxTrust, minTrust, scenariodId).
 		Scan(
 			&stepId,
 		); err != nil {
@@ -450,18 +450,12 @@ func (p *PostgresStorage) EditStep(stepID string, maxTrust, minTrust *int) error
 	return nil
 }
 func (p *PostgresStorage) GetStep(stepId string) (*models.StepData, error) {
-	// var previousStep, previosAnswer sql.NullString
-	// var MinTrust, MaxTrust sql.NullInt64
 	var step models.StepData
 	var actionIds []uint8
-
-	var previousStep, previousAnswer sql.NullString
 
 	if err := p.db.QueryRow(`
 		SELECT 
 			s.uuid,
-			s.previous_step,
-			s.previous_answer,
 			s.min_trust,
 			s.max_trust,
 			s.scenario_id,
@@ -476,8 +470,6 @@ func (p *PostgresStorage) GetStep(stepId string) (*models.StepData, error) {
 		WHERE s.uuid = $1::uuid
 		GROUP BY 
 			s.uuid,
-			s.previous_step,
-			s.previous_answer,
 			s.min_trust,
 			s.max_trust,
 			s.scenario_id,
@@ -485,8 +477,6 @@ func (p *PostgresStorage) GetStep(stepId string) (*models.StepData, error) {
 			s.updated_at;
 	`, stepId).Scan(
 		&step.UUID,
-		&previousStep,
-		&previousAnswer,
 		&step.MinTrust,
 		&step.MaxTrust,
 		&step.ScenarioId,
@@ -504,13 +494,6 @@ func (p *PostgresStorage) GetStep(stepId string) (*models.StepData, error) {
 	if err := json.Unmarshal(actionIds, &step.ActionIds); err != nil {
 		p.log.Error(err)
 		return nil, err
-	}
-
-	if previousStep.Valid {
-		step.PreviousStep = &previousStep.String
-	}
-	if previousAnswer.Valid {
-		step.PreviousAnswer = &previousAnswer.String
 	}
 
 	return &step, nil
@@ -543,9 +526,10 @@ func (p *PostgresStorage) DeleteAllMatchActionToStep(stepId string) error {
 func (p *PostgresStorage) GetNextStepByStepId(currentStepId string, currentTrust int) (*string, error) {
 	var nextStepId string
 	if err := p.db.QueryRow(`
-	SELECT uuid
-	FROM steps 
-	WHERE previous_step = $1 AND uuid != $1 AND $2 BETWEEN min_trust AND max_trust;
+		SELECT s2s.step_uuid
+		FROM step_to_steps s2s
+		JOIN steps s ON s2s.step_uuid = s.uuid
+		WHERE s2s.previous_step_uuid = $1 AND $2 BETWEEN s.min_trust AND s.max_trust;
 	`, currentStepId, currentTrust).Scan(&nextStepId); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -559,9 +543,10 @@ func (p *PostgresStorage) GetNextStepByStepId(currentStepId string, currentTrust
 func (p *PostgresStorage) GetNextStepByAnswerId(answerId string, currentTrust int) (*string, error) {
 	var nextStepId string
 	if err := p.db.QueryRow(`
-		SELECT uuid
-		FROM steps 
-		WHERE previous_answer = $1 AND $2 BETWEEN min_trust AND max_trust;
+		SELECT s2a.step_uuid
+		FROM step_to_answers s2a
+		JOIN steps s ON s2a.step_uuid = s.uuid
+		WHERE s2a.previous_answer_uuid = $1 AND $2 BETWEEN s.min_trust AND s.max_trust;
 	`, answerId, currentTrust).Scan(&nextStepId); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -967,4 +952,25 @@ func (p *PostgresStorage) GetFileById(fileId string) (*models.FileData, error) {
 	}
 
 	return &file, nil
+}
+
+func (p *PostgresStorage) MatchAnswerToStep(stepId, previousAnswerId string) error {
+	if _, err := p.db.Exec(`
+		INSERT INTO step_to_answers (step_uuid, previous_answer_uuid)
+		VALUES ($1, $2);
+	`, stepId, previousAnswerId); err != nil {
+		p.log.Error(err)
+		return err
+	}
+	return nil
+}
+func (p *PostgresStorage) MatchStepToStep(stepId, previousStepId string) error {
+	if _, err := p.db.Exec(`
+		INSERT INTO step_to_steps (step_uuid, previous_step_uuid)
+		VALUES ($1, $2);
+	`, stepId, previousStepId); err != nil {
+		p.log.Error(err)
+		return err
+	}
+	return nil
 }

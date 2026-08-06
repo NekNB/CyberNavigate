@@ -1,0 +1,61 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  z-index: 1000;
+}
+
+.smsWrapper {
+  /* Скрываем блок за пределами экрана сверху */
+  transform: translateY(-100%);
+  opacity: 0; /* Делаем его прозрачным */
+
+  /* Подключаем анимацию: длительность 0.8с, задержка 0.2с, плавное замедление в конце */
+  animation: slideDown 0.8s 0.2s ease-out forwards;
+}
+/* Создаем ключевые кадры анимации */
+@keyframes slideDown {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.sms {
+  padding: 4px 25px;
+  display: grid;
+  grid-template-columns: auto;
+  grid-template-rows: 1fr 1fr;
+  max-width: 60wv;
+  min-width: 40vw;
+  border-radius: 30px;
+  background-color: rgba(44, 194, 149, 0.9);
+  margin-top: 5px;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.senderName {
+  text-align: center;
+  text-transform: capitalize;
+  margin: 0;
+  width: 100%;
+}
+
+.text {
+  color: #063028;
+  text-align: center;
+  margin: 0;
+}

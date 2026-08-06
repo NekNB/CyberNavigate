@@ -36,11 +36,10 @@ func AuthorizationMiddleware(cfg *config.Config, log *logrus.Logger, specs *pars
 					return handleError(c, fiber.ErrUnauthorized, "Invalid token claims")
 				}
 				// Добавляем к запросу заголовок с Id
-				log.Debug(c.Req().Get("X-User-Id"))
 				if c.Req().Get("X-User-Id") != claims.UserID {
-					c.Request().Header.Add("X-User-Id", claims.UserID)
+					c.Request().Header.Del("X-User-Id")
+					c.Request().Header.Set("X-User-Id", claims.UserID)
 				}
-				log.Debug(c.Req().GetHeaders())
 
 				if policy.Permission == "admin" {
 					if !claims.IsAdmin {

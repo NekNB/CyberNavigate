@@ -1,0 +1,107 @@
+metadata:
+  title: Служба безопасности Госуслуг
+  difficulty: middle
+  description: Игрок учится распозновать классический обман мошенника, учится распозновать опасные файлы
+
+starts_step: step_0
+
+senders:
+  alex:
+    senderName: Александр
+
+steps:
+  step_0:
+    next_step: step_1
+    actions:
+      - type: sms
+        senderName: GOSUSLUGI
+        text: Зафиксирован вход с нового устройства. Если это не Вы - ожидайте звонка специалита службы безопасности
+        delay: 0
+
+  step_1:
+    actions:
+      - type: message
+        sender_id: alex
+        sender_name: alex.senderName
+        text: Получили сигнал о входе с нового устройства, Вам удобно сейчас разговаривать?
+        answers:
+          - text: Да, удобно
+            add_trust: 10
+            next_step: step_2
+          - text: Нет, всего доброго
+            add_trust: -100
+            next_step: good_end
+        delay: 4
+  step_2:
+    actions:
+      - type: message
+        sender_id: alex
+        sender_name: alex.senderName
+        text: Был осуществлен вход с устройства Android. Регион отличается от Вашего. Мы приостановили подозрительные операции. Это были Вы?
+        answers:
+          - text: Нет, это был не я
+            add_trust: 15
+            next_step: step_3
+          - text: Это был я
+            add_trust: 0
+            next_step: good_end
+        delay: 0
+
+  step_3:
+    actions:
+      - type: message
+        sender_id: alex
+        sender_name: alex.senderName
+        text: Похоже злоумышленники пытаются получить доступ к электронным доверенностям. Доступ к Вашей учетной записи был заблокирован
+        answers:
+          - text: Что мне делать?
+            add_trust: 15
+            next_step: step_5
+          - text: Почему Вы пишите через мессенджер?
+            add_trust: -15
+            next_step: step_4
+        delay: 0
+  step_4:
+    actions:
+      - type: message
+        sender_id: alex
+        sender_name: alex.senderName
+        text: По регламенту связываемся через номер из аккаунта. Продолжаем сопровождение до полной блокировки. Вы рядом с телефоном?
+        answers:
+          - text: Да
+            add_trust: 0
+            next_step: step_5
+        delay: 0
+
+  step_5:
+    actions:
+      - type: message
+        sender_id: alex
+        sender_name: alex.senderName
+        text: Я помогу защитить ваши данные, просто следуйте моим инструкциям
+        answers:
+          - text: Хорошо
+            add_trust: 0
+            next_step: step_6
+        delay: 0
+
+  step_6:
+    actions:
+      - type: message
+        sender_id: alex
+        sender_name: alex.senderName
+        text: Сейчас вам необходимо установить это приложение. Оно разработано специально для быстрой смены паролей от всех ваших учетных записей, включая мессенджеры и онлайн-банки
+        answers:
+          - text: Я не буду скачивать
+            add_trust: -100
+            next_step: good_end
+        files:
+          - filename: gosuslugi_security.apk
+            error: "Вы скачали файл с расширением .apk - это программа. Программы можно устанавливать только из официальных магазинов приложений: Google Play, RuStore"
+            size: 19
+            is_safe: false
+        delay: 0
+
+ends:
+  - good_end
+  - game_over

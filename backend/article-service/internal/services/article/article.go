@@ -23,7 +23,7 @@ type ArticleMetaProvider interface {
 	ArticleByUUID(articleUUID string) (*article.ArticleMetaData, error)
 	ArticleTextIDByUUID(articleUUID string) (textID string, err error)
 	CreateArticle(articleName *string) (*article.ArticleMetaData, error)
-	UpdateArticleByUUID(uuid, title, textID, status, videoUrl string) (*article.ArticleMetaData, error)
+	UpdateArticleByUUID(articleUUID string, title, textID, status, videoUrl *string) (*article.ArticleMetaData, error)
 }
 
 type ArticleService struct {
@@ -106,10 +106,10 @@ func (a *ArticleService) SaveArticleTextByUUID(ctx context.Context, articleId, t
 
 	metadata, err := mP.UpdateArticleByUUID(
 		articleId,
-		"",
-		textId,
-		"",
-		"",
+		nil,
+		&textId,
+		nil,
+		nil,
 	)
 	if err != nil {
 		a.log.Error(err)
@@ -118,13 +118,13 @@ func (a *ArticleService) SaveArticleTextByUUID(ctx context.Context, articleId, t
 	return metadata, nil
 }
 
-func (a *ArticleService) UpdateArticleByUUID(articleId, text, title, videoURL, status string) (*article.ArticleMetaData, error) {
+func (a *ArticleService) UpdateArticleByUUID(articleId string, title, status *string) (*article.ArticleMetaData, error) {
 	metadata, err := a.articleMetaProvider.UpdateArticleByUUID(
 		articleId,
-		text,
 		title,
-		videoURL,
+		nil,
 		status,
+		nil,
 	)
 	if err != nil {
 		a.log.Error(err)

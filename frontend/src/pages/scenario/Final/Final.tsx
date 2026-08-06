@@ -8,7 +8,7 @@ interface FinalProps {
   results: IResults;
 }
 
-const Final: FC<FinalProps> = ({ onClose, results }) => {
+const Final: FC<FinalProps> = ({ results }) => {
   const navigate = useNavigate();
 
   const gameDuration = useMemo(() => {
@@ -25,7 +25,7 @@ const Final: FC<FinalProps> = ({ onClose, results }) => {
   }, [results]);
 
   return (
-    <div className={styles.wrapper} onClick={onClose}>
+    <div className={styles.wrapper}>
       <div className={styles.finalWindow} onClick={(e) => e.stopPropagation()}>
         <h3 className={styles.title}>Игра окончена</h3>
 

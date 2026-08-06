@@ -138,7 +138,7 @@ func (p *PostgresStorage) CreateArticle(articleTitle *string) (*article.ArticleM
 }
 
 // Обновление сущности Article по UUID
-func (p *PostgresStorage) UpdateArticleByUUID(uuid, title, textID, status, videoUrl string) (*article.ArticleMetaData, error) {
+func (p *PostgresStorage) UpdateArticleByUUID(articleUUID string, title, textID, status, videoUrl *string) (*article.ArticleMetaData, error) {
 	var metadata article.ArticleMetaData
 
 	if err := p.db.QueryRow(`
@@ -150,7 +150,7 @@ func (p *PostgresStorage) UpdateArticleByUUID(uuid, title, textID, status, video
 			video_url = COALESCE(NULLIF($5, ''), video_url)
 		WHERE uuid = $1
 		RETURNING uuid, title, status;
-	`, uuid, title, textID, status, videoUrl).
+	`, articleUUID, title, textID, status, videoUrl).
 		Scan(
 			&metadata.Id,
 			&metadata.Title,

@@ -32,17 +32,8 @@ export default defineConfig(() => {
     server: {
       host: appConfig.server?.address || "localhost",
       port: appConfig.server?.port || 3777,
-      //  ДОБАВЛЯЕМ ПРОКСИРОВАНИЕ 
-      proxy: {
-        '/api': {
-          target: 'http://127.0.0.1:9080',
-          changeOrigin: true,
-          secure: false,
-          
-        },
-      },
+      //  ДОБАВЛЯЕМ ПРОКСИРОВАНИЕ
     },
     plugins: [react(), babel({ presets: [reactCompilerPreset()] })],
   };
 });
-

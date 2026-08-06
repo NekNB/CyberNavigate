@@ -2,8 +2,10 @@ import { useEffect, useState, type FC } from "react";
 import FileDownloader from "../../../types/fileDownloader";
 import type { IChat, IChatAnswer } from "../../../types/messenger";
 
+import type { ISMS } from "../../../types/simulator";
 import Chat from "./Chat/Chat";
 import styles from "./Messenger.module.css";
+import SMS from "./Sms/Sms";
 
 interface MessengerProps {
   chats: Map<string, IChat>;
@@ -11,21 +13,32 @@ interface MessengerProps {
   sendAnswer: (senderId: string, answer: IChatAnswer) => Promise<void>;
   readMessage: (chatId: string) => void;
   isFrozen: boolean;
+  setIsGetResults: (isGetResults: boolean) => void;
+  sms?: ISMS[];
 }
 
 const Messenger: FC<MessengerProps> = ({
   chats,
   setIsFinished,
+  setIsGetResults,
   readMessage,
   sendAnswer,
   isFrozen,
+  sms,
 }) => {
   const [openedChat, setOpenedChat] = useState<string>();
   const fileDownloader = new FileDownloader();
+  const [openedSms, setOpenedSms] = useState(false);
 
   const handleChoiceChat = (chatId: string) => {
     setOpenedChat(chatId);
   };
+
+  useEffect(() => {
+    if (sms) {
+      setOpenedSms(true);
+    }
+  }, [sms]);
 
   useEffect(() => {
     if (openedChat) {
@@ -34,11 +47,14 @@ const Messenger: FC<MessengerProps> = ({
   }, [chats, openedChat, readMessage]);
   return (
     <div className={styles.messenger}>
+      {sms && openedSms && (
+        <SMS sms={sms} closeSms={() => setOpenedSms(false)} />
+      )}
       <header className={styles.header}>
         <img
           src="/assets/messenger.png"
           className={styles.logo}
-          onClick={isFrozen ? () => setIsFinished(true) : () => {}}
+          onClick={() => setOpenedSms(true)}
         />
       </header>
       <nav className={styles.chatList}>
@@ -66,6 +82,7 @@ const Messenger: FC<MessengerProps> = ({
       <main className={styles.chat}>
         {openedChat && (
           <Chat
+            setIsGetResults={setIsGetResults}
             isFrozen={isFrozen}
             setIsFinished={setIsFinished}
             chat={chats.get(openedChat)!}

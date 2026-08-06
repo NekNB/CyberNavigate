@@ -1,7 +1,7 @@
 env: "local" # dev, prod
 
 http:
-  port: 9000
+  port: 8000
   timeout: 10h
 
 storages:
@@ -17,3 +17,9 @@ storages:
     port: 27017
     user: articleService
     collection: articles
+
+certs:
+  ca_cert: ../../secrets/certs/article-service/ca-cert.pem
+
+  server_cert: ../../secrets/certs/article-service/server-cert.pem
+  server_key: ../../secrets/certs/article-service/server-key.pem

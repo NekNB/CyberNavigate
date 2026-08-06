@@ -15,7 +15,6 @@ import (
 	"github.com/NekNB/CyberNavigate/swagger"
 	"github.com/NekNB/CyberNavigate/swagger/gen/user"
 	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/middleware/cors"
 	"github.com/gofiber/fiber/v3/middleware/logger"
 
 	"github.com/gofiber/fiber/v3/middleware/recover"
@@ -68,28 +67,6 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 	app.Use(logger.New())
 	app.Use(recover.New())
 	app.Use(middlewares.AuthMiddleware(sessionService))
-	app.Use(cors.New(cors.Config{
-		AllowOrigins: []string{
-			"http://localhost:9000",
-			"http://localhost:8000",
-			"http://127.0.0.1:9000",
-			"http://cyber-navigate_gateway-server:9000",
-			"http://127.0.0.1:3777",
-			"http://127.0.0.1:9080",
-			"http://127.0.0.1:3000",
-		},
-		AllowOriginsFunc: func(origin string) bool {
-			fmt.Println(origin)
-			return true
-		},
-		AllowMethods: []string{
-			"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS",
-		},
-		AllowHeaders: []string{
-			"Origin", "Content-Type", "Accept", "Authorization", "Content-Encoding",
-		},
-		AllowCredentials: true,
-	}))
 
 	userAPI := userAPI.New(cfg, log, userService, sessionService)
 

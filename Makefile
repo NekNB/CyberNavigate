@@ -4,9 +4,13 @@
 
 ARGS = $(filter-out $@,$(MAKECMDGOALS))
 
-init:
+ps1:
 	powershell -Command "Push-Location ./ps1; ./convert-env.ps1; ./create-keys.ps1; ./generate-mtls-certs.ps1; Pop-Location"
 
+
+sh:
+	chmod +x ./sh/convert-env.sh ./sh/create-keys.sh ./sh/generate-mtls-certs.sh
+	pushd ./sh && ./convert-env.sh && ./create-keys.sh && ./generate-mtls-certs.sh && popd
 
 run:
 	$(MAKE) build ARGS=postgres
