@@ -156,14 +156,18 @@ components:
           type: string
           format: uuid
           example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
-        previousStep:
-          type: string
-          format: uuid
-          example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
-        previousAnswer:
-          type: string
-          format: uuid
-          example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+        previousSteps:
+          type: array
+          items:
+            type: string
+            format: uuid
+            example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
+        previousAnswers:
+          type: array
+          items:
+            type: string
+            format: uuid
+            example: 2b1c6d2c-4e6f-4c9b-a2b4-8f1d2c3e4f5a
         minTrust:
           type: integer
           example: 0

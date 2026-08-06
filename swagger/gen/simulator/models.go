@@ -301,23 +301,23 @@ type StepBase struct {
 
 // StepMeta defines model for StepMeta.
 type StepMeta struct {
-	Actions        *[]openapi_types.UUID `json:"actions,omitempty"`
-	MaxTrust       *int                  `json:"maxTrust,omitempty"`
-	MinTrust       *int                  `json:"minTrust,omitempty"`
-	PreviousAnswer *openapi_types.UUID   `json:"previousAnswer,omitempty"`
-	PreviousStep   *openapi_types.UUID   `json:"previousStep,omitempty"`
-	ScenarioId     *openapi_types.UUID   `json:"scenarioId,omitempty"`
+	Actions         *[]openapi_types.UUID `json:"actions,omitempty"`
+	MaxTrust        *int                  `json:"maxTrust,omitempty"`
+	MinTrust        *int                  `json:"minTrust,omitempty"`
+	PreviousAnswers *[]openapi_types.UUID `json:"previousAnswers,omitempty"`
+	PreviousSteps   *[]openapi_types.UUID `json:"previousSteps,omitempty"`
+	ScenarioId      *openapi_types.UUID   `json:"scenarioId,omitempty"`
 }
 
 // StepMetaFull defines model for StepMetaFull.
 type StepMetaFull struct {
-	Actions        []ActionFull        `json:"actions"`
-	Id             openapi_types.UUID  `json:"id"`
-	MaxTrust       *int                `json:"maxTrust,omitempty"`
-	MinTrust       *int                `json:"minTrust,omitempty"`
-	PreviousAnswer *openapi_types.UUID `json:"previousAnswer,omitempty"`
-	PreviousStep   *openapi_types.UUID `json:"previousStep,omitempty"`
-	ScenarioId     openapi_types.UUID  `json:"scenarioId"`
+	Actions         []ActionFull          `json:"actions"`
+	Id              openapi_types.UUID    `json:"id"`
+	MaxTrust        *int                  `json:"maxTrust,omitempty"`
+	MinTrust        *int                  `json:"minTrust,omitempty"`
+	PreviousAnswers *[]openapi_types.UUID `json:"previousAnswers,omitempty"`
+	PreviousSteps   *[]openapi_types.UUID `json:"previousSteps,omitempty"`
+	ScenarioId      openapi_types.UUID    `json:"scenarioId"`
 }
 
 // StepMetaMin defines model for StepMetaMin.
@@ -329,12 +329,12 @@ type StepMetaMin struct {
 
 // StepMetaRequired defines model for StepMetaRequired.
 type StepMetaRequired struct {
-	Actions        []openapi_types.UUID `json:"actions"`
-	MaxTrust       *int                 `json:"maxTrust,omitempty"`
-	MinTrust       *int                 `json:"minTrust,omitempty"`
-	PreviousAnswer *openapi_types.UUID  `json:"previousAnswer,omitempty"`
-	PreviousStep   *openapi_types.UUID  `json:"previousStep,omitempty"`
-	ScenarioId     openapi_types.UUID   `json:"scenarioId"`
+	Actions         []openapi_types.UUID  `json:"actions"`
+	MaxTrust        *int                  `json:"maxTrust,omitempty"`
+	MinTrust        *int                  `json:"minTrust,omitempty"`
+	PreviousAnswers *[]openapi_types.UUID `json:"previousAnswers,omitempty"`
+	PreviousSteps   *[]openapi_types.UUID `json:"previousSteps,omitempty"`
+	ScenarioId      openapi_types.UUID    `json:"scenarioId"`
 }
 
 // ForbiddenResponse defines model for ForbiddenResponse.
