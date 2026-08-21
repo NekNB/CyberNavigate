@@ -13,5 +13,5 @@ COPY /databases/postgres/templates /docker-entrypoint-initdb.d/
 
 COPY /databases/postgres/scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
-
 RUN sed -i 's/\r$//'  /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
