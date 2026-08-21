@@ -20,7 +20,7 @@ echo "Запуск Nginx..."
 nginx -g 'daemon off;' &
 
 # Ждем, пока Nginx поднимется
-sleep
+sleep 3
 # Если сертификатов нет, получаем их
 if [ ! -f "$CERT_PATH" ]; then
     echo "Запрашиваем сертификаты у Let's Encrypt..."
