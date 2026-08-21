@@ -34,12 +34,11 @@ server:
                 - "Authorization"
                 - "Content-Encoding"
         allow_origins:
-                - "http://127.0.0.1:3000"
-                - "http://127.0.0.1:3777"
-                - "http://127.0.0.1:9080"
-                - "http://localhost:3000"
-                - "http://localhost:3777"
-                - "http://localhost:9080"
+                - "https://api.кибер-навигатор.рф"
+                - "https://www.кибер-навигатор.рф"
+                - "https://api.xn----8sbabhgkwfn1brsi2a.xn--p1ai"
+                - "https://www.xn----8sbabhgkwfn1brsi2a.xn--p1ai"
+
 
 public_key_path: ./keys/public.pem
 

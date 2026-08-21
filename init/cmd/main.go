@@ -16,7 +16,7 @@ func main() {
 	apiClient := http.New(log, "http://127.0.0.1:9080/api/v1")
 
 	// TODO: поменять ввод username/password
-	apiClient.Login("admin", "admin")
+	apiClient.Login("Арей", "123")
 
 	log.Info("Инициализация проекта началась...")
 	if err := parser.ProcessArticles(apiClient, log); err != nil {

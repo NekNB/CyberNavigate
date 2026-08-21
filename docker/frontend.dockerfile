@@ -6,8 +6,8 @@ COPY /frontend/package*.json ./
 RUN npm ci
 # Копируем исходный код и собираем
 COPY /frontend .
-COPY /configs/frontend/dev.yaml .
-ENV CONFIG_PATH=./dev.yaml
+COPY /configs/frontend/prod.yaml .
+ENV CONFIG_PATH=./prod.yaml
 RUN npm run build
 
 # Этап 2: Отдача через Nginx

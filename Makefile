@@ -1,4 +1,4 @@
-.PHONY: echorun build start stop secrets_remove srm secrets_create scr secrets_update ps1 sh
+.PHONY: build start stop secrets_remove srm secrets_create scr secrets_update ps1 sh
 
 .SILENT:
 
@@ -55,6 +55,8 @@ scale:
 	$(eval SERVICE=$(word 1,$(ARGS)))
 	$(eval COUNT=$(word 2,$(ARGS)))
 	docker service scale cyber-navigate_$(SERVICE)=$(COUNT)
+start_service:
+	docker service scale cyber-navigate_$(ARGS)=1
 
 stop:
 	docker service scale cyber-navigate_${ARGS}=0

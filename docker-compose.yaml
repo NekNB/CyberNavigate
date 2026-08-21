@@ -15,10 +15,7 @@ services:
      
 
   nginx:
-    build:
-      context: .
-      dockerfile: Dockerfile.nginx
-    image: cyber-navigate/nginx-certbot:latest
+    image: cyber-navigate/nginx
     ports:
       - target: 80
         published: 80
@@ -26,11 +23,7 @@ services:
       - target: 443
         published: 443
         mode: host
-    environment:
-      - DOMAINS=api.кибер-навигатор.рф www.кибер-навигатор.рф
-      - EMAIL=nikita.58baydin4@mail.ru # УКАЖИ СВОЮ ПОЧТУ
     volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - certbot-www:/var/www/certbot
       - certbot-certs:/etc/letsencrypt
     deploy:
@@ -38,11 +31,12 @@ services:
       placement:
         constraints:
           - node.role == manager
+    depends_on:
+      - frontend
+      - gateway-server
 
   gateway-server:
     image: cyber-navigate/gateway-server
-    depends_on:
-      - article-service
     ports:
       - target: 443
         published: 9443

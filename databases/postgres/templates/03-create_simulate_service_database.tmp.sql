@@ -103,7 +103,6 @@ CREATE TABLE steps (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT chk_not_both_not_null CHECK (previous_step IS NULL OR previous_answer IS NULL),
 
     CONSTRAINT chk_max_greater_min CHECK (max_trust > min_trust),
     CONSTRAINT chk_max_normal CHECK (max_trust BETWEEN -100 AND 100),
@@ -114,12 +113,12 @@ CREATE TABLE step_to_steps (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     step_uuid UUID NOT NULL REFERENCES steps(uuid) ON DELETE CASCADE,
     previous_step_uuid UUID NOT NULL REFERENCES steps(uuid) ON DELETE CASCADE
-)
+);
 CREATE TABLE step_to_answers (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     step_uuid UUID NOT NULL REFERENCES steps(uuid) ON DELETE CASCADE,
     previous_answer_uuid UUID NOT NULL REFERENCES answers(uuid) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE scenarios (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
