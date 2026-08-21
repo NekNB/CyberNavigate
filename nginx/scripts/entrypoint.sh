@@ -20,8 +20,7 @@ echo "Запуск Nginx..."
 nginx -g 'daemon off;' &
 
 # Ждем, пока Nginx поднимется
-sleep 3
-
+sleep
 # Если сертификатов нет, получаем их
 if [ ! -f "$CERT_PATH" ]; then
     echo "Запрашиваем сертификаты у Let's Encrypt..."
@@ -33,11 +32,11 @@ if [ ! -f "$CERT_PATH" ]; then
         -d xn----8sbabhgkwfn1brsi2a.xn--p1ai \
         -d api.xn----8sbabhgkwfn1brsi2a.xn--p1ai \
         -d www.xn----8sbabhgkwfn1brsi2a.xn--p1ai
-    
+
     # Заменяем конфиг Nginx на версию с HTTPS
     echo "Активируем HTTPS конфигурацию..."
     cp /etc/nginx/configs/nginx-https.conf /etc/nginx/conf.d/default.conf
-    
+
     # Перезагружаем Nginx
     echo "Перезагрузка Nginx..."
     nginx -s reload
