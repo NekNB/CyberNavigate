@@ -6,7 +6,7 @@
 .hero {
   background:
     linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
-    url("/assets/knight-bg.png") no-repeat center center;
+    url("/assets/knight-bg.webp") no-repeat center center;
 
   background-size: cover;
   padding: 100px 0;

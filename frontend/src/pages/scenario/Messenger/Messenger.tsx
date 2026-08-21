@@ -52,7 +52,7 @@ const Messenger: FC<MessengerProps> = ({
       )}
       <header className={styles.header}>
         <img
-          src="/assets/messenger.png"
+          src="/assets/messenger.webp"
           className={styles.logo}
           onClick={() => setOpenedSms(true)}
         />

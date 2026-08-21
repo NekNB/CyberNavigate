@@ -5,7 +5,7 @@ import type { IArticle } from "../../types/articles";
 import Login from "../Login/Login";
 import Register from "../Register/Register";
 import styles from "./Header.module.css";
-import logo from "/assets/logo.png";
+import logo from "/assets/logo.webp";
 import openDoor from "/assets/open-door.svg";
 import profile from "/assets/profile.svg";
 

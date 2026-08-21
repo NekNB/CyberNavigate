@@ -1,6 +1,6 @@
 import type { FC } from "react";
 import styles from "./Stats.module.css";
-import graph from "/assets/graph-line.png";
+import graph from "/assets/graph-line.webp";
 
 const Stats: FC = () => {
   return (
