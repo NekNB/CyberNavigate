@@ -87,7 +87,7 @@ CREATE TABLE files (
 );
 CREATE TABLE answers (
     uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    text VARCHAR(50) NOT NULL,
+    text VARCHAR(512) NOT NULL,
     message_id UUID REFERENCES messages(uuid) ON DELETE CASCADE,
     add_trust INTEGER NOT NULL DEFAULT 0,
     error VARCHAR(256)

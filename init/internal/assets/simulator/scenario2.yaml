@@ -1,0 +1,215 @@
+# yaml-language-server: $schema=./scenario-schema.json
+metadata:
+  title: Корпоративная учетная запись
+  difficulty: hard
+  description: Игрок учится распознавать сложную многоэтапную атаку на корпоративную учетную запись и проверять подлинность обращений службы поддержки
+
+starts_step: step_0
+
+senders:
+  alex:
+    senderName: Александр
+
+steps:
+  step_0:
+    next_step: step_1
+    actions:
+      - type: sms
+        senderName: IT-отдел
+        text: Обнаружена попытка входа в корпоративную учетную запись с нового устройства. Если это были не Вы - ожидайте звонка специалиста службы поддержки
+        delay: 0
+
+  step_1:
+    actions:
+      - type: message
+        sender_id: alex
+        sender_name: alex.senderName
+        text: Добрый день. Меня зовут Александр, я специалист службы поддержки. Мы получили уведомление о подозрительном входе в Вашу корпоративную учетную запись. Вам удобно сейчас разговаривать?
+        answers:
+          - text: Да, удобно
+            add_trust: 0
+            next_step: step_2
+          - text: Нет, я сам обращусь в службу поддержки
+            add_trust: 0
+            next_step: good_end
+        delay: 4
+
+  step_2:
+    actions:
+      - type: message
+        sender_id: alex
+        sender_name: alex.senderName
+        text: В системе зафиксирован вход с нового устройства. Подключение произошло несколько минут назад. Вы сейчас находитесь за рабочим компьютером?
+        answers:
+          - text: Да
+            add_trust: 0
+            next_step: step_3
+          - text: Почему Вы не можете проверить это самостоятельно?
+            add_trust: 0
+            next_step: step_31
+          - text: Я не буду сообщать такую информацию
+            add_trust: 0
+            next_step: step_4
+        delay: 0
+
+  step_31:
+    actions:
+      - type: message
+        sender_id: alex
+        sender_name: alex.sender_name
+        text: Это конфиденциальные данные. Без вашего разрешения мы не можем получить к ним доступ
+        answers:
+          - text: Тогда почему я должен что-то вам сообщать?
+            next_step: step_4
+            add_trust: 0
+          - text: Что нужно делать?
+            next_step: step_3
+            add_trust: 0
+  step_3:
+    actions:
+      - type: message
+        sender_id: alex
+        sender_name: alex.senderName
+        text: Хорошо. Для проверки я должен убедиться, что разговариваю именно с владельцем учетной записи. Назовите, пожалуйста, Ваш логин в корпоративной системе.
+        answers:
+          - text: "Мой логин: user_15689"
+            add_trust: 0
+            next_step: step_5
+          - text: Я не буду сообщать учетные данные в чате
+            add_trust: 0
+            next_step: step_4
+        delay: 0
+
+  step_4:
+    actions:
+      - type: message
+        sender_id: alex
+        sender_name: alex.senderName
+        text: Понимаю Вашу осторожность. Логин сам по себе не является паролем, поэтому его можно сообщить для идентификации. После этого мы сможем продолжить проверку.
+        answers:
+          - text: "Хорошо, мой логин: user_15689"
+            add_trust: 0
+            next_step: step_5
+          - text: Я самостоятельно свяжусь с поддержкой через официальный канал
+            add_trust: 0
+            next_step: good_end
+        delay: 0
+
+  step_5:
+    actions:
+      - type: message
+        sender_id: alex
+        sender_name: alex.senderName
+        text: Спасибо. Теперь вижу Вашу учетную запись. Для устранения проблемы необходимо временно подтвердить операцию восстановления доступа.
+        answers:
+          - text: Что именно нужно подтвердить?
+            next_step: step_6
+            add_trust: 0
+          - text: Я хочу сначала проверить, действительно ли Вы сотрудник поддержки
+            add_trust: 0
+            next_step: step_7
+        delay: 0
+
+  step_6:
+    actions:
+      - type: message
+        sender_id: alex
+        sender_name: alex.senderName
+        text: Вам сейчас придет код в уведомлении. Продиктуйте его мне
+        answers:
+          - text: "Код: 35068"
+            add_trust: 0
+            next_step: step_8
+            error: "Нельзя сообщать коды из sms третьим лицам"
+          - text: Я не буду подтверждать вход, который не совершал
+            add_trust: 0
+            next_step: step_7
+        delay: 0
+      - type: sms
+        senderName: Корпоративный доступ
+        text: "Ваш код для доступа в личный кабинет: 35068"
+        delay: 1
+
+  step_7:
+    actions:
+      - type: message
+        sender_id: alex
+        sender_name: alex.senderName
+        text: Конечно. Вы можете проверить информацию самостоятельно. Я прикрепил инструкцию по процедуре восстановления корпоративной учетной записи
+        answers:
+          - text: Хорошо, отправляйте инструкцию
+            add_trust: 0
+            next_step: step_9
+          - text: Я сам найду официальный раздел поддержки
+            add_trust: 0
+            next_step: good_end
+        files:
+          - filename: employee_access_guide.pdf
+            size: 1800
+            is_safe: true
+        delay: 0
+  step_8:
+    actions:
+      - type: message
+        sender_id: alex
+        sender_name: alex.senderName
+        text: Отлично. Система получила подтверждение. Осталось завершить восстановление доступа. Сейчас Вам поступит еще одно уведомление.
+        answers:
+          - text: Хорошо
+            add_trust: 0
+            next_step: step_10
+          - text: Я хочу остановить процедуру и обратиться в поддержку самостоятельно
+            add_trust: 0
+            next_step: good_end
+        delay: 0
+
+  step_9:
+    actions:
+      - type: message
+        sender_id: alex
+        sender_name: alex.senderName
+        text: В инструкции указано, что восстановление выполняется через корпоративный портал. Перейдите по ссылке из сообщения, чтобы завершить процедуру.
+        answers:
+          - text: Открыть ссылку
+            add_trust: 0
+            next_step: step_10
+          - text: Я найду корпоративный портал самостоятельно
+            add_trust: 0
+            next_step: good_end
+        delay: 1
+      - type: sms
+        sender_name: тех поддержка
+        text: "https://sber.help-er.io/auth"
+        answers:
+          - text: Хорошо я открою ссылку
+            add_trust: 0
+            error: "Вы перешли по ссылке: https://sber.help-er.io/auth. Она ведет на неизвестный нам сайт help-er.io"
+            next_step: step_10
+          - text: Я найду корпоративный портал самостоятельно
+            add_trust: 0
+            next_step: good_end
+        delay: 0
+
+  step_10:
+    actions:
+      - type: message
+        sender_id: alex
+        sender_name: alex.senderName
+        text: Для завершения восстановления система может запросить одноразовое подтверждение. Если получите код, сообщите мне его, чтобы я завершил операцию.
+        answers:
+          - text: "12056"
+            add_trust: 0
+            next_step: game_over
+            error: "Нельзя сообщать коды из sms третьим лицам"
+          - text: Я не буду сообщать никакой код
+            add_trust: 0
+            next_step: good_end
+        delay: 0
+      - type: sms
+        senderName: Корпоративный доступ
+        text: "Ваш код для доступа в личный кабинет: 12056"
+        delay: 1
+
+ends:
+  - good_end
+  - game_over

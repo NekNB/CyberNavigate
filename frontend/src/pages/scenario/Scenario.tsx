@@ -244,8 +244,12 @@ const Scenario: FC = () => {
 
   const sendAnswer = useCallback(
     async (senderId: string, answer: IChatAnswer) => {
+      // Отправляем запрос по API
       await SendAnswer(answer.answerId);
-
+      console.log(answer)
+      if (answer.error) {
+        console.log("Я ответил с ошибкой!")
+      }
       const chat = chats.get(senderId)!;
 
       const newMessage: IChatMessage = {

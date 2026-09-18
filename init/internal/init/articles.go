@@ -1,4 +1,4 @@
-package parser
+package init
 
 import (
 	"bytes"
@@ -62,6 +62,7 @@ func ProcessArticles(apiClient *http.APIClient, log *logrus.Logger) error {
 			return fmt.Errorf("ошибка отправки статьи '%s': %w", meta.ArticleTitle, err)
 		}
 		if resp.Code == 201 {
+			log.Info("Создана статья", resp.Body.Title)
 			if resp.Body == nil {
 				log.Error("Body не найден")
 				continue

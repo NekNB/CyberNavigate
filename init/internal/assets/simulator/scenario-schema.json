@@ -1,0 +1,337 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "scenario-schema.json",
+  "title": "Сценарий тренировки",
+  "description": "Схема YAML-сценария: граф шагов (steps), действия (sms / message) с вариантами ответов и финалы (ends).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "metadata",
+    "starts_step",
+    "steps",
+    "ends"
+  ],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "title": "Метаданные",
+      "description": "Общая информация о сценарии.",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "difficulty",
+        "description"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "title": "Название",
+          "description": "Заголовок сценария."
+        },
+        "difficulty": {
+          "type": "string",
+          "title": "Сложность",
+          "description": "Уровень сложности сценария.",
+          "enum": [
+            "easy",
+            "middle",
+            "hard"
+          ],
+          "default": "medium"
+        },
+        "description": {
+          "type": "string",
+          "title": "Описание",
+          "description": "Краткое описание сценария."
+        }
+      }
+    },
+    "starts_step": {
+      "type": "string",
+      "title": "Начальный шаг",
+      "description": "Идентификатор шага из steps, с которого начинается сценарий (например, step_0)."
+    },
+    "senders": {
+      "type": "object",
+      "title": "Отправители",
+      "description": "Реестр отправителей. Ключ — идентификатор, на который ссылаются действия через sender_id (например, alex).",
+      "additionalProperties": {
+        "type": "object",
+        "title": "Отправитель",
+        "description": "Описание одного отправителя.",
+        "additionalProperties": false,
+        "required": [
+          "senderName"
+        ],
+        "properties": {
+          "senderName": {
+            "type": "string",
+            "title": "Имя отправителя",
+            "description": "Отображаемое имя (на него ссылаются как alex.senderName)."
+          }
+        }
+      }
+    },
+    "steps": {
+      "type": "object",
+      "title": "Шаги",
+      "description": "Граф сценария. Ключ — идентификатор шага (step_0, good_end, game_over, ...).",
+      "additionalProperties": {
+        "$ref": "#/definitions/step"
+      }
+    },
+    "ends": {
+      "type": "array",
+      "title": "Финалы",
+      "description": "Идентификаторы терминальных узлов сценария (например, good_end, game_over).",
+      "items": {
+        "type": "string",
+        "title": "Идентификатор финала"
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    }
+  },
+  "definitions": {
+    "step": {
+      "title": "Шаг",
+      "description": "Шаг сценария: объект с actions либо список действий.",
+      "oneOf": [
+        {
+          "$ref": "#/definitions/stepObject"
+        },
+        {
+          "type": "array",
+          "title": "Шаг как список действий",
+          "description": "Альтернативная форма: шаг задан сразу списком действий (в т.ч. пустой список-заглушка).",
+          "items": {
+            "$ref": "#/definitions/action"
+          }
+        }
+      ]
+    },
+    "stepObject": {
+      "type": "object",
+      "title": "Шаг",
+      "description": "Шаг сценария.",
+      "additionalProperties": false,
+      "required": [
+        "actions"
+      ],
+      "properties": {
+        "next_step": {
+          "type": "string",
+          "title": "Следующий шаг",
+          "description": "Шаг по умолчанию для действий без answers (например, после sms)."
+        },
+        "actions": {
+          "type": "array",
+          "title": "Действия",
+          "description": "Действия, выполняемые на шаге.",
+          "items": {
+            "$ref": "#/definitions/action"
+          }
+        }
+      }
+    },
+    "action": {
+      "title": "Действие",
+      "description": "Действие шага. Типы: sms, message.",
+      "oneOf": [
+        {
+          "$ref": "#/definitions/actionSms"
+        },
+        {
+          "$ref": "#/definitions/actionMessage"
+        }
+      ]
+    },
+    "actionSms": {
+      "type": "object",
+      "title": "SMS",
+      "description": "SMS-сообщение вне чата.",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "text"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "senderName"
+          ]
+        },
+        {
+          "required": [
+            "sender_name"
+          ]
+        }
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "title": "Тип действия",
+          "enum": [
+            "sms"
+          ]
+        },
+        "senderName": {
+          "type": "string",
+          "title": "Отправитель",
+          "description": "Подпись отправителя SMS (camelCase-вариант)."
+        },
+        "sender_name": {
+          "type": "string",
+          "title": "Отправитель",
+          "description": "Подпись отправителя SMS (snake_case-вариант)."
+        },
+        "text": {
+          "type": "string",
+          "title": "Текст",
+          "description": "Текст SMS."
+        },
+        "answers": {
+          "type": "array",
+          "title": "Варианты ответа",
+          "description": "Ответы игрока на SMS.",
+          "items": {
+            "$ref": "#/definitions/answer"
+          }
+        },
+        "delay": {
+          "type": "number",
+          "title": "Задержка",
+          "description": "Задержка перед отправкой, сек.",
+          "minimum": 0,
+          "default": 0
+        }
+      }
+    },
+    "actionMessage": {
+      "type": "object",
+      "title": "Сообщение",
+      "description": "Сообщение в чате от отправителя.",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "sender_id",
+        "sender_name",
+        "text"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "title": "Тип действия",
+          "enum": [
+            "message"
+          ]
+        },
+        "sender_id": {
+          "type": "string",
+          "title": "ID отправителя",
+          "description": "Ключ из секции senders (например, alex)."
+        },
+        "sender_name": {
+          "type": "string",
+          "title": "Имя отправителя",
+          "description": "Отображаемое имя; обычно ссылка вида alex.senderName."
+        },
+        "text": {
+          "type": "string",
+          "title": "Текст",
+          "description": "Текст сообщения."
+        },
+        "answers": {
+          "type": "array",
+          "title": "Варианты ответа",
+          "description": "Ответы, доступные игроку.",
+          "items": {
+            "$ref": "#/definitions/answer"
+          }
+        },
+        "files": {
+          "type": "array",
+          "title": "Вложения",
+          "description": "Файлы, приложенные к сообщению.",
+          "items": {
+            "$ref": "#/definitions/file"
+          }
+        },
+        "delay": {
+          "type": "number",
+          "title": "Задержка",
+          "description": "Задержка перед отправкой, сек.",
+          "minimum": 0,
+          "default": 0
+        }
+      }
+    },
+    "answer": {
+      "type": "object",
+      "title": "Вариант ответа",
+      "description": "Ответ игрока и его последствия.",
+      "additionalProperties": false,
+      "required": [
+        "text",
+        "next_step"
+      ],
+      "properties": {
+        "text": {
+          "type": "string",
+          "title": "Текст ответа",
+          "description": "Вариант, который выбирает игрок."
+        },
+        "error": {
+          "type": "string",
+          "title": "Текст ошибки",
+          "description": "Текст ошибки, котоый увидит игрок, когда игра закончится"
+        },
+        "add_trust": {
+          "type": "number",
+          "title": "Изменение доверия",
+          "description": "На сколько изменить уровень доверия (может быть отрицательным).",
+          "default": 0
+        },
+        "next_step": {
+          "type": "string",
+          "title": "Следующий шаг",
+          "description": "Идентификатор шага из steps или финала из ends (step_3, good_end, game_over, ...)."
+        }
+      }
+    },
+    "file": {
+      "type": "object",
+      "title": "Файл",
+      "description": "Файл, приложенный к сообщению.",
+      "additionalProperties": false,
+      "required": [
+        "filename",
+        "size",
+        "is_safe"
+      ],
+      "properties": {
+        "filename": {
+          "type": "string",
+          "title": "Имя файла",
+          "description": "Имя файла с расширением (например, employee_access_guide.pdf)."
+        },
+        "error": {
+          "type": "string",
+          "title": "Последствия открытия",
+          "description": "Что происходит при открытии файла."
+        },
+        "size": {
+          "type": "number",
+          "title": "Размер",
+          "description": "Размер файла.",
+          "minimum": 0
+        },
+        "is_safe": {
+          "type": "boolean",
+          "title": "Безопасен",
+          "description": "Безопасно ли открывать файл."
+        }
+      }
+    }
+  }
+}

@@ -51,7 +51,6 @@ func New(cfg *config.Config, log *logrus.Logger) (*Server, error) {
 	}
 	app.Use(middleware.LoggerMiddleware())
 	app.Use(logger.New())
-
 	mongoStorage, err := mongo.CreateConnection(log, fmt.Sprintf(
 		"mongodb://%s:%s@%s:%d",
 		cfg.Storage.Mongo.User,

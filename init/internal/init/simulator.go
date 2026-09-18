@@ -1,11 +1,10 @@
-package parser
+package init
 
 import (
 	"io/fs"
 
 	"github.com/NekNB/CyberNavigate/init/internal/assets"
 	"github.com/NekNB/CyberNavigate/init/internal/http"
-	"github.com/NekNB/CyberNavigate/init/internal/init/scenarios"
 	"github.com/sirupsen/logrus"
 )
 
@@ -35,9 +34,9 @@ func InitScenarios(apiClient *http.APIClient, log *logrus.Logger) error {
 
 		// Вызываем вашу функцию
 		log.Infof("Генерируем сценарий из: %s\n", entry.Name())
-		if err := scenarios.GenerateScenario(data, apiClient, log); err != nil {
+		if err := GenerateScenario(data, apiClient, log); err != nil {
 			log.Warn(err)
-			return err
+			continue
 		}
 	}
 	return nil

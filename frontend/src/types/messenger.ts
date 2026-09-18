@@ -24,4 +24,5 @@ export interface IChatFile {
 export interface IChatAnswer {
   answerId: string;
   text: string;
+  error?: string;
 }

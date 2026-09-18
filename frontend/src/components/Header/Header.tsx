@@ -35,7 +35,7 @@ const Header: FC<HeaderProps> = ({
       try {
         await GetUser();
         setIsAuth(true);
-      } catch (error) {
+      } catch  {
         setIsAuth(false);
       }
     };

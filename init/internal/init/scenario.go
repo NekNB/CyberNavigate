@@ -1,7 +1,8 @@
-package scenarios
+package init
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/NekNB/CyberNavigate/init/internal/http"
@@ -50,9 +51,10 @@ type Action struct {
 }
 
 type Answer struct {
-	Text     string `yaml:"text"`
-	AddTrust int    `yaml:"add_trust"`
-	NextStep string `yaml:"next_step,omitempty"`
+	Text     string  `yaml:"text"`
+	AddTrust int     `yaml:"add_trust"`
+	Error    *string `yaml:"error"`
+	NextStep string  `yaml:"next_step,omitempty"`
 }
 
 type File struct {
@@ -76,15 +78,10 @@ func ptrString(s string) *string {
 
 // isEnd проверяет, является ли шаг финальным
 func isEnd(step string, ends []string) bool {
-	for _, e := range ends {
-		if e == step {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(ends, step)
 }
 
-// ==========================================
+// ========================================
 // 3. ОСНОВНОЙ СЦЕНАРИЙ ГЕНЕРАЦИИ
 // ==========================================
 
@@ -135,7 +132,7 @@ func GenerateScenario(yamlData []byte, apiClient *http.APIClient, log *logrus.Lo
 			var answerIDs []string
 			for _, ans := range action.Answers {
 				// CreateAnswer тоже возвращает *Response[Message]
-				ansResp, err := apiClient.CreateAnswer(ans.Text, nil, ans.AddTrust)
+				ansResp, err := apiClient.CreateAnswer(ans.Text, ans.Error, ans.AddTrust)
 				if err != nil || ansResp.Body == nil {
 					return fmt.Errorf("ошибка создания ответа '%s': %w", ans.Text, err)
 				}
