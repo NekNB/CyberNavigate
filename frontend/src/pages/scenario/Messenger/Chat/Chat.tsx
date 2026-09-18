@@ -5,6 +5,7 @@ import type { IChat, IChatAnswer } from "../../../../types/messenger";
 import styles from "./Chat.module.css";
 import downloadImg from "/assets/download.svg";
 import fileImg from "/assets/file.svg";
+
 interface ChatProps {
   chat: IChat;
   fileDownloader: FileDownloader;
@@ -12,7 +13,9 @@ interface ChatProps {
   isFrozen: boolean;
   setIsGetResults: (isGetResults: boolean) => void;
   setIsFinished: React.Dispatch<React.SetStateAction<boolean>>;
+  onBack: () => void;
 }
+
 const Chat: FC<ChatProps> = ({
   chat,
   fileDownloader,
@@ -20,16 +23,15 @@ const Chat: FC<ChatProps> = ({
   sendAnswer,
   setIsFinished,
   setIsGetResults,
+  onBack,
 }) => {
-  // 1. Создаем ссылку на контейнер чата
   const chatRef = useRef<HTMLDivElement>(null);
 
-  // 2. Добавляем useEffect для прокрутки вниз при изменении сообщений
   useEffect(() => {
     if (chatRef.current) {
       chatRef.current.scrollTop = chatRef.current.scrollHeight;
     }
-  }, [chat.messages]); // Зависимость от массива сообщений
+  }, [chat.messages]);
 
   const handleAnswerOnClick = async (answer: IChatAnswer) => {
     sendAnswer(chat.senderId, answer);
@@ -39,9 +41,13 @@ const Chat: FC<ChatProps> = ({
 
   return (
     <div className={`${isFrozen ? styles.frozen : ""} ${styles.chatWindow}`}>
-      <div className={styles.chatName}>{chat.senderName}</div>
+      <div className={styles.chatHeader}>
+        <button className={styles.backBtn} onClick={onBack} aria-label="Назад">
+          ←
+        </button>
+        <div className={styles.chatName}>{chat.senderName}</div>
+      </div>
 
-      {/* 3. Привязываем ref к скроллящемуся контейнеру */}
       <div className={styles.chat} ref={chatRef}>
         {chat.messages.map((message) => {
           return (
@@ -87,6 +93,7 @@ interface MessageProps {
   setIsGetResults: (isGetResults: boolean) => void;
   setIsFinished: React.Dispatch<React.SetStateAction<boolean>>;
 }
+
 const Message: FC<MessageProps> = ({
   isInput,
   text,
@@ -98,7 +105,7 @@ const Message: FC<MessageProps> = ({
     <div
       className={`${styles.message} ${isInput ? styles.inputMessage : styles.outputMessage}`}
     >
-      <p className={styles.messageText}>{text}</p>
+      {text && <p className={styles.messageText}>{text}</p>}
       {files?.length
         ? files.map((file) => {
             return (
@@ -124,9 +131,9 @@ interface FileProps {
   fileDownloader: FileDownloader;
   setIsGetResults: (isGetResults: boolean) => void;
 }
-// Константы для SVG круга
-const RADIUS = 24; // Радиус круга (подгоните под размер вашей картинки)
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS; // Длина окружности
+
+const RADIUS = 20;
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 const File: FC<FileProps> = ({
   fileId,
@@ -146,7 +153,9 @@ const File: FC<FileProps> = ({
       console.log("Игра окончена");
       setIsGetResults(true);
     }
-  }, [isGameFall, isDownloaded, isLoading]);
+  }, [isGameFall, isDownloaded, isLoading, setIsGetResults]);
+
+  const animationDuration = size / 100 + 10;
 
   const handleDownloadClick = () => {
     if (!isDownloaded && !isLoading) {
@@ -171,8 +180,6 @@ const File: FC<FileProps> = ({
     }
   };
 
-  const animationDuration = size / 100 + 10;
-
   return (
     <div className={styles.file}>
       <div className={styles.fileImgWrapper}>
@@ -180,23 +187,23 @@ const File: FC<FileProps> = ({
           className={styles.fileImg}
           src={!isLoading && isDownloaded ? fileImg : downloadImg}
           onClick={handleDownloadClick}
+          alt="File status"
         />
 
-        {/* SVG для рисования круга */}
         {isLoading && (
           <svg
             className={styles.progressRing}
             width="100%"
             height="100%"
-            viewBox="0 0 56 56"
+            viewBox="0 0 48 48"
           >
             <circle
               className={styles.progressCircle}
-              cx="28"
-              cy="28"
+              cx="24"
+              cy="24"
               r={RADIUS}
               fill="transparent"
-              strokeWidth="3" // Толщина границы
+              strokeWidth="3"
               strokeDasharray={CIRCUMFERENCE}
               strokeDashoffset={isDownloaded ? 0 : CIRCUMFERENCE}
               style={{

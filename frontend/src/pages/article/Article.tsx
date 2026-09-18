@@ -22,30 +22,59 @@ const Article: FC = () => {
   // Управление мобильной шторкой
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 
+  // // 1. Загрузка списка всех статей
+  // useEffect(() => {
+  //   const fetchArticlesList = async () => {
+  //     try {
+  //       setIsLoadingList(true);
+  //       const articles = await GetPublishedArticles();
+
+  //       // const data: ArticleHeader[] = await response.json();
+  //       setArticles(articles);
+
+  //       if (articles.length > 0) {
+  //         const firstId = articles[0].id;
+  //         if (firstId !== undefined) setSelectedId(firstId);
+  //       }
+  //     } catch (err) {
+  //       console.error("Не удалось загрузить статьи:", err);
+  //       setError("Не удалось загрузить список статей");
+  //     } finally {
+  //       setIsLoadingList(false);
+  //     }
+  //   };
+
+  //   fetchArticlesList();
+  // }, []);
+
   // 1. Загрузка списка всех статей
-  useEffect(() => {
-    const fetchArticlesList = async () => {
-      try {
-        setIsLoadingList(true);
-        const articles = await GetPublishedArticles();
+useEffect(() => {
+  const fetchArticlesList = async () => {
+    try {
+      setIsLoadingList(true);
+      const response: any = await GetPublishedArticles();
 
-        // const data: ArticleHeader[] = await response.json();
-        setArticles(articles);
+      // Безопасно достаем массив, если ответ пришел объектом
+      const articlesList = Array.isArray(response)
+        ? response
+        : response?.data || response?.articles || response?.items || [];
 
-        if (articles.length > 0) {
-          const firstId = articles[0].id;
-          if (firstId !== undefined) setSelectedId(firstId);
-        }
-      } catch (err) {
-        console.error("Не удалось загрузить статьи:", err);
-        setError("Не удалось загрузить список статей");
-      } finally {
-        setIsLoadingList(false);
+      setArticles(articlesList);
+
+      if (articlesList.length > 0) {
+        const firstId = articlesList[0].id;
+        if (firstId !== undefined) setSelectedId(firstId);
       }
-    };
+    } catch (err) {
+      console.error("Не удалось загрузить статьи:", err);
+      setError("Не удалось загрузить список статей");
+    } finally {
+      setIsLoadingList(false);
+    }
+  };
 
-    fetchArticlesList();
-  }, []);
+  fetchArticlesList();
+}, []);
 
   // 2. Загрузка текста выбранной статьи
   useEffect(() => {

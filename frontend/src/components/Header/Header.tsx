@@ -15,6 +15,7 @@ interface HeaderProps {
   onSelectArticle?: (id: string) => void;
   isMenuOpen?: boolean;
   setIsMenuOpen?: (open: boolean) => void;
+  drawerTitle?: string;
 }
 
 const Header: FC<HeaderProps> = ({
@@ -23,6 +24,7 @@ const Header: FC<HeaderProps> = ({
   onSelectArticle,
   isMenuOpen = false,
   setIsMenuOpen,
+  drawerTitle = "Каталог статей",
 }) => {
   const [isAuth, setIsAuth] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -112,7 +114,7 @@ const Header: FC<HeaderProps> = ({
         className={`${styles.articleDrawer} ${isMenuOpen ? styles.drawerActive : ""}`}
       >
         <div className={styles.drawerHeader}>
-          <span className={styles.drawerTitle}>Каталог статей</span>
+          <span className={styles.drawerTitle}>{drawerTitle}</span>
           <button
             className={styles.closeBtn}
             onClick={closeMenu}

@@ -9,5 +9,5 @@ export type EArticleStatus =
 export interface IArticle {
   id: string;
   title: string;
-  status: EArticleStatus;
+  status?: EArticleStatus;
 }

@@ -8,29 +8,29 @@
 }
 
 .scenarioPage {
-  position: relative;
   display: flex;
   flex-direction: column;
   max-width: 100%;
   box-sizing: border-box;
 
-  /* Заставляем переносить любые длинные слова, если они не влезают */
   overflow-wrap: break-word;
-  word-break: break-word; /* Для поддержки старых браузеров */
-  height: 85vh;
+  word-break: break-word;
+  
+  /* Менявшая высоту привязка убрана */
+  height: auto;
 }
 
 .buttonChoiceScenario {
-  position: absolute;
+  /* Убираем абсолютное позиционирование */
+  position: static; 
   align-self: center;
 
-  bottom: 10px;
   width: 70%;
+  max-width: 400px;
 
-  background-color: rgba(44, 194, 149, 0.8); /* Синий цвет (можете поменять) */
+  background-color: rgba(44, 194, 149, 0.8);
   color: white;
 
-  flex: 1; /* Чтобы кнопки занимали равное место */
   padding: 12px 16px;
   border: none;
   border-radius: 8px;
@@ -39,5 +39,7 @@
   font-size: 18px;
   transition: all 0.3s ease;
 
+  /* Задаем фиксированный отступ СВЕРХУ от текста */
+  margin-top: 150px; 
   margin-bottom: 15px;
 }

@@ -7,18 +7,23 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  padding-top: 12px;
   z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
 }
 
 .smsWrapper {
-  /* Скрываем блок за пределами экрана сверху */
   transform: translateY(-100%);
-  opacity: 0; /* Делаем его прозрачным */
-
-  /* Подключаем анимацию: длительность 0.8с, задержка 0.2с, плавное замедление в конце */
-  animation: slideDown 0.8s 0.2s ease-out forwards;
+  opacity: 0;
+  width: 90vw;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: slideDown 0.4s ease-out forwards;
 }
-/* Создаем ключевые кадры анимации */
+
 @keyframes slideDown {
   0% {
     transform: translateY(-100%);
@@ -31,31 +36,31 @@
 }
 
 .sms {
-  padding: 4px 25px;
-  display: grid;
-  grid-template-columns: auto;
-  grid-template-rows: 1fr 1fr;
-  max-width: 60wv;
-  min-width: 40vw;
-  border-radius: 30px;
-  background-color: rgba(44, 194, 149, 0.9);
-  margin-top: 5px;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-radius: 16px;
+  background-color: rgba(12, 46, 39, 0.95);
+  border: 1px solid #2cc295;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
   user-select: none;
 }
 
 .senderName {
-  text-align: center;
-  text-transform: capitalize;
+  font-size: 13px;
+  font-weight: 700;
+  color: #2cc295;
   margin: 0;
-  width: 100%;
+  text-transform: capitalize;
+  text-align: left;
 }
 
 .text {
-  color: #063028;
-  text-align: center;
+  color: #e1f0ec;
+  font-size: 14px;
+  line-height: 1.35;
   margin: 0;
+  text-align: left;
 }

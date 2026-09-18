@@ -1,39 +1,93 @@
+/* Базовые стили для десктопа */
 .menu {
   display: flex;
-  min-height: 85vh;
+  flex-direction: row;
+  width: 100%;
+  box-sizing: border-box;
 }
+
 .scenariosList {
   display: flex;
   flex-direction: column;
-  padding: 10px;
-  gap: 5px;
+  width: 280px;
   flex-shrink: 0;
-  overflow-y: scroll;
-  height: 85vh;
-  scrollbar-width: none;
 }
 
-.scenarioTitle {
-  font-size: 18px;
-  font-weight: 400;
-  background-color: #495d5c;
-  border-radius: 15px;
-  display: flex;
-  padding: 10px;
-  width: 207px;
-  cursor: pointer;
-
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
+.mobileMenuTrigger {
+  display: none; /* Скрыта на ПК */
 }
 
-/* Новый класс для правой панели */
 .mainContent {
-  flex: 1; /* Занимает всё оставшееся свободное пространство */
-  min-width: 0; /* ВАЖНО: Fixes flexbox overflow, чтобы контент не выталкивал панель */
-  overflow-y: auto; /* Скролл внутри основной панели */
-  height: 100%;
+  flex: 1;
+  box-sizing: border-box;
+}
+
+/* Элемент списка сценариев в сайдбаре */
+.scenarioTitle {
+  padding: 12px 16px;
+  background-color: #4a5c59; /* Тот самый серый фоновый цвет карточки */
+  color: #ffffff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-bottom: 8px;
+}
+
+.scenarioTitle:hover {
+  background-color: #5c726e;
+}
+
+/* Активное выбрительное облако */
+.scenarioTitle.active {
+  background-color: #03624c;
+}
+
+/* Главный контейнер на десктопе */
+.menu {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 24px 32px; /* Добавляем отступы от краев экрана сверху и по бокам */
+  gap: 32px;          /* Задаем фиксированный разрыв между сайдбаром и контентом */
+}
+
+/* Правая часть с описанием сценария */
+.mainContent {
+  flex: 1;
+  box-sizing: border-box;
+  padding-left: 16px; /* Запасной отступ слева, чтобы текст не лип к сайдбару */
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+  /* Перебиваем специфичность за счет точной вложенности `.menu .scenariosList` */
+  .menu {
+    flex-direction: column;
+    padding: 16px 16px 24px;
+  }
+
+  .menu .scenariosList {
+    display: none; /* Прячем ПК-список */
+  }
+
+  .menu .mobileMenuTrigger {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    background-color: #03624c;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .menu .mainContent {
+    width: 100%;
+    padding: 0;
+  }
 }
