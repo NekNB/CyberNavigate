@@ -1,0 +1,235 @@
+.frozen {
+  pointer-events: none;
+  user-select: none;
+}
+
+.chatWindow {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 60px 1fr auto;
+  height: 100%;
+  background-color: #041412;
+  overflow-y: hidden;
+}
+
+/* Шапка открытого чата */
+.chatHeader {
+  grid-row: 1;
+  background-color: #06241e;
+  border-bottom: 1px solid #093b31;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.backBtn {
+  background: transparent;
+  border: none;
+  color: #2cc295;
+  font-size: 22px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+}
+
+.backBtn:active {
+  background-color: #093b31;
+}
+
+.chatName {
+  color: #e1f0ec;
+  font-size: 18px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Лента сообщений */
+.chat {
+  grid-row: 2;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.chat::-webkit-scrollbar {
+  display: none;
+}
+
+/* Сообщения */
+.message {
+  user-select: none;
+  max-width: 82%;
+  width: fit-content;
+  padding: 8px 14px;
+  border-radius: 14px;
+  height: min-content;
+  cursor: default;
+  word-break: break-word;
+}
+
+.outputMessage {
+  margin-left: auto;
+  background-color: #03624c;
+  border-bottom-right-radius: 3px;
+}
+
+.inputMessage {
+  margin-right: auto;
+  background-color: #142e29;
+  border-bottom-left-radius: 3px;
+}
+
+.outputMessage + .outputMessage {
+  margin-top: -4px;
+  border-top-right-radius: 3px;
+}
+
+.inputMessage + .inputMessage {
+  margin-top: -4px;
+  border-top-left-radius: 3px;
+}
+
+.inputMessage + .outputMessage,
+.outputMessage + .inputMessage {
+  margin-top: 6px;
+}
+
+.messageText {
+  color: #ffffff;
+  font-size: 15px;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.messageText + .file {
+  margin-top: 8px;
+}
+
+/* Карточка файла */
+.file {
+  margin: 0;
+  display: grid;
+  width: fit-content;
+  grid-template-columns: auto max-content;
+  grid-template-rows: max-content max-content;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(44, 194, 149, 0.2);
+}
+
+.fileImgWrapper {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  grid-row: 1 / 3;
+  padding: 4px;
+}
+
+.fileImg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  cursor: pointer;
+}
+
+.progressRing {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: rotate(-90deg);
+  pointer-events: none;
+}
+
+.progressCircle {
+  stroke: #2cc295;
+  stroke-linecap: round;
+}
+
+.filename {
+  grid-row: 1;
+  grid-column: 2;
+  width: fit-content;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+  padding-left: 8px;
+}
+
+.fileSize {
+  grid-row: 2;
+  grid-column: 2;
+  margin: 0;
+  font-size: 12px;
+  color: #8faea8;
+  padding-left: 8px;
+}
+
+/* Блок ответов (кнопки) */
+.answers {
+  grid-row: 3;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: #06241e;
+  border-top: 1px solid #093b31;
+}
+
+.answer {
+  background-color: #0c382f;
+  color: #e1f0ec;
+  border: 1px solid #1f6b58;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 20px;
+  text-align: center;
+  font-size: 14px;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  user-select: none;
+}
+
+.answer:active {
+  background-color: #2cc295;
+  color: #000000;
+  transform: scale(0.98);
+}
+
+/* Десктопные стили */
+@media (min-width: 769px) {
+  .message {
+    max-width: 55%;
+  }
+
+  .backBtn {
+    display: none;
+  }
+
+  .answers {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .answer {
+    width: auto;
+    flex: 1;
+    max-width: 300px;
+  }
+}

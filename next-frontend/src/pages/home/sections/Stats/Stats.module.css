@@ -1,0 +1,49 @@
+.title {
+  margin: 0;
+  color: #f1f7f7;
+  font-size: 36px;
+}
+
+.text {
+  font-size: 18px;
+  color: #aacbc4;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.card {
+  background-color: #495d5c;
+  border-radius: 30px;
+  padding: 50px;
+  display: flex;
+
+  gap: 40px;
+}
+
+.graphImg {
+  width: 100%;
+}
+
+@media (max-width: 800px) {
+  .title {
+    font-size: 28px;
+  }
+  .text {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 650px) {
+  .stats {
+    padding: 10px 0;
+  }
+  .card {
+    flex-direction: column;
+    gap: 5px;
+    padding: 20px;
+  }
+}
