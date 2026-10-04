@@ -36,8 +36,10 @@ server:
   allow_origins:
     - "https://api.кибер-навигатор.рф"
     - "https://www.кибер-навигатор.рф"
+    - "https://кибер-навигатор.рф"
     - "https://api.xn----8sbabhgkwfn1brsi2a.xn--p1ai"
     - "https://www.xn----8sbabhgkwfn1brsi2a.xn--p1ai"
+    - "https://xn----8sbabhgkwfn1brsi2a.xn--p1ai"
     - "http://localhost:3000"
     - "http://localhost:3000"
     - "http://127.0.0.1:3777"
