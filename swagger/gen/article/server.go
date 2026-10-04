@@ -19,11 +19,11 @@ type ServerInterface interface {
 	// (POST /articles)
 	PostArticles(c fiber.Ctx) error
 	// Find article by Id
-	// (GET /articles/{articleId})
-	GetArticleById(c fiber.Ctx, articleId string) error
+	// (GET /articles/{articleIdOrSlug})
+	GetArticleById(c fiber.Ctx, articleIdOrSlug string) error
 	// Update article by Id
-	// (PATCH /articles/{articleId})
-	PatchArticleById(c fiber.Ctx, articleId string) error
+	// (PATCH /articles/{articleIdOrSlug})
+	PatchArticleById(c fiber.Ctx, articleIdOrSlug string) error
 	// Article Text By articleId
 	// (GET /articles/{articleId}/text)
 	GetArticleTextById(c fiber.Ctx, articleId string) error
@@ -86,16 +86,16 @@ func (siw *ServerInterfaceWrapper) GetArticleById(c fiber.Ctx) error {
 	var err error
 	_ = err
 
-	// ------------- Path parameter "articleId" -------------
-	var articleId string
+	// ------------- Path parameter "articleIdOrSlug" -------------
+	var articleIdOrSlug string
 
-	err = runtime.BindStyledParameterWithOptions("simple", "articleId", c.Params("articleId"), &articleId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	err = runtime.BindStyledParameterWithOptions("simple", "articleIdOrSlug", c.Params("articleIdOrSlug"), &articleIdOrSlug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
 	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter articleId: %w", err).Error())
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter articleIdOrSlug: %w", err).Error())
 	}
 
 	handler := func(c fiber.Ctx) error {
-		return siw.Handler.GetArticleById(c, articleId)
+		return siw.Handler.GetArticleById(c, articleIdOrSlug)
 	}
 
 	for i := len(siw.HandlerMiddlewares) - 1; i >= 0; i-- {
@@ -115,16 +115,16 @@ func (siw *ServerInterfaceWrapper) PatchArticleById(c fiber.Ctx) error {
 	var err error
 	_ = err
 
-	// ------------- Path parameter "articleId" -------------
-	var articleId string
+	// ------------- Path parameter "articleIdOrSlug" -------------
+	var articleIdOrSlug string
 
-	err = runtime.BindStyledParameterWithOptions("simple", "articleId", c.Params("articleId"), &articleId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	err = runtime.BindStyledParameterWithOptions("simple", "articleIdOrSlug", c.Params("articleIdOrSlug"), &articleIdOrSlug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
 	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter articleId: %w", err).Error())
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("Invalid format for parameter articleIdOrSlug: %w", err).Error())
 	}
 
 	handler := func(c fiber.Ctx) error {
-		return siw.Handler.PatchArticleById(c, articleId)
+		return siw.Handler.PatchArticleById(c, articleIdOrSlug)
 	}
 
 	for i := len(siw.HandlerMiddlewares) - 1; i >= 0; i-- {
@@ -252,9 +252,9 @@ func RegisterHandlersWithOptions(router fiber.Router, si ServerInterface, option
 
 	router.Post(options.BaseURL+"/articles", wrapper.PostArticles)
 
-	router.Get(options.BaseURL+"/articles/:articleId", wrapper.GetArticleById)
+	router.Get(options.BaseURL+"/articles/:articleIdOrSlug", wrapper.GetArticleById)
 
-	router.Patch(options.BaseURL+"/articles/:articleId", wrapper.PatchArticleById)
+	router.Patch(options.BaseURL+"/articles/:articleIdOrSlug", wrapper.PatchArticleById)
 
 	router.Get(options.BaseURL+"/articles/:articleId/text", wrapper.GetArticleTextById)
 

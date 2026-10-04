@@ -98,12 +98,12 @@ type ClientInterface interface {
 	PostArticles(ctx context.Context, body PostArticlesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetArticleById request
-	GetArticleById(ctx context.Context, articleId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetArticleById(ctx context.Context, articleIdOrSlug string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// PatchArticleByIdWithBody request with any body
-	PatchArticleByIdWithBody(ctx context.Context, articleId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	PatchArticleByIdWithBody(ctx context.Context, articleIdOrSlug string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PatchArticleById(ctx context.Context, articleId string, body PatchArticleByIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	PatchArticleById(ctx context.Context, articleIdOrSlug string, body PatchArticleByIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetArticleTextById request
 	GetArticleTextById(ctx context.Context, articleId string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -155,8 +155,8 @@ func (c *Client) PostArticles(ctx context.Context, body PostArticlesJSONRequestB
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetArticleById(ctx context.Context, articleId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetArticleByIdRequest(c.Server, articleId)
+func (c *Client) GetArticleById(ctx context.Context, articleIdOrSlug string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetArticleByIdRequest(c.Server, articleIdOrSlug)
 	if err != nil {
 		return nil, err
 	}
@@ -167,8 +167,8 @@ func (c *Client) GetArticleById(ctx context.Context, articleId string, reqEditor
 	return c.Client.Do(req)
 }
 
-func (c *Client) PatchArticleByIdWithBody(ctx context.Context, articleId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPatchArticleByIdRequestWithBody(c.Server, articleId, contentType, body)
+func (c *Client) PatchArticleByIdWithBody(ctx context.Context, articleIdOrSlug string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPatchArticleByIdRequestWithBody(c.Server, articleIdOrSlug, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -179,8 +179,8 @@ func (c *Client) PatchArticleByIdWithBody(ctx context.Context, articleId string,
 	return c.Client.Do(req)
 }
 
-func (c *Client) PatchArticleById(ctx context.Context, articleId string, body PatchArticleByIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPatchArticleByIdRequest(c.Server, articleId, body)
+func (c *Client) PatchArticleById(ctx context.Context, articleIdOrSlug string, body PatchArticleByIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPatchArticleByIdRequest(c.Server, articleIdOrSlug, body)
 	if err != nil {
 		return nil, err
 	}
@@ -319,12 +319,12 @@ func NewPostArticlesRequestWithBody(server string, contentType string, body io.R
 }
 
 // NewGetArticleByIdRequest generates requests for GetArticleById
-func NewGetArticleByIdRequest(server string, articleId string) (*http.Request, error) {
+func NewGetArticleByIdRequest(server string, articleIdOrSlug string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "articleId", articleId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "articleIdOrSlug", articleIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
 	if err != nil {
 		return nil, err
 	}
@@ -353,23 +353,23 @@ func NewGetArticleByIdRequest(server string, articleId string) (*http.Request, e
 }
 
 // NewPatchArticleByIdRequest calls the generic PatchArticleById builder with application/json body
-func NewPatchArticleByIdRequest(server string, articleId string, body PatchArticleByIdJSONRequestBody) (*http.Request, error) {
+func NewPatchArticleByIdRequest(server string, articleIdOrSlug string, body PatchArticleByIdJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewPatchArticleByIdRequestWithBody(server, articleId, "application/json", bodyReader)
+	return NewPatchArticleByIdRequestWithBody(server, articleIdOrSlug, "application/json", bodyReader)
 }
 
 // NewPatchArticleByIdRequestWithBody generates requests for PatchArticleById with any type of body
-func NewPatchArticleByIdRequestWithBody(server string, articleId string, contentType string, body io.Reader) (*http.Request, error) {
+func NewPatchArticleByIdRequestWithBody(server string, articleIdOrSlug string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "articleId", articleId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "articleIdOrSlug", articleIdOrSlug, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
 	if err != nil {
 		return nil, err
 	}
@@ -579,12 +579,12 @@ type ClientWithResponsesInterface interface {
 	PostArticlesWithResponse(ctx context.Context, body PostArticlesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostArticlesResponse, error)
 
 	// GetArticleByIdWithResponse request
-	GetArticleByIdWithResponse(ctx context.Context, articleId string, reqEditors ...RequestEditorFn) (*GetArticleByIdResponse, error)
+	GetArticleByIdWithResponse(ctx context.Context, articleIdOrSlug string, reqEditors ...RequestEditorFn) (*GetArticleByIdResponse, error)
 
 	// PatchArticleByIdWithBodyWithResponse request with any body
-	PatchArticleByIdWithBodyWithResponse(ctx context.Context, articleId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchArticleByIdResponse, error)
+	PatchArticleByIdWithBodyWithResponse(ctx context.Context, articleIdOrSlug string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchArticleByIdResponse, error)
 
-	PatchArticleByIdWithResponse(ctx context.Context, articleId string, body PatchArticleByIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchArticleByIdResponse, error)
+	PatchArticleByIdWithResponse(ctx context.Context, articleIdOrSlug string, body PatchArticleByIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchArticleByIdResponse, error)
 
 	// GetArticleTextByIdWithResponse request
 	GetArticleTextByIdWithResponse(ctx context.Context, articleId string, reqEditors ...RequestEditorFn) (*GetArticleTextByIdResponse, error)
@@ -843,8 +843,8 @@ func (c *ClientWithResponses) PostArticlesWithResponse(ctx context.Context, body
 }
 
 // GetArticleByIdWithResponse request returning *GetArticleByIdResponse
-func (c *ClientWithResponses) GetArticleByIdWithResponse(ctx context.Context, articleId string, reqEditors ...RequestEditorFn) (*GetArticleByIdResponse, error) {
-	rsp, err := c.GetArticleById(ctx, articleId, reqEditors...)
+func (c *ClientWithResponses) GetArticleByIdWithResponse(ctx context.Context, articleIdOrSlug string, reqEditors ...RequestEditorFn) (*GetArticleByIdResponse, error) {
+	rsp, err := c.GetArticleById(ctx, articleIdOrSlug, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -852,16 +852,16 @@ func (c *ClientWithResponses) GetArticleByIdWithResponse(ctx context.Context, ar
 }
 
 // PatchArticleByIdWithBodyWithResponse request with arbitrary body returning *PatchArticleByIdResponse
-func (c *ClientWithResponses) PatchArticleByIdWithBodyWithResponse(ctx context.Context, articleId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchArticleByIdResponse, error) {
-	rsp, err := c.PatchArticleByIdWithBody(ctx, articleId, contentType, body, reqEditors...)
+func (c *ClientWithResponses) PatchArticleByIdWithBodyWithResponse(ctx context.Context, articleIdOrSlug string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchArticleByIdResponse, error) {
+	rsp, err := c.PatchArticleByIdWithBody(ctx, articleIdOrSlug, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParsePatchArticleByIdResponse(rsp)
 }
 
-func (c *ClientWithResponses) PatchArticleByIdWithResponse(ctx context.Context, articleId string, body PatchArticleByIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchArticleByIdResponse, error) {
-	rsp, err := c.PatchArticleById(ctx, articleId, body, reqEditors...)
+func (c *ClientWithResponses) PatchArticleByIdWithResponse(ctx context.Context, articleIdOrSlug string, body PatchArticleByIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchArticleByIdResponse, error) {
+	rsp, err := c.PatchArticleById(ctx, articleIdOrSlug, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}

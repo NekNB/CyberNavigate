@@ -1,5 +1,2 @@
-backend:
-  url: http://127.0.0.1:9080/api/v1
-server:
-  address: 0.0.0.0
-  port: 3000
+internalUrl: http://cyber-navigate_gateway-server:80/api/v1
+externalUrl: http://127.0.0.1:9080/api/v1

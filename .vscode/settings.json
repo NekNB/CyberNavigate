@@ -9,9 +9,9 @@
     "plpgsql",
     "rolname",
     "sqlite",
-    "swarmpit"
+    "swarmpit",
+    "парсим"
   ],
-
   "files.associations": {
     "*.env": "env"
   },

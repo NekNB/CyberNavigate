@@ -19,6 +19,8 @@ components:
       properties:
         id:
           type: string
+        slug:
+          type: string
         title:
           type: string
         status:
@@ -26,7 +28,9 @@ components:
       example:
         id: "0c0ea3c4-925e-4801-9ef5-b6c40976d3c0"
         title: "Article Title 1"
+        slug: "article-title-1"
         status: "draft"
+      required: ["id", "slug", "title", "status"]
   responses:
     ArticleNotFound:
       description: Article Not Found
@@ -93,7 +97,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ArticleMetaData"
         "400":
-          description: ArticleAlreadyExists
           $ref: "#/components/responses/ArticleAlreadyExists"
 
     get:
@@ -115,7 +118,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/ArticleMetaData"
 
-  /articles/{articleId}:
+  /articles/{articleIdOrSlug}:
     patch:
       x-auth:
         jwt: true
@@ -126,9 +129,9 @@ paths:
       summary: Update article by Id
       operationId: patchArticleById
       parameters:
-        - name: articleId
+        - name: articleIdOrSlug
           in: path
-          description: ID of article
+          description: ID or Slug of article
           required: true
           schema:
             type: string
@@ -155,7 +158,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ArticleMetaData"
         "404":
-          description: ArticleNotFound
           $ref: "#/components/responses/ArticleNotFound"
 
     get:
@@ -168,9 +170,9 @@ paths:
       summary: Find article by Id
       operationId: getArticleById
       parameters:
-        - name: articleId
+        - name: articleIdOrSlug
           in: path
-          description: ID of article
+          description: ID or Slug of article
           required: true
           schema:
             type: string
@@ -182,7 +184,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ArticleMetaData"
         "404":
-          description: ArticleNotFound
           $ref: "#/components/responses/ArticleNotFound"
 
   /articles/{articleId}/text:
@@ -215,7 +216,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ArticleMetaData"
         "404":
-          description: ArticleNotFound
           $ref: "#/components/responses/ArticleNotFound"
 
     put:
@@ -247,10 +247,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/ArticleMetaData"
         "404":
-          description: ArticleNotFound
           $ref: "#/components/responses/ArticleNotFound"
         "422":
-          description: ArticleTextNotCreatedYet
           $ref: "#/components/responses/ArticleTextNotCreatedYet"
 
     get:
@@ -278,5 +276,4 @@ paths:
                 type: string
                 format: binary
         "404":
-          description: ArticleNotFound
           $ref: "#/components/responses/ArticleNotFound"

@@ -1,4 +1,4 @@
-import { GetFile } from "../app/api/Simulator/Simulator";
+import { GetFile } from "@/lib/api-client/Simulator/Simulator";
 
 export default class FileDownloader {
   // 1. private: скрыл массив внутри класса, чтобы его нельзя было изменить напрямую снаружи

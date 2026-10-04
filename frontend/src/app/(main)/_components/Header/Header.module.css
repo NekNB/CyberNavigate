@@ -1,0 +1,241 @@
+/* 1. ОБЩИЕ СТИЛИ ШАПКИ */
+
+.header {
+  background-color: #03624c;
+  padding: 0;
+  height: 15dvh;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: 32px;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 50;
+}
+
+.leftSection {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 280px;
+  height: 100%;
+  background-color: #021b1a;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.logo img {
+  height: 80%;
+  width: 95%;
+  display: block;
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+}
+
+.headerLink {
+  color: #f1f7f7;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.headerLink:hover {
+  color: #4ee2c0;
+}
+
+.profile {
+  height: 45px;
+  width: auto;
+  cursor: pointer;
+  display: block;
+}
+
+/* 2.ТОЛЬКО ДЕСКТОП (экран от 769px) */
+@media (min-width: 770px) {
+  .leftSection {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  .logo {
+    width: 300px;
+    min-width: 300px;
+    height: 100%;
+    background-color: #021b1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .navMainLinks {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+    margin: 0;
+    gap: 60px;
+  }
+
+  .headerLink {
+    color: #f1f7f7;
+    text-decoration: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 18px;
+    letter-spacing: 1px;
+    transition: color 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .headerLink:hover {
+    color: #4ee2c0;
+  }
+}
+
+/* 3.ТОЛЬКО МОБИЛКА (экран до 768px) */
+@media (max-width: 768px) {
+  .header {
+    /* height: 10dvh; */
+    /* padding-left: 12px ; */
+    padding-right: 12px;
+  }
+
+  /* .leftSection {
+    gap: 8px;
+    height: 100%;
+  } */
+
+  .logo {
+    width: auto;
+    height: 100%;
+    background-color: #021b1a;
+    padding: 0 12px;
+    /* border-radius: 4px ; */
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .logo img {
+    height: 32px;
+    width: auto;
+  }
+
+  .navMainLinks {
+    display: flex;
+    align-items: center;
+    margin-left: 4px;
+    gap: 10px;
+  }
+
+  .headerLink {
+    color: #f1f7f7;
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    white-space: nowrap;
+    padding-right: 0;
+  }
+
+  .profile {
+    height: 28px;
+  }
+}
+
+/* 4. МОБИЛЬНАЯ ВЫДВИЖНАЯ ШТОРКА */
+
+/* .articleDrawer {
+  position: fixed;
+  top: 0;
+  left: -320px;
+  width: 300px;
+  height: 100vh;
+  background-color: #021b1a;
+  padding: 24px 20px;
+  box-sizing: border-box;
+  z-index: 100;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.drawerActive {
+  left: 0;
+}
+
+.drawerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 16px;
+}
+
+.drawerTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #4ee2c0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+} */
+
+/* .closeBtn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+} */
+
+/* .mobileArticlesList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.mobileArticleItem {
+  color: #aacbc4;
+  font-size: 14px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+} */
+
+/* .mobileArticleItem:hover,
+.mobileArticleActive {
+  background-color: #03624c;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 99;
+} */
