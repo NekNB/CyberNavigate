@@ -19,6 +19,8 @@ components:
       properties:
         id:
           type: string
+        slug:
+          type: string
         title:
           type: string
         status:
@@ -26,6 +28,7 @@ components:
       example:
         id: "0c0ea3c4-925e-4801-9ef5-b6c40976d3c0"
         title: "Article Title 1"
+        slug: "article-title-1"
         status: "draft"
   responses:
     ArticleNotFound:
@@ -93,7 +96,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ArticleMetaData"
         "400":
-          description: ArticleAlreadyExists
           $ref: "#/components/responses/ArticleAlreadyExists"
 
     get:
@@ -155,7 +157,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ArticleMetaData"
         "404":
-          description: ArticleNotFound
           $ref: "#/components/responses/ArticleNotFound"
 
     get:
@@ -182,7 +183,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ArticleMetaData"
         "404":
-          description: ArticleNotFound
           $ref: "#/components/responses/ArticleNotFound"
 
   /articles/{articleId}/text:
@@ -215,7 +215,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ArticleMetaData"
         "404":
-          description: ArticleNotFound
           $ref: "#/components/responses/ArticleNotFound"
 
     put:
@@ -247,10 +246,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/ArticleMetaData"
         "404":
-          description: ArticleNotFound
           $ref: "#/components/responses/ArticleNotFound"
         "422":
-          description: ArticleTextNotCreatedYet
           $ref: "#/components/responses/ArticleTextNotCreatedYet"
 
     get:
@@ -278,5 +275,4 @@ paths:
                 type: string
                 format: binary
         "404":
-          description: ArticleNotFound
           $ref: "#/components/responses/ArticleNotFound"

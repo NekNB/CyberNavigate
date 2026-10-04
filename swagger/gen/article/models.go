@@ -18,6 +18,7 @@ const ServerUrlLocalService = "http://127.0.0.1:8000/api/v1"
 // ArticleMetaData defines model for ArticleMetaData.
 type ArticleMetaData struct {
 	Id     *string `json:"id,omitempty"`
+	Slug   *string `json:"slug,omitempty"`
 	Status *string `json:"status,omitempty"`
 	Title  *string `json:"title,omitempty"`
 }

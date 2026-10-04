@@ -71,6 +71,7 @@ CREATE TABLE metadata (
 uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     
 title VARCHAR UNIQUE NOT NULL,
+slug title VARCHAR UNIQUE NOT NULL,
 status article_status NOT NULL DEFAULT 'draft',
 text_id VARCHAR UNIQUE,
 video_url VARCHAR UNIQUE,
