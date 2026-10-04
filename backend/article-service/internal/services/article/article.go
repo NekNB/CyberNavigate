@@ -22,6 +22,7 @@ type ArticleContentProvider interface {
 type ArticleMetaProvider interface {
 	Articles() (*[]article.ArticleMetaData, error)
 	ArticleByUUID(articleUUID string) (*article.ArticleMetaData, error)
+	ArticleUUIDBySlug(slug string) (string, error)
 	ArticleTextIDByUUID(articleUUID string) (textID string, err error)
 	CreateArticle(articleName, slug string) (*article.ArticleMetaData, error)
 	UpdateArticleByUUID(articleUUID string, title, textID, slug, status, videoUrl *string) (*article.ArticleMetaData, error)
@@ -62,6 +63,10 @@ func (a *ArticleService) ArticleByUUID(articleId string) (*article.ArticleMetaDa
 		return nil, err
 	}
 	return metadata, nil
+}
+
+func (a *ArticleService) ArticleUUIDBySlug(slug string) (string, error) {
+	return a.articleMetaProvider.ArticleUUIDBySlug(slug)
 }
 
 func (a *ArticleService) ArticleTextByUUID(ctx context.Context, articleId string) (string, error) {

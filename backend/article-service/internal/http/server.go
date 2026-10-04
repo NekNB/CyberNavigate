@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"uuid"
 
 	"github.com/NekNB/CyberNavigate/backend/article-service/internal/storage"
 	"github.com/NekNB/CyberNavigate/swagger/gen/article"
@@ -26,6 +27,7 @@ type ArticleServiceInterface interface {
 	CreateArticle(title string) (*article.ArticleMetaData, error)
 	Articles() (*[]article.ArticleMetaData, error)
 	ArticleByUUID(articleId string) (*article.ArticleMetaData, error)
+	ArticleUUIDBySlug(slug string) (string, error)
 	SaveArticleTextByUUID(ctx context.Context, articleId, text string) (*article.ArticleMetaData, error)
 	ArticleTextByUUID(ctx context.Context, articleId string) (string, error)
 	UpdateArticleTextByUUID(ctx context.Context, articleId, text string) (*article.ArticleMetaData, error)
@@ -71,9 +73,16 @@ func (a *APIServer) GetArticles(c fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(metadata)
 }
 
-func (a *APIServer) GetArticleById(c fiber.Ctx, articleId string) error {
+func (a *APIServer) GetArticleById(c fiber.Ctx, articleIdOrSlug string) error {
 	aS := a.articleService
+	var articleId string
 
+	articleUUID, err := uuid.Parse(articleIdOrSlug)
+	if err != nil {
+		articleId, err = aS.ArticleUUIDBySlug(articleIdOrSlug)
+	} else {
+		articleId = articleUUID.String()
+	}
 	metadata, err := aS.ArticleByUUID(articleId)
 	if err != nil {
 		if errors.Is(err, storage.ErrArticleNotFound) {

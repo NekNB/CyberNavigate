@@ -61,6 +61,20 @@ func (p *PostgresStorage) Articles() (*[]article.ArticleMetaData, error) {
 
 	return &articleSlice, nil
 }
+func (p *PostgresStorage) ArticleUUIDBySlug(slug string) (string, error) {
+	var articleId string
+	if err := p.db.QueryRow(`
+		SELECT uuid
+		FROM metadata
+		WHERE slug = $1;
+	`, slug).Scan(&articleId); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", storage.ErrArticleNotFound
+		}
+		return "", err
+	}
+	return articleId, nil
+}
 
 // Получение конкретного article metadata по uuid
 func (p *PostgresStorage) ArticleByUUID(articleUUID string) (*article.ArticleMetaData, error) {

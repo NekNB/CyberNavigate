@@ -12,7 +12,6 @@
     "swarmpit",
     "парсим"
   ],
-
   "files.associations": {
     "*.env": "env"
   },
