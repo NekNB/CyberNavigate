@@ -1,5 +1,7 @@
+import { GetPublishedArticles } from "@/lib/api-server/Article/Article";
+import { GetAllScenarios } from "@/lib/api-server/Simulator/Simulator";
 import { MetadataRoute } from "next";
-
+export const dynamic = "force-dynamic";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://кибер-навигатор.рф";
 
@@ -22,14 +24,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 2. Динамические страницы (например, статьи)
   // Получаем массив slug'ов из вашей базы или API
   // const articles = await fetchArticles();
-  const dynamicSlugs = ["kak-zashchitit-dannye", "chto-takoe-fishing"];
+  const articles = await GetPublishedArticles();
+  const dynamicArticleSlugs = articles.map((article) => {
+    return article.slug;
+  });
+  const articlePages: MetadataRoute.Sitemap = dynamicArticleSlugs.map(
+    (slug) => ({
+      url: `${baseUrl}/articles/${slug}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.6,
+    }),
+  );
 
-  const articlePages = dynamicSlugs.map((slug) => ({
-    url: `${baseUrl}/articles/${slug}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.6,
-  }));
+  const scenarios = await GetAllScenarios();
+  const dynamicScenarioUUIDs = scenarios.map((scenario) => {
+    return scenario.id;
+  });
+  const scenarioPage: MetadataRoute.Sitemap = dynamicScenarioUUIDs.map(
+    (id) => ({
+      url: `${baseUrl}/simulator/${id}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    }),
+  );
 
-  return [...staticPages, ...articlePages];
+  return [...staticPages, ...articlePages, ...scenarioPage];
 }

@@ -3,13 +3,24 @@ import {
   GetAllScenarios,
   GetScenarioById,
 } from "@/lib/api-server/Simulator/Simulator";
+import { Metadata } from "next";
 import Link from "next/link";
 import { FC } from "react";
 import styles from "./Scenario.module.css";
+export const dynamic = "force-dynamic";
 interface PageProps {
   params: Promise<{ simulatorId: string }>;
 }
-export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const scenario = await GetScenarioById((await params).simulatorId);
+  return {
+    title: scenario.title,
+    description: scenario.description,
+  };
+}
 const SimulatorPage: FC<PageProps> = async ({ params }) => {
   const { simulatorId } = await params;
   const scenario = await GetScenarioById(simulatorId);
