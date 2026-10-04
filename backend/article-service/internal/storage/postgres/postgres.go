@@ -35,7 +35,7 @@ func New(log *logrus.Logger, uri string) (*PostgresStorage, error) {
 func (p *PostgresStorage) Articles() (*[]article.ArticleMetaData, error) {
 	rows, err := p.db.Query(
 		`
-			SELECT uuid, title, status 
+			SELECT uuid, title, slug, status 
 			FROM metadata;
 		`,
 	)
@@ -50,6 +50,7 @@ func (p *PostgresStorage) Articles() (*[]article.ArticleMetaData, error) {
 		if err := rows.Scan(
 			&metadata.Id,
 			&metadata.Title,
+			&metadata.Slug,
 			&metadata.Status,
 		); err != nil {
 			return nil, err
@@ -65,7 +66,7 @@ func (p *PostgresStorage) Articles() (*[]article.ArticleMetaData, error) {
 func (p *PostgresStorage) ArticleByUUID(articleUUID string) (*article.ArticleMetaData, error) {
 	stmt, err := p.db.Prepare(
 		`
-			SELECT uuid, title, status 
+			SELECT uuid, title, slug, status 
 			FROM metadata
 			WHERE uuid = $1;
 		`,
@@ -79,6 +80,7 @@ func (p *PostgresStorage) ArticleByUUID(articleUUID string) (*article.ArticleMet
 	if err = stmt.QueryRow(articleUUID).Scan(
 		&articleMetadata.Id,
 		&articleMetadata.Title,
+		&articleMetadata.Slug,
 		&articleMetadata.Status,
 	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -114,17 +116,18 @@ func (p *PostgresStorage) ArticleTextIDByUUID(articleUUID string) (string, error
 }
 
 // Создание сущности Article
-func (p *PostgresStorage) CreateArticle(articleTitle *string) (*article.ArticleMetaData, error) {
+func (p *PostgresStorage) CreateArticle(articleTitle, slug string) (*article.ArticleMetaData, error) {
 	var metadata article.ArticleMetaData
 
 	if err := p.db.QueryRow(`
-		INSERT INTO metadata (title)
-		VALUES ($1)
-		RETURNING uuid, title, status;
-	`, articleTitle).
+		INSERT INTO metadata (title, slug)
+		VALUES ($1, $2)
+		RETURNING uuid, title, slug, status;
+	`, articleTitle, slug).
 		Scan(
 			&metadata.Id,
 			&metadata.Title,
+			&metadata.Slug,
 			&metadata.Status,
 		); err != nil {
 		var pgerr *pq.Error
@@ -138,7 +141,7 @@ func (p *PostgresStorage) CreateArticle(articleTitle *string) (*article.ArticleM
 }
 
 // Обновление сущности Article по UUID
-func (p *PostgresStorage) UpdateArticleByUUID(articleUUID string, title, textID, status, videoUrl *string) (*article.ArticleMetaData, error) {
+func (p *PostgresStorage) UpdateArticleByUUID(articleUUID string, title, textID, slug, status, videoUrl *string) (*article.ArticleMetaData, error) {
 	var metadata article.ArticleMetaData
 
 	if err := p.db.QueryRow(`
@@ -146,14 +149,16 @@ func (p *PostgresStorage) UpdateArticleByUUID(articleUUID string, title, textID,
 		SET
 			title = COALESCE(NULLIF($2, ''), title),
 			text_id = COALESCE(NULLIF($3, ''), text_id),
-			status = COALESCE(NULLIF($4, '')::article_status, status),
-			video_url = COALESCE(NULLIF($5, ''), video_url)
+			slug = COALESCE(NULLIF($4, ''), slug),
+			status = COALESCE(NULLIF($5, '')::article_status, status),
+			video_url = COALESCE(NULLIF($6, ''), video_url)
 		WHERE uuid = $1
-		RETURNING uuid, title, status;
-	`, articleUUID, title, textID, status, videoUrl).
+		RETURNING uuid, title, slug, status;
+	`, articleUUID, title, textID, slug, status, videoUrl).
 		Scan(
 			&metadata.Id,
 			&metadata.Title,
+			&metadata.Slug,
 			&metadata.Status,
 		); err != nil {
 		var pgerr *pq.Error

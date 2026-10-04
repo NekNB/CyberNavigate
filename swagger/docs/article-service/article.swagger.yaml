@@ -30,6 +30,7 @@ components:
         title: "Article Title 1"
         slug: "article-title-1"
         status: "draft"
+      required: ["id", "slug", "title", "status"]
   responses:
     ArticleNotFound:
       description: Article Not Found
@@ -117,7 +118,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/ArticleMetaData"
 
-  /articles/{articleId}:
+  /articles/{articleIdOrSlug}:
     patch:
       x-auth:
         jwt: true
@@ -128,9 +129,9 @@ paths:
       summary: Update article by Id
       operationId: patchArticleById
       parameters:
-        - name: articleId
+        - name: articleIdOrSlug
           in: path
-          description: ID of article
+          description: ID or Slug of article
           required: true
           schema:
             type: string
@@ -169,9 +170,9 @@ paths:
       summary: Find article by Id
       operationId: getArticleById
       parameters:
-        - name: articleId
+        - name: articleIdOrSlug
           in: path
-          description: ID of article
+          description: ID or Slug of article
           required: true
           schema:
             type: string

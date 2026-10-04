@@ -5,11 +5,11 @@ import {
 import DOMPurify from "isomorphic-dompurify";
 import styles from "./Article.module.css";
 type PageProps = {
-  params: Promise<{ articleId: string }>;
+  params: Promise<{ slug: string }>;
 };
 
 export default async function Article({ params }: PageProps) {
-  const { articleId } = await params;
+  const { slug } = await params;
 
   //  Загрузка текста выбранной статьи
   const articleText = await GetArticleText(articleId);

@@ -7,6 +7,7 @@ import (
 	"github.com/NekNB/CyberNavigate/backend/article-service/internal/http"
 	"github.com/NekNB/CyberNavigate/backend/article-service/internal/storage"
 	"github.com/NekNB/CyberNavigate/swagger/gen/article"
+	"github.com/gosimple/slug"
 	"github.com/sirupsen/logrus"
 )
 
@@ -22,8 +23,8 @@ type ArticleMetaProvider interface {
 	Articles() (*[]article.ArticleMetaData, error)
 	ArticleByUUID(articleUUID string) (*article.ArticleMetaData, error)
 	ArticleTextIDByUUID(articleUUID string) (textID string, err error)
-	CreateArticle(articleName *string) (*article.ArticleMetaData, error)
-	UpdateArticleByUUID(articleUUID string, title, textID, status, videoUrl *string) (*article.ArticleMetaData, error)
+	CreateArticle(articleName, slug string) (*article.ArticleMetaData, error)
+	UpdateArticleByUUID(articleUUID string, title, textID, slug, status, videoUrl *string) (*article.ArticleMetaData, error)
 }
 
 type ArticleService struct {
@@ -85,8 +86,10 @@ func (a *ArticleService) ArticleTextByUUID(ctx context.Context, articleId string
 	return text, nil
 }
 
-func (a *ArticleService) CreateArticle(title *string) (*article.ArticleMetaData, error) {
-	metadata, err := a.articleMetaProvider.CreateArticle(title)
+func (a *ArticleService) CreateArticle(title string) (*article.ArticleMetaData, error) {
+
+	slug := slug.Make(title)
+	metadata, err := a.articleMetaProvider.CreateArticle(title, slug)
 	if err != nil {
 		a.log.Error(err)
 		return nil, err
@@ -110,6 +113,7 @@ func (a *ArticleService) SaveArticleTextByUUID(ctx context.Context, articleId, t
 		&textId,
 		nil,
 		nil,
+		nil,
 	)
 	if err != nil {
 		a.log.Error(err)
@@ -118,13 +122,19 @@ func (a *ArticleService) SaveArticleTextByUUID(ctx context.Context, articleId, t
 	return metadata, nil
 }
 
-func (a *ArticleService) UpdateArticleByUUID(articleId string, title, status *string) (*article.ArticleMetaData, error) {
+func (a *ArticleService) UpdateArticleByUUID(articleId string, title, status, videoUrl *string) (*article.ArticleMetaData, error) {
+	var slugTitle *string
+	if title != nil {
+		slugStr := slug.Make(*title)
+		slugTitle = &slugStr
+	}
 	metadata, err := a.articleMetaProvider.UpdateArticleByUUID(
 		articleId,
 		title,
 		nil,
+		slugTitle,
 		status,
-		nil,
+		videoUrl,
 	)
 	if err != nil {
 		a.log.Error(err)
