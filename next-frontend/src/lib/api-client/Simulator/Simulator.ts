@@ -1,19 +1,5 @@
-import type {
-  IFile,
-  IResults,
-  IScenario,
-  IStep,
-} from "../../../types/simulator";
+import type { IFile, IResults, IStep } from "../../../types/simulator";
 import apiClient from "../Api";
-
-export const GetAllScenarios = async (): Promise<IScenario[]> => {
-  try {
-    const response = await apiClient.get<IScenario[]>("simulator/scenarios");
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
 
 export const CreateSession = async (scenarioId: string): Promise<void> => {
   await apiClient.post("/simulator/sessions", {

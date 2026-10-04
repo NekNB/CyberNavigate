@@ -1,6 +1,5 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 
-import { config } from "../config";
 import { isAuthEndpoint, isRefreshEndpoint } from "./endpoints";
 
 // Очередь обновления
@@ -22,7 +21,6 @@ const processQueue = (error: any) => {
 };
 
 const apiClient = axios.create({
-  baseURL: config.backend!.url,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -68,7 +66,7 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        await apiClient.put(`${__APP_CONFIG__.backend.url}/auth/refresh`);
+        await apiClient.put("/auth/refresh");
 
         processQueue(null);
 
@@ -86,3 +84,6 @@ apiClient.interceptors.response.use(
 );
 
 export default apiClient;
+export const setClientApiBaseUrl = (url: string) => {
+  apiClient.defaults.baseURL = url;
+};

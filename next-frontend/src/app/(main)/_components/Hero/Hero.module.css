@@ -1,0 +1,75 @@
+.hero {
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
+    url("/assets/knight-bg.webp") no-repeat center center;
+  align-items: flex-end;
+  background-size: cover;
+  padding: 1rem 0;
+  min-height: 500px;
+  display: flex;
+  border-bottom-left-radius: 50px;
+  border-bottom-right-radius: 50px;
+}
+.container {
+  max-width: 1200px;
+  margin: 40px 30px;
+  gap: 5px;
+}
+
+.title {
+  text-align: left;
+  font-size: 48px;
+  line-height: 1.2;
+  margin: 0;
+  text-transform: none;
+}
+
+.text {
+  padding-right: 10dvw;
+  text-align: left;
+  font-size: 1.5rem;
+  color: #f1f7f7;
+  line-height: 1.5;
+  margin: 0;
+}
+
+@media (max-width: 970px) {
+  .hero {
+    background-position: right center;
+  }
+}
+
+@media (max-width: 600px) {
+  .hero {
+    min-height: 50dvh;
+    max-height: 80dvh;
+    border-radius: 10px 0px 0px 10px;
+    /* background-position: -210px; */
+  }
+  .container {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+    padding: 0;
+  }
+  .title {
+    font-size: 20px;
+    margin: 0;
+    /* margin-bottom: 15px; */
+  }
+  .text {
+    font-size: small;
+  }
+  .DesktopOnly {
+    display: none;
+  }
+}
+
+@media (max-width: 500px) {
+  .hero {
+    min-height: 50dvh;
+    max-height: 80dvh;
+    border-radius: 10px 0px 0px 10px;
+    background-position: clamp(-12.5rem, -21.389rem + 44.44vw, -7.5rem) center;
+  }
+}

@@ -1,0 +1,44 @@
+html {
+  overflow-x: hidden;
+  width: 100%;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  scroll-snap-type: y mandatory; /* Фиксация по вертикали. mandatory = строгое прилипание */
+  scroll-behavior: smooth; /* Плавный скролл при клике по ссылкам */
+}
+
+body {
+  margin: 0 auto;
+  padding: 0;
+  max-width: 1400px;
+  width: 100%;
+  background-color: #021b1a;
+  color: #ffffff;
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+* {
+  text-decoration: none;
+  /* Для Chrome, Safari, Opera */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Для Firefox */
+  scrollbar-width: none;
+
+  /* Для IE / Edge */
+  -ms-overflow-style: none;
+}
+
+@media (max-width: 300px) {
+  html {
+    overflow-x: auto;
+  }
+  body {
+    min-width: 300px;
+  }
+}
