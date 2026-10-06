@@ -31,6 +31,9 @@ export const metadata: Metadata = {
     "молодежь",
     "студенты",
   ],
+  verification: {
+    google: "cCIWxjjJPbOikaMFZujIwog-MUdnMhcdHG4pVtZ5480"
+  },
   openGraph: {
     title: "КиберНавигатор — защита от онлайн-угроз",
     description:
