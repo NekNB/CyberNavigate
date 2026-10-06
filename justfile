@@ -1,21 +1,23 @@
 set shell := ["nu", "-c"]
 
 build env service:
-  docker build -f ./docker/{{ env }}/{{ service }}.dockerfile -t cyber-navigate/{{ service }} .
+	docker build -f ./docker/{{ env }}/{{ service }}.dockerfile -t cyber-navigate/{{ service }} .
 
 run env: 
-  just build {{ env }} nginx
-  just build {{ env }} postgres
-  just build {{ env }} mongo
-  just build {{ env }} article-service
-  just build {{ env }} user-service
-  just build {{ env }} simulator-service
-  just build {{ env }} gateway-server
-  just build {{ env }} frontend
+	just build {{ env }} nginx
+	just build {{ env }} postgres
+	just build {{ env }} mongo
+	just build {{ env }} article-service
+	just build {{ env }} user-service
+	just build {{ env }} simulator-service
+	just build {{ env }} gateway-server
+	just build {{ env }} frontend
 
-  just secrets_update
+	just secrets_update
+	just deploy
 
-  docker stack deploy -c docker-compose.yaml cyber-navigate
+deploy:
+	docker stack deploy -c docker-compose.yaml cyber-navigate
 
 [no-exit-message]
 secrets_remove: 
