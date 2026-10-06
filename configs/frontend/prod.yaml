@@ -1,5 +1,2 @@
-backend:
-  url: https://api.кибер-навигатор.рф/api/v1
-server:
-  address: 0.0.0.0
-  port: 3000
+internalUrl: http://cyber-navigate_gateway-server:80/api/v1
+externalUrl: https://api.xn----8sbabhgkwfn1brsi2a.xn--p1ai/api/v1
