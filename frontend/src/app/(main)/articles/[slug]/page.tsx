@@ -34,7 +34,7 @@ export default async function Article({ params }: PageProps) {
       <h1 className={styles.articleTitle}>{articleData.title}</h1>
       <div className={styles.articleText}>
         <div
-          style={{ whiteSpace: "pre-line" }}
+        className={styles.articleBody}
           dangerouslySetInnerHTML={{ __html: clearHTML }}
         ></div>
       </div>

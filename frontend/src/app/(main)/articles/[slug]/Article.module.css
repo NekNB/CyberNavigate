@@ -37,6 +37,13 @@
   display: none;
 }
 
+.articleBody {
+  white-space: normal;
+}
+/* .articleBody > * {
+  margin: 0;
+} */
+
 /* --- Мобильная версия --- */
 @media (max-width: 768px) {
   .mobileMenuTrigger {
