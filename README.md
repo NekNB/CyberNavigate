@@ -1,6 +1,11 @@
 # CyberNavigate
 
-CyberNavigate - это круто
+CyberNavigate - это симулятор мошеннических схем
+
+Требуется:
+Docker Swarm
+Just
+NuShell
 
 # Запуск
 
