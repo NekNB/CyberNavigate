@@ -1,18 +1,57 @@
 set shell := ["nu", "-c"]
 
 build env service:
-	docker build -f ./docker/{{ env }}/{{ service }}.dockerfile -t cyber-navigate/{{ service }} .
+	docker build -f ./docker/{{ env }}/{{ service }}.dockerfile -t cyber-navigator/{{ service }} .
+
+tag service:
+	docker tag cyber-navigator/{{ service }}:latest neknarej/cyber-navigator_{{ service }}:latest	
+
+push service:
+	docker push neknarej/cyber-navigator_{{ service }}:latest
+send:
+	just build prod nginx
+	just tag nginx
+	just push nginx
+	 
+
+	just build prod postgres
+	just tag postgres
+	just push postgres
+	 
+
+	just build prod mongo
+	just tag mongo 
+	just push mongo
+	 
+
+	just build prod article-service
+	just tag article-service
+	just push article-service
+	 
+
+	just build prod user-service
+	just tag user-service
+	just push user-service
+	 
+
+	just build prod simulator-service
+	just tag simulator-service
+	just push simulator-service
+	 
+
+	just build prod gateway-server
+	just tag gateway-server
+	just push gateway-server
+	 
+
+	just build prod frontend
+	just tag frontend
+	just push frontend
+	 
+
+
 
 run env: 
-	just build {{ env }} nginx
-	just build {{ env }} postgres
-	just build {{ env }} mongo
-	just build {{ env }} article-service
-	just build {{ env }} user-service
-	just build {{ env }} simulator-service
-	just build {{ env }} gateway-server
-	just build {{ env }} frontend
-
 	just secrets_update
 	just deploy
 

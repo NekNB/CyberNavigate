@@ -4,6 +4,8 @@
     "envsubst",
     "gomplate",
     "initdb",
+    "marticle",
+    "msimulator",
     "ossp",
     "pgcrypto",
     "plpgsql",

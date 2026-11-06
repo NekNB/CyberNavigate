@@ -15,7 +15,7 @@ services:
      
 
   nginx:
-    image: cyber-navigate/nginx
+    image: neknarej/cyber-navigator_nginx:latest
     ports:
       - target: 80
         published: 80
@@ -36,7 +36,7 @@ services:
       - gateway-server
 
   gateway-server:
-    image: cyber-navigate/gateway-server
+    image: neknarej/cyber-navigator_gateway-server:latest
     ports:
       - target: 443
         published: 9443
@@ -48,7 +48,7 @@ services:
         mode: host
         
   mongo:
-    image: cyber-navigate/mongo
+    image: neknarej/cyber-navigator_mongo:latest
     ports:
       - target: 27017
         published: 27017
@@ -63,7 +63,7 @@ services:
       - mongo_data:/data/db
 
   frontend:
-    image: cyber-navigate/frontend
+    image: neknarej/cyber-navigator_frontend:latest
     ports:
       - target: 3000
         published: 3777
@@ -74,7 +74,7 @@ services:
 
 
   postgres:
-    image: cyber-navigate/postgres
+    image: neknarej/cyber-navigator_postgres:latest
     ports:
       - target: 5432
         published: 5777
@@ -89,7 +89,7 @@ services:
       replicas: 1
 
   article-service:
-    image: cyber-navigate/article-service
+    image: neknarej/cyber-navigator_article-service:latest
     secrets:
       - source: article_service_secret
         target: article_service_secret
@@ -98,7 +98,7 @@ services:
       - postgres
       - mongo
   user-service:
-    image: cyber-navigate/user-service
+    image: neknarej/cyber-navigator_user-service:latest
     secrets:
       - source: user_service_secret
         target: user_service_secret
@@ -106,7 +106,7 @@ services:
     depends_on:
       - postgres
   simulator-service:
-    image: cyber-navigate/simulator-service
+    image: neknarej/cyber-navigator_simulator-service:latest
     secrets:
       - source: simulator_service_secret
         target: simulator_service_secret
